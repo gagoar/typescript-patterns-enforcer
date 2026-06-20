@@ -13,9 +13,6 @@ description: >
 
   Natural language triggers: "write this in TypeScript", "review my TypeScript", "refactor
   this TS file", "enforce patterns", "check type safety", "improve types".
-
-  For deeper delegated work (full PR review, large refactors), spawn the
-  ts-patterns:review subagent via the Agent tool instead.
 ---
 
 # TypeScript Pattern Enforcement
