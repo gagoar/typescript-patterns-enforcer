@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
-  "name": "gago",
-  "id": "gago",
+  "name": "typescript-patterns-enforcer",
+  "id": "typescript-patterns-enforcer",
   "owner": {
     "name": "gagoar",
     "url": "https://github.com/gagoar"
