@@ -2,27 +2,31 @@
 
 A Claude Code plugin that enforces TypeScript best practices and patterns — available as both a lightweight **inline skill** and a heavyweight **subagent** for delegated reviews.
 
+**Webpage:** [gagoar.github.io/typescript-patterns-enforcer](https://gagoar.github.io/typescript-patterns-enforcer)
+
 ## What's included
 
 | Component | When to use |
 |-----------|-------------|
-| **Skill** `typescript-patterns` | Automatically active while writing or editing `.ts`/`.tsx` files. Provides inline guidance on type safety, patterns, and anti-patterns. |
-| **Agent** `typescript-patterns-enforcer` | Spawn via the Agent tool for full PR reviews, large refactors, or converting JavaScript to TypeScript. |
+| **Skill** `/ts-patterns:check` | Automatically active while writing or editing `.ts`/`.tsx` files. Provides inline guidance on type safety, patterns, and anti-patterns. |
+| **Agent** `ts-patterns:review` | Spawn via the Agent tool for full PR reviews, large refactors, or converting JavaScript to TypeScript. |
 
 ## Install
 
-Via the [gago-plugins](https://github.com/gagoar/gago-plugins) marketplace:
+Via the [gago-plugins](https://gagoar.github.io/gago-plugins) marketplace:
 
 ```
-/plugin marketplace add github:gagoar/gago-plugins
-/plugin install typescript-patterns-enforcer@gago-plugins
+/plugin marketplace add gagoar/gago-plugins
+/plugin install ts-patterns@gago-plugins
+/reload-plugins
 ```
 
 Or standalone:
 
 ```
-/plugin marketplace add github:gagoar/typescript-patterns-enforcer
-/plugin install typescript-patterns-enforcer@typescript-patterns-enforcer
+/plugin marketplace add gagoar/typescript-patterns-enforcer
+/plugin install ts-patterns@ts-patterns
+/reload-plugins
 ```
 
 ## Core principles enforced

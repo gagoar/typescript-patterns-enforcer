@@ -1,5 +1,5 @@
 ---
-name: typescript-patterns
+name: check
 description: >
   Use when writing, reviewing, or refactoring TypeScript code to enforce type-safety,
   project conventions, and established best practices.
@@ -15,7 +15,7 @@ description: >
   this TS file", "enforce patterns", "check type safety", "improve types".
 
   For deeper delegated work (full PR review, large refactors), spawn the
-  typescript-patterns-enforcer subagent via the Agent tool instead.
+  ts-patterns:review subagent via the Agent tool instead.
 ---
 
 # TypeScript Pattern Enforcement

@@ -1,6 +1,6 @@
 {
-  "name": "typescript-patterns-enforcer",
-  "version": "0.1.0",
+  "name": "ts-patterns",
+  "version": "0.2.0",
   "description": "Enforce TypeScript best practices and patterns — inline skill guidance plus a dedicated subagent for reviews and refactors.",
   "author": {
     "name": "gagoar",
@@ -9,5 +9,5 @@
   "homepage": "https://github.com/gagoar/typescript-patterns-enforcer",
   "license": "MIT",
   "keywords": ["typescript", "patterns", "code-quality", "linting", "best-practices"],
-  "skills": ["./skills/typescript-patterns"]
+  "skills": ["./skills/check"]
 }
