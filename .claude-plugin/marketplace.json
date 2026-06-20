@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "typescript-patterns-enforcer",
+  "id": "typescript-patterns-enforcer",
+  "owner": {
+    "name": "gagoar",
+    "url": "https://github.com/gagoar"
+  },
+  "metadata": {
+    "description": "Enforce TypeScript best practices and patterns — inline skill guidance plus a dedicated subagent for reviews and refactors.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "typescript-patterns-enforcer",
+      "source": "./",
+      "description": "Enforce TypeScript best practices and patterns — inline skill guidance plus a dedicated subagent for reviews and refactors.",
+      "version": "0.1.0",
+      "author": {
+        "name": "gagoar",
+        "url": "https://github.com/gagoar"
+      },
+      "homepage": "https://github.com/gagoar/typescript-patterns-enforcer",
+      "license": "MIT",
+      "keywords": ["typescript", "patterns", "code-quality", "linting", "best-practices"],
+      "category": "productivity"
+    }
+  ]
+}
