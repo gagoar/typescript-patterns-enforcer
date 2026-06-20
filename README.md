@@ -11,15 +11,16 @@ A Claude Code plugin that enforces TypeScript best practices and patterns — av
 
 ## Install
 
-```bash
-# Add this repo as a marketplace, then install the plugin
-/plugin marketplace add /path/to/typescript-patterns-enforcer
-/plugin install typescript-patterns-enforcer@typescript-patterns-enforcer
+Via the [gago-plugins](https://github.com/gagoar/gago-plugins) marketplace:
+
+```
+/plugin marketplace add github:gagoar/gago-plugins
+/plugin install typescript-patterns-enforcer@gago-plugins
 ```
 
-Or once pushed to GitHub (`gagoar/typescript-patterns-enforcer`):
+Or standalone:
 
-```bash
+```
 /plugin marketplace add github:gagoar/typescript-patterns-enforcer
 /plugin install typescript-patterns-enforcer@typescript-patterns-enforcer
 ```
