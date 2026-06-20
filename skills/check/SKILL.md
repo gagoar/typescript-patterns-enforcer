@@ -1,8 +1,8 @@
 ---
 name: check
 description: >
-  Use when writing, reviewing, or refactoring TypeScript code to enforce type-safety,
-  project conventions, and established best practices.
+  /ts-patterns:check — Enforce TypeScript best practices inline while writing or editing
+  .ts/.tsx files: no any, explicit return types, readonly by default, async/await only.
 
   Trigger automatically when:
   - Writing new TypeScript files or modules
