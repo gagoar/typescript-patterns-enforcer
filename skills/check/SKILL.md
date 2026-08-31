@@ -33,6 +33,26 @@ Apply these principles to every TypeScript file you write or edit.
 7. **Generics with constraints** — `<TEntity extends BaseEntity>` not just `<T>`. Use descriptive names.
 8. **Composition over inheritance** — classes only when necessary; prefer plain functions and utility types.
 
+## Comment Discipline
+
+A comment must do one of two things: name the **feature** a piece of code
+enables (why it exists), or state an **invariant a future edit could
+silently break** — a hidden constraint, a subtle ordering requirement, the
+reason a guard exists, the regression a test specifically catches. Never
+restate what the adjacent code already says in plain English.
+
+- Bad: `// loop over the array and push each item` above a `.forEach(...)`.
+- Bad: `// assert the result is 2` above `expect(x).toBe(2)`.
+- Good: `// must never call X directly — Y already owns that, calling it here
+  double-fires` above a guard clause.
+- Good: `// this count would be 3 if a future edit added a direct call — the
+  guard below is what catches that` above an assertion.
+
+Don't re-narrate the whole PR/feature design inline — that belongs in the PR
+description or a top-of-file one-liner, not repeated above every function or
+test case. If removing a comment wouldn't cost a future reader anything, cut
+it.
+
 ## File Layout
 
 ```

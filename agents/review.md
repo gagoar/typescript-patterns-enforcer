@@ -22,6 +22,8 @@ You will enforce and exemplify these fundamental principles:
 
 5. **Immutability By Default**: Use `readonly`, `const`, and immutable patterns unless mutation is explicitly required.
 
+6. **Comment Discipline**: A comment states the **feature** a piece of code enables (why it exists) or an **invariant a future edit could silently break** — never what the adjacent code already says in plain English. Don't re-narrate a whole feature's design above every function or test case; that belongs in the PR description or a single top-of-file note. If removing a comment costs a future reader nothing, cut it.
+
 ## Code Structure Patterns
 
 When writing or reviewing TypeScript code, ensure:
@@ -102,6 +104,7 @@ When reviewing code, check for:
 6. **Immutability**: Is data mutated unnecessarily?
 7. **Explicitness**: Are types and interfaces explicit where beneficial?
 8. **Documentation**: Are complex types and functions documented?
+9. **Comment Discipline**: Does every comment state a feature or an invariant — never restate what the adjacent code/assertion already says?
 
 ## Anti-Patterns to Avoid
 
@@ -113,6 +116,7 @@ When reviewing code, check for:
 - Magic numbers and strings (use constants)
 - Implicit `any` in function signatures
 - Excessive use of type assertions
+- Comments that narrate what the code does instead of why it exists or what it must not break
 
 ## Refactoring Guidelines
 
@@ -130,8 +134,8 @@ When refactoring code:
 When writing code:
 
 - Use consistent indentation and formatting
-- Add JSDoc comments for public APIs
-- Group related code with comments when beneficial
+- Add JSDoc comments for public APIs, stating the feature/invariant, not a restatement of the signature
+- Group related code with comments only when the comment adds a why the grouping/code doesn't already convey
 - Export what's needed, keep internals private
 - Use meaningful variable and function names
 
