@@ -32,6 +32,37 @@ Apply these principles to every TypeScript file you write or edit.
 6. **Typed errors** — custom classes extending `Error`, or discriminated-union result types. Never silently swallow.
 7. **Generics with constraints** — `<TEntity extends BaseEntity>` not just `<T>`. Use descriptive names.
 8. **Composition over inheritance** — classes only when necessary; prefer plain functions and utility types.
+9. **No magic strings/numbers in comparisons or branching** — extract a repeated or semantically-meaningful literal (a URL scheme like `"https:"`, a sentinel path segment, a fixed error code) into a named `const`. For a small closed set of mutually-exclusive tags, prefer a string-literal union type (`type Kind = "a" | "b"`) or a `const` object/enum over scattered inline comparisons, so the compiler can narrow exhaustively. Never hardcode a literal a second time when it could instead be derived from an existing named constant — e.g. slicing by the length of a duplicated literal instead of deriving it from that constant.
+
+## Single Source of Truth for Fixed Sets
+
+Represent a fixed, closed set of values in **one** declaration. Never author a
+literal-union type and a separate set of `const`s that repeat the same strings.
+Two hand-written copies drift silently: rename one member, and `tsc` stays quiet
+because the stale `const`'s annotation still satisfies the now-wrong type.
+
+Bad — the two strings are authored twice:
+
+```ts
+export type HandlerPosture = "opt-in" | "opt-out";
+const OPT_IN: HandlerPosture = "opt-in";
+const OPT_OUT: HandlerPosture = "opt-out";
+```
+
+Good — the type is derived from the values:
+
+```ts
+export const HandlerPosture = { OptIn: "opt-in", OptOut: "opt-out" } as const;
+export type HandlerPosture = (typeof HandlerPosture)[keyof typeof HandlerPosture];
+```
+
+A `const` and a `type` may share a name (separate namespaces), so
+`HandlerPosture` reads as both the value bag and its type.
+
+Don't reach for this as "just use a TS `enum`." Match what the surrounding
+module already does with its other fixed sets. If it uses plain literal unions
+and has no `enum`, use the `as const` object above rather than introduce the
+first `enum`. Consistency with the existing convention wins.
 
 ## Comment Discipline
 
@@ -71,7 +102,8 @@ it.
 - `any` / unguarded `as` casts
 - Mutating function parameters
 - Deeply nested `.then().catch()` chains
-- Magic strings/numbers (extract to `const` or `enum`)
+- Magic strings/numbers, especially in comparisons or branching — extract to a named `const`, or a literal-union type when there's a closed set of them
+- A fixed value set declared twice — a literal-union type plus separate `const`s holding the same strings (derive one from the other via `as const`)
 - Missing error handling in `async` functions
 - Classes with no private state (use plain functions instead)
 - `@ts-ignore` without a follow-up TODO
