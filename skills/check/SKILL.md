@@ -64,6 +64,126 @@ module already does with its other fixed sets. If it uses plain literal unions
 and has no `enum`, use the `as const` object above rather than introduce the
 first `enum`. Consistency with the existing convention wins.
 
+## Data Over Logic
+
+A `switch` — and an `if`/`else if` chain, and a `while` that dispatches — is
+control-flow *logic*: a hand-rolled matcher whose cases grow by editing the
+chain. Replace it with a *data structure* keyed by the value being matched: a
+lookup scales by adding an entry, not by editing every site that already
+branches on that set. **Do not keep a `switch`** — convert it. There is no
+exhaustiveness or "distinct branches" exception: a total `Record` over a closed
+key set is itself exhaustive (a missing key is a compile error), so
+exhaustiveness is never a reason to reach back for the `switch`.
+
+**Dispatch table** — replace an `if`/`else if` (or `switch`) chain keyed on a
+closed set with a `Record` from the set to a handler:
+
+```ts
+// Bad
+function performAction(role: Role): void {
+  if (role === "admin") { grantAdminAccess(); }
+  else if (role === "user") { grantUserAccess(); }
+  else { grantGuestAccess(); }
+}
+
+// Good
+const actionByRole: Readonly<Record<Role, () => void>> = {
+  admin: grantAdminAccess,
+  user: grantUserAccess,
+  guest: grantGuestAccess,
+};
+function performAction(role: Role): void {
+  actionByRole[role]();
+}
+```
+
+**Config array + `.reduce()`** — replace a sequence of independent `if`
+blocks that each fold into the same accumulator with an array of
+`[test, transform]` tuples reduced over:
+
+```ts
+type Rule<T> = readonly [test: (input: T) => boolean, transform: (input: T) => T];
+const rules: readonly Rule<Payload>[] = [
+  [(p) => p.role === "user", addUserFields],
+  [(p) => isAllowlisted(p), addAllowlistFields],
+];
+const payload = rules.reduce((acc, [test, transform]) => (test(acc) ? transform(acc) : acc), initial);
+```
+
+**Config array + `.find()`** — same shape, but for "stop at the first match"
+instead of "apply every match":
+
+```ts
+const matched = rules.find(([test]) => test(input));
+matched?.[1](input);
+```
+
+**Comparison chains** — replace repeated `===`/`&&`/`||` against the same
+variable with a named array and `.includes()`:
+
+```ts
+// Bad
+if (role === "user" || role === "admin") { /* ... */ }
+
+// Good
+const ROLES_ALLOWED_FOR_X: readonly Role[] = ["user", "admin"];
+if (ROLES_ALLOWED_FOR_X.includes(role)) { /* ... */ }
+```
+
+**A `switch` on a discriminated union's tag** is the same dispatch table in
+disguise, even when each arm reads that variant's own fields. Key the `Record`
+by the tag and let each handler receive the union member, so an arm reads the
+fields it needs off its own parameter:
+
+```ts
+// Bad — a switch on the union tag
+function applyDecision(decision: Decision, deps: Deps): boolean {
+  switch (decision.outcome) {
+    case "push":
+      return true;
+    case "skip":
+      deps.notice(decision.notice);
+      return false;
+    case "fail":
+      for (const line of decision.errors) { deps.error(line); }
+      deps.setFailed(decision.errors[0]);
+      return false;
+  }
+}
+
+// Good — a total Record keyed by the tag; a new variant that misses a key is a
+// compile error, the same coverage the switch's return type gave. Each handler
+// takes its own narrowed variant, so it reads that variant's fields directly.
+const decisionHandlers: Readonly<{
+  [K in Decision["outcome"]]: (d: Extract<Decision, { outcome: K }>, deps: Deps) => boolean;
+}> = {
+  push: () => true,
+  skip: (d, deps) => {
+    deps.notice(d.notice);
+    return false;
+  },
+  fail: (d, deps) => {
+    d.errors.forEach((line) => deps.error(line));
+    deps.setFailed(d.errors[0]);
+    return false;
+  },
+};
+
+const applyDecision = (decision: Decision, deps: Deps): boolean => {
+  // The one justified cast (rule 1): TypeScript can't correlate the looked-up
+  // handler's parameter with `decision`'s own variant across an index access,
+  // so the call is typed as `never` without it. The Record above is what makes
+  // this safe — every key maps to a handler for exactly that variant.
+  const handle = decisionHandlers[decision.outcome] as (d: Decision, deps: Deps) => boolean;
+  return handle(decision, deps);
+};
+```
+
+No `ts-pattern` (or any library) here — a plain `Record` and one localized,
+documented cast. A library that adds `.exhaustive()` matching is a separate
+choice a project may make on its own; this skill's rule is only "no `switch`,"
+and the standard-library data structures above satisfy it.
+
 ## Comment Discipline
 
 A comment must do one of two things: name the **feature** a piece of code
@@ -104,6 +224,7 @@ it.
 - Deeply nested `.then().catch()` chains
 - Magic strings/numbers, especially in comparisons or branching — extract to a named `const`, or a literal-union type when there's a closed set of them
 - A fixed value set declared twice — a literal-union type plus separate `const`s holding the same strings (derive one from the other via `as const`)
+- **Any `switch`**, and any `if`/`else if` chain that dispatches on a closed set of values — convert to a data structure (a `Record` dispatch table, or a config array reduced/found over). A `switch` is never the answer here; there is no exhaustiveness exception
 - Missing error handling in `async` functions
 - Classes with no private state (use plain functions instead)
 - `@ts-ignore` without a follow-up TODO
@@ -115,5 +236,6 @@ Before finalising:
 - [ ] `any` is absent or justified
 - [ ] Errors are typed and handled
 - [ ] Immutability enforced where possible
+- [ ] No `switch` survives — branching over a closed set is a `Record` dispatch table or a config array
 - [ ] Complex types have JSDoc comments
 - [ ] TypeScript compiles without errors (`tsc --noEmit`)
