@@ -71,9 +71,9 @@ control-flow *logic*: a hand-rolled matcher whose cases grow by editing the
 chain. Replace it with a *data structure* keyed by the value being matched: a
 lookup scales by adding an entry, not by editing every site that already
 branches on that set. **Do not keep a `switch`** — convert it. There is no
-exhaustiveness or "distinct branches" exception: exhaustiveness is a property
-you get from the data structure too (a total `Record`, or `ts-pattern`'s
-`.exhaustive()`), not a reason to reach back for the `switch`.
+exhaustiveness or "distinct branches" exception: a total `Record` over a closed
+key set is itself exhaustive (a missing key is a compile error), so
+exhaustiveness is never a reason to reach back for the `switch`.
 
 **Dispatch table** — replace an `if`/`else if` (or `switch`) chain keyed on a
 closed set with a `Record` from the set to a handler:
@@ -130,12 +130,10 @@ const ROLES_ALLOWED_FOR_X: readonly Role[] = ["user", "admin"];
 if (ROLES_ALLOWED_FOR_X.includes(role)) { /* ... */ }
 ```
 
-**Discriminated-union `switch`** — the case that *looks* like it needs a
-`switch` (branches with per-variant data, side effects, exhaustiveness). It
-still converts. Use `ts-pattern`'s `match(...).with(...).exhaustive()`: the
-`.with` clauses are the data structure, each arm narrows to its variant, and
-`.exhaustive()` is a compile error the moment a variant is added and left
-unmatched — the same guarantee a returning `switch` gave, without the `switch`:
+**A `switch` on a discriminated union's tag** is the same dispatch table in
+disguise, even when each arm reads that variant's own fields. Key the `Record`
+by the tag and let each handler receive the union member, so an arm reads the
+fields it needs off its own parameter:
 
 ```ts
 // Bad — a switch on the union tag
@@ -153,27 +151,38 @@ function applyDecision(decision: Decision, deps: Deps): boolean {
   }
 }
 
-// Good — match arms are data; each arm narrows; .exhaustive() enforces coverage
-import { match } from "ts-pattern";
+// Good — a total Record keyed by the tag; a new variant that misses a key is a
+// compile error, the same coverage the switch's return type gave. Each handler
+// takes its own narrowed variant, so it reads that variant's fields directly.
+const decisionHandlers: Readonly<{
+  [K in Decision["outcome"]]: (d: Extract<Decision, { outcome: K }>, deps: Deps) => boolean;
+}> = {
+  push: () => true,
+  skip: (d, deps) => {
+    deps.notice(d.notice);
+    return false;
+  },
+  fail: (d, deps) => {
+    d.errors.forEach((line) => deps.error(line));
+    deps.setFailed(d.errors[0]);
+    return false;
+  },
+};
 
-const applyDecision = (decision: Decision, deps: Deps): boolean =>
-  match(decision)
-    .with({ outcome: "push" }, () => true)
-    .with({ outcome: "skip" }, ({ notice }) => {
-      deps.notice(notice);
-      return false;
-    })
-    .with({ outcome: "fail" }, ({ errors }) => {
-      errors.forEach((line) => deps.error(line));
-      deps.setFailed(errors[0]);
-      return false;
-    })
-    .exhaustive();
+const applyDecision = (decision: Decision, deps: Deps): boolean => {
+  // The one justified cast (rule 1): TypeScript can't correlate the looked-up
+  // handler's parameter with `decision`'s own variant across an index access,
+  // so the call is typed as `never` without it. The Record above is what makes
+  // this safe — every key maps to a handler for exactly that variant.
+  const handle = decisionHandlers[decision.outcome] as (d: Decision, deps: Deps) => boolean;
+  return handle(decision, deps);
+};
 ```
 
-If a branch is a bare value-to-behavior map with no per-variant data, a total
-`Record<Tag, Handler>` is enough and needs no library. Reach for `ts-pattern`
-when arms need their narrowed variant, as above.
+No `ts-pattern` (or any library) here — a plain `Record` and one localized,
+documented cast. A library that adds `.exhaustive()` matching is a separate
+choice a project may make on its own; this skill's rule is only "no `switch`,"
+and the standard-library data structures above satisfy it.
 
 ## Comment Discipline
 
@@ -215,7 +224,7 @@ it.
 - Deeply nested `.then().catch()` chains
 - Magic strings/numbers, especially in comparisons or branching — extract to a named `const`, or a literal-union type when there's a closed set of them
 - A fixed value set declared twice — a literal-union type plus separate `const`s holding the same strings (derive one from the other via `as const`)
-- **Any `switch`**, and any `if`/`else if` chain that dispatches on a closed set of values — convert to a data structure (`Record` dispatch table, config array reduced/found over, or `ts-pattern`'s `match().exhaustive()` for a discriminated union). A `switch` is never the answer here; there is no exhaustiveness exception
+- **Any `switch`**, and any `if`/`else if` chain that dispatches on a closed set of values — convert to a data structure (a `Record` dispatch table, or a config array reduced/found over). A `switch` is never the answer here; there is no exhaustiveness exception
 - Missing error handling in `async` functions
 - Classes with no private state (use plain functions instead)
 - `@ts-ignore` without a follow-up TODO
@@ -227,6 +236,6 @@ Before finalising:
 - [ ] `any` is absent or justified
 - [ ] Errors are typed and handled
 - [ ] Immutability enforced where possible
-- [ ] No `switch` survives — branching over a closed set is a dispatch table, config array, or `ts-pattern` `match().exhaustive()`
+- [ ] No `switch` survives — branching over a closed set is a `Record` dispatch table or a config array
 - [ ] Complex types have JSDoc comments
 - [ ] TypeScript compiles without errors (`tsc --noEmit`)
