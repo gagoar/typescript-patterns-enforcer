@@ -66,10 +66,14 @@ first `enum`. Consistency with the existing convention wins.
 
 ## Data Over Logic
 
-Prefer a data structure over control-flow logic (`if`/`else` chains, `switch`,
-`while`) whenever the branching is really "pick a behavior for a value in a
-closed set." A lookup scales by adding an entry; a branch chain scales by
-editing every call site that already matches on that set.
+A `switch` — and an `if`/`else if` chain, and a `while` that dispatches — is
+control-flow *logic*: a hand-rolled matcher whose cases grow by editing the
+chain. Replace it with a *data structure* keyed by the value being matched: a
+lookup scales by adding an entry, not by editing every site that already
+branches on that set. **Do not keep a `switch`** — convert it. There is no
+exhaustiveness or "distinct branches" exception: exhaustiveness is a property
+you get from the data structure too (a total `Record`, or `ts-pattern`'s
+`.exhaustive()`), not a reason to reach back for the `switch`.
 
 **Dispatch table** — replace an `if`/`else if` (or `switch`) chain keyed on a
 closed set with a `Record` from the set to a handler:
@@ -126,12 +130,50 @@ const ROLES_ALLOWED_FOR_X: readonly Role[] = ["user", "admin"];
 if (ROLES_ALLOWED_FOR_X.includes(role)) { /* ... */ }
 ```
 
-This doesn't ban `switch` outright. A `switch` over a discriminated union's
-tag, with a declared return type enforcing exhaustiveness (see "Utility Types
-to Reach For"), is still the right tool when each branch is genuinely
-distinct control flow — a mix of side effects, early returns, loops — rather
-than a plain value-to-behavior lookup. Reach for a data structure specifically
-when the branches are structurally uniform: same shape, different data.
+**Discriminated-union `switch`** — the case that *looks* like it needs a
+`switch` (branches with per-variant data, side effects, exhaustiveness). It
+still converts. Use `ts-pattern`'s `match(...).with(...).exhaustive()`: the
+`.with` clauses are the data structure, each arm narrows to its variant, and
+`.exhaustive()` is a compile error the moment a variant is added and left
+unmatched — the same guarantee a returning `switch` gave, without the `switch`:
+
+```ts
+// Bad — a switch on the union tag
+function applyDecision(decision: Decision, deps: Deps): boolean {
+  switch (decision.outcome) {
+    case "push":
+      return true;
+    case "skip":
+      deps.notice(decision.notice);
+      return false;
+    case "fail":
+      for (const line of decision.errors) { deps.error(line); }
+      deps.setFailed(decision.errors[0]);
+      return false;
+  }
+}
+
+// Good — match arms are data; each arm narrows; .exhaustive() enforces coverage
+import { match } from "ts-pattern";
+
+const applyDecision = (decision: Decision, deps: Deps): boolean =>
+  match(decision)
+    .with({ outcome: "push" }, () => true)
+    .with({ outcome: "skip" }, ({ notice }) => {
+      deps.notice(notice);
+      return false;
+    })
+    .with({ outcome: "fail" }, ({ errors }) => {
+      errors.forEach((line) => deps.error(line));
+      deps.setFailed(errors[0]);
+      return false;
+    })
+    .exhaustive();
+```
+
+If a branch is a bare value-to-behavior map with no per-variant data, a total
+`Record<Tag, Handler>` is enough and needs no library. Reach for `ts-pattern`
+when arms need their narrowed variant, as above.
 
 ## Comment Discipline
 
@@ -173,7 +215,7 @@ it.
 - Deeply nested `.then().catch()` chains
 - Magic strings/numbers, especially in comparisons or branching — extract to a named `const`, or a literal-union type when there's a closed set of them
 - A fixed value set declared twice — a literal-union type plus separate `const`s holding the same strings (derive one from the other via `as const`)
-- An `if`/`else if` or `switch` chain that maps a closed set of values to structurally uniform handlers — a `Record` dispatch table, or a config array reduced/found over, would scale by adding an entry instead of editing the chain
+- **Any `switch`**, and any `if`/`else if` chain that dispatches on a closed set of values — convert to a data structure (`Record` dispatch table, config array reduced/found over, or `ts-pattern`'s `match().exhaustive()` for a discriminated union). A `switch` is never the answer here; there is no exhaustiveness exception
 - Missing error handling in `async` functions
 - Classes with no private state (use plain functions instead)
 - `@ts-ignore` without a follow-up TODO
@@ -185,6 +227,6 @@ Before finalising:
 - [ ] `any` is absent or justified
 - [ ] Errors are typed and handled
 - [ ] Immutability enforced where possible
-- [ ] Value-to-behavior branching over a closed set uses a dispatch table or config array, not a uniform `if`/`switch` chain
+- [ ] No `switch` survives — branching over a closed set is a dispatch table, config array, or `ts-pattern` `match().exhaustive()`
 - [ ] Complex types have JSDoc comments
 - [ ] TypeScript compiles without errors (`tsc --noEmit`)

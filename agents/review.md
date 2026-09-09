@@ -24,7 +24,7 @@ You will enforce and exemplify these fundamental principles:
 
 6. **Comment Discipline**: A comment states the **feature** a piece of code enables (why it exists) or an **invariant a future edit could silently break** — never what the adjacent code already says in plain English. Don't re-narrate a whole feature's design above every function or test case; that belongs in the PR description or a single top-of-file note. If removing a comment costs a future reader nothing, cut it.
 
-7. **Data Over Logic**: When branching exists only to pick a behavior for a value in a closed set, replace the `if`/`else`/`switch` chain with a data structure — a `Record` dispatch table, or a config array of `[test, action]` tuples processed with `.reduce()`/`.find()` — so a new case is an added entry, not an edited chain. This doesn't ban `switch`: an exhaustiveness-checked switch over a discriminated union's tag is still correct when each branch is genuinely distinct control flow rather than a uniform lookup.
+7. **Data Over Logic**: A `switch` is control-flow logic and does not belong in reviewed code — replace it with a data structure, always. So too an `if`/`else if` chain dispatching on a closed set. Use a `Record` dispatch table, a config array of `[test, action]` tuples processed with `.reduce()`/`.find()`, or — for a discriminated union whose arms need per-variant data or exhaustiveness — `ts-pattern`'s `match(...).with(...).exhaustive()`, whose `.with` clauses are the data structure and whose `.exhaustive()` gives the same coverage guarantee a returning switch did. There is no exhaustiveness or "distinct branches" exception: if a `switch` can become a data structure, it must.
 
 ## Code Structure Patterns
 
@@ -107,7 +107,7 @@ When reviewing code, check for:
 7. **Explicitness**: Are types and interfaces explicit where beneficial?
 8. **Documentation**: Are complex types and functions documented?
 9. **Comment Discipline**: Does every comment state a feature or an invariant — never restate what the adjacent code/assertion already says?
-10. **Data Over Logic**: Does a branch chain over a closed set of values use a dispatch table or config array instead of a uniform `if`/`switch` chain?
+10. **Data Over Logic**: Is there any `switch` left? There should be none — every one becomes a dispatch table, config array, or `ts-pattern` `match().exhaustive()`.
 
 ## Anti-Patterns to Avoid
 
@@ -120,7 +120,7 @@ When reviewing code, check for:
 - Implicit `any` in function signatures
 - Excessive use of type assertions
 - Comments that narrate what the code does instead of why it exists or what it must not break
-- An `if`/`else if`/`switch` chain mapping a closed set of values to structurally uniform handlers, where a `Record` dispatch table or a reduced/found config array would scale better
+- Any `switch`, or an `if`/`else if` chain dispatching on a closed set — must become a `Record` dispatch table, a reduced/found config array, or a `ts-pattern` `match().exhaustive()`; a `switch` is never kept
 
 ## Refactoring Guidelines
 
