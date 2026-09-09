@@ -64,6 +64,75 @@ module already does with its other fixed sets. If it uses plain literal unions
 and has no `enum`, use the `as const` object above rather than introduce the
 first `enum`. Consistency with the existing convention wins.
 
+## Data Over Logic
+
+Prefer a data structure over control-flow logic (`if`/`else` chains, `switch`,
+`while`) whenever the branching is really "pick a behavior for a value in a
+closed set." A lookup scales by adding an entry; a branch chain scales by
+editing every call site that already matches on that set.
+
+**Dispatch table** — replace an `if`/`else if` (or `switch`) chain keyed on a
+closed set with a `Record` from the set to a handler:
+
+```ts
+// Bad
+function performAction(role: Role): void {
+  if (role === "admin") { grantAdminAccess(); }
+  else if (role === "user") { grantUserAccess(); }
+  else { grantGuestAccess(); }
+}
+
+// Good
+const actionByRole: Readonly<Record<Role, () => void>> = {
+  admin: grantAdminAccess,
+  user: grantUserAccess,
+  guest: grantGuestAccess,
+};
+function performAction(role: Role): void {
+  actionByRole[role]();
+}
+```
+
+**Config array + `.reduce()`** — replace a sequence of independent `if`
+blocks that each fold into the same accumulator with an array of
+`[test, transform]` tuples reduced over:
+
+```ts
+type Rule<T> = readonly [test: (input: T) => boolean, transform: (input: T) => T];
+const rules: readonly Rule<Payload>[] = [
+  [(p) => p.role === "user", addUserFields],
+  [(p) => isAllowlisted(p), addAllowlistFields],
+];
+const payload = rules.reduce((acc, [test, transform]) => (test(acc) ? transform(acc) : acc), initial);
+```
+
+**Config array + `.find()`** — same shape, but for "stop at the first match"
+instead of "apply every match":
+
+```ts
+const matched = rules.find(([test]) => test(input));
+matched?.[1](input);
+```
+
+**Comparison chains** — replace repeated `===`/`&&`/`||` against the same
+variable with a named array and `.includes()`:
+
+```ts
+// Bad
+if (role === "user" || role === "admin") { /* ... */ }
+
+// Good
+const ROLES_ALLOWED_FOR_X: readonly Role[] = ["user", "admin"];
+if (ROLES_ALLOWED_FOR_X.includes(role)) { /* ... */ }
+```
+
+This doesn't ban `switch` outright. A `switch` over a discriminated union's
+tag, with a declared return type enforcing exhaustiveness (see "Utility Types
+to Reach For"), is still the right tool when each branch is genuinely
+distinct control flow — a mix of side effects, early returns, loops — rather
+than a plain value-to-behavior lookup. Reach for a data structure specifically
+when the branches are structurally uniform: same shape, different data.
+
 ## Comment Discipline
 
 A comment must do one of two things: name the **feature** a piece of code
@@ -104,6 +173,7 @@ it.
 - Deeply nested `.then().catch()` chains
 - Magic strings/numbers, especially in comparisons or branching — extract to a named `const`, or a literal-union type when there's a closed set of them
 - A fixed value set declared twice — a literal-union type plus separate `const`s holding the same strings (derive one from the other via `as const`)
+- An `if`/`else if` or `switch` chain that maps a closed set of values to structurally uniform handlers — a `Record` dispatch table, or a config array reduced/found over, would scale by adding an entry instead of editing the chain
 - Missing error handling in `async` functions
 - Classes with no private state (use plain functions instead)
 - `@ts-ignore` without a follow-up TODO
@@ -115,5 +185,6 @@ Before finalising:
 - [ ] `any` is absent or justified
 - [ ] Errors are typed and handled
 - [ ] Immutability enforced where possible
+- [ ] Value-to-behavior branching over a closed set uses a dispatch table or config array, not a uniform `if`/`switch` chain
 - [ ] Complex types have JSDoc comments
 - [ ] TypeScript compiles without errors (`tsc --noEmit`)
