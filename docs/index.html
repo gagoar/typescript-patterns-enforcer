@@ -181,6 +181,7 @@ tr:last-child td { border-bottom: none; }
             <tr><td><code>catch { /* ignored */ }</code></td><td>rethrow a typed error, never swallow silently</td></tr>
             <tr><td>class with no private state</td><td>a plain function</td></tr>
             <tr><td><code>// @ts-ignore</code> alone</td><td><code>// @ts-ignore — TODO(TICKET): ...</code></td></tr>
+            <tr><td><code>items.length === 0</code> / <code>count &gt; 0</code></td><td><code>!items.length</code> / <code>count</code> (coerce any zero-check, not just <code>.length</code>)</td></tr>
           </tbody>
         </table>
       </section>

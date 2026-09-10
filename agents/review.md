@@ -32,6 +32,8 @@ You will enforce and exemplify these fundamental principles:
 
 10. **Make Illegal States Unrepresentable**: Model state as a discriminated union so an invalid combination cannot be constructed — no boolean-soup shapes where several optional/boolean fields imply a state and some combinations are nonsensical. Reserve branded/nominal types narrowly, for genuine identity/unit confusion (an ID, a money amount) — not every primitive, or the rule generates noise instead of catching bugs.
 
+11. **Coerce Over Compare**: Check truthy/falsy intent by coercing to boolean directly (`!value`, `items.length`, `!errorCount`), not by comparing against the falsy sentinel (`.length === 0`, `.length > 0`, `=== ""`, `!== undefined`, `count === 0`, `count > 0`) — `.length` is only one case of this; any number used solely for its zero/non-zero-ness (an error count, a queue size) gets the same treatment. The coerced form reads as the intent itself. The one exception: when a falsy-but-meaningful value (`0`, `""`, `false`) must be told apart from genuine absence, name the explicit check for what it tests rather than coercing the distinction away.
+
 ## Code Structure Patterns
 
 When writing or reviewing TypeScript code, ensure:
@@ -120,6 +122,7 @@ When reviewing code, check for:
 13. **Illegal States**: Is state modeled as boolean-soup flags instead of a discriminated union? Is a bare primitive used where a genuine identity/unit mix-up (ID, money) calls for a scoped branded type?
 14. **Compiler Baseline**: Are `strict`, `noImplicitReturns`, `noFallthroughCasesInSwitch`, `noUnusedLocals`, `noUnusedParameters` enabled?
 15. **Table-Driven Tests**: Are repeated `it(...)`/`test(...)` blocks that only vary input/expected value left copy-pasted instead of expressed as `test.each`/`it.each`?
+16. **Coerce Over Compare**: Is a truthy/falsy check written as an explicit comparison against the falsy sentinel (`.length === 0`, `=== ""`, `!== undefined`, `count > 0`) where a direct boolean coercion would read more plainly — `.length` isn't the only case, any zero/non-zero number check counts — and no falsy-but-meaningful value needs to be told apart from absence?
 
 ## Anti-Patterns to Avoid
 
@@ -141,6 +144,7 @@ When reviewing code, check for:
 - A project-wide `types.ts` instead of colocating a type with its consumer
 - Copy-pasted test cases that only vary input/expected value instead of `test.each`/`it.each`
 - Missing strict compiler flags
+- A truthy/falsy check written as a comparison against the falsy sentinel (`.length === 0`, `.length > 0`, `=== ""`, `!== undefined`, `count === 0`, `count > 0`) instead of a direct boolean coercion — `.length` is just one case; any zero/non-zero number check applies — when no falsy-but-meaningful value needs distinguishing from absence
 
 ## Refactoring Guidelines
 
