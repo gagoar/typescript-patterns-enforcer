@@ -150,6 +150,9 @@ tr:last-child td { border-bottom: none; }
             <tr><td>async/await only</td><td>No callbacks or .then() chains</td></tr>
             <tr><td>Typed errors</td><td>Custom error classes or discriminated-union results</td></tr>
             <tr><td>Composition over inheritance</td><td>Prefer interfaces and composition</td></tr>
+            <tr><td>Derive types from data</td><td>keyof typeof, Pick/NonNullable off a library type — never retype a shape by hand</td></tr>
+            <tr><td>Validate at boundaries</td><td>Narrow unknown with a type guard or schema, never cast unverified input</td></tr>
+            <tr><td>Illegal states unrepresentable</td><td>Discriminated unions over boolean-soup flags; scoped branded types for real ID/unit mix-ups</td></tr>
           </tbody>
         </table>
       </section>
@@ -168,6 +171,16 @@ tr:last-child td { border-bottom: none; }
             <tr><td><code>class B extends A</code></td><td><code>interface I; class B implements I</code></td></tr>
             <tr><td><code>try { } catch(e) { e.message }</code></td><td><code>catch(e) { if (e instanceof MyError) ... }</code></td></tr>
             <tr><td><code>as SomeType</code></td><td>satisfies or explicit narrowing</td></tr>
+            <tr><td><code>const x: T = {...}</code></td><td><code>const x = {...} as const satisfies T</code></td></tr>
+            <tr><td><code>JSON.parse(x) as T</code></td><td>narrow with a type guard or schema (zod, envalid)</td></tr>
+            <tr><td>standalone <code>types.ts</code></td><td>colocate the type with its consumer</td></tr>
+            <tr><td>boolean-soup state</td><td>discriminated union</td></tr>
+            <tr><td><code>switch</code> / if-else chain on a closed set</td><td><code>Record</code> dispatch table, or a config array reduced/found over</td></tr>
+            <tr><td><code>if (url.startsWith("https:"))</code></td><td>extract to a named <code>const</code>: <code>HTTPS_SCHEME</code></td></tr>
+            <tr><td><code>options.retries ??= 3</code></td><td><code>return { retries: 3, ...options }</code> (no param mutation)</td></tr>
+            <tr><td><code>catch { /* ignored */ }</code></td><td>rethrow a typed error, never swallow silently</td></tr>
+            <tr><td>class with no private state</td><td>a plain function</td></tr>
+            <tr><td><code>// @ts-ignore</code> alone</td><td><code>// @ts-ignore — TODO(TICKET): ...</code></td></tr>
           </tbody>
         </table>
       </section>
