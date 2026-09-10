@@ -33,6 +33,7 @@ Apply these principles to every TypeScript file you write or edit.
 7. **Generics with constraints** — `<TEntity extends BaseEntity>` not just `<T>`. Use descriptive names.
 8. **Composition over inheritance** — classes only when necessary; prefer plain functions and utility types.
 9. **No magic strings/numbers in comparisons or branching** — extract a repeated or semantically-meaningful literal (a URL scheme like `"https:"`, a sentinel path segment, a fixed error code) into a named `const`. For a small closed set of mutually-exclusive tags, prefer a string-literal union type (`type Kind = "a" | "b"`) or a `const` object/enum over scattered inline comparisons, so the compiler can narrow exhaustively. Never hardcode a literal a second time when it could instead be derived from an existing named constant — e.g. slicing by the length of a duplicated literal instead of deriving it from that constant.
+10. **Coerce over compare for truthy/falsy intent** — check truthiness directly (`if (!value)` / `if (value)`, `if (!items.length)` / `if (items.length)`, `if (!errorCount)` / `if (errorCount)`) instead of an explicit comparison against the falsy sentinel (`.length === 0`, `.length > 0`, `=== ""`, `!== undefined`, `count === 0`, `count > 0`) when the intent is "does this exist," "is this empty," or "is this non-zero." `.length` is one instance of this, not the whole rule — any number whose only role is its zero/non-zero-ness (an error count, a queue size, a remaining-retries check) gets the same treatment. The coerced form reads as the boolean intent directly; the comparison form makes the reader evaluate an expression to recover that same intent. Exception: when a falsy-but-meaningful value (`0`, `""`, `false`) must be distinguished from genuine absence, name the explicit check for what it tests (`value === undefined`) — don't coerce away a distinction the domain actually cares about.
 
 ## Core Rule Examples
 
@@ -88,6 +89,28 @@ const HTTPS_SCHEME = "https:";
 if (url.startsWith(HTTPS_SCHEME)) { /* ... */ }
 const TEST_SUFFIX = ".test.ts";
 const suffix = path.slice(-TEST_SUFFIX.length);
+```
+
+**Coerce over compare for truthy/falsy intent**
+
+```ts
+// Bad — .length is only one case; any zero/non-zero check reads the same way
+if (identity.acrName === "") { return failMissingAcrName(input); }
+if (items.length > 0) { process(items); }
+if (rules.length === 0) { return; }
+if (pendingJobs.length > 0) { drainQueue(pendingJobs); }
+if (errorCount === 0) { markHealthy(); }
+
+// Good
+if (!identity.acrName) { return failMissingAcrName(input); }
+if (items.length) { process(items); }
+if (!rules.length) { return; }
+if (pendingJobs.length) { drainQueue(pendingJobs); }
+if (!errorCount) { markHealthy(); }
+
+// Exception — 0 is a meaningful value here, distinct from "not set";
+// coercing would treat a real zero retry count as absent
+if (retryCount === undefined) { retryCount = DEFAULT_RETRIES; }
 ```
 
 **Never mutate function parameters**
@@ -616,6 +639,7 @@ test.each([
 - Mutating function parameters
 - Deeply nested `.then().catch()` chains
 - Magic strings/numbers, especially in comparisons or branching — extract to a named `const`, or a literal-union type when there's a closed set of them
+- An explicit comparison against the falsy sentinel (`.length === 0`, `.length > 0`, `=== ""`, `!== undefined`, `count === 0`, `count > 0`) for truthy/falsy intent instead of coercing to boolean directly — `.length` is only one case of this, any zero/non-zero check on a number reads the same way — unless a falsy-but-meaningful value (`0`, `""`, `false`) must be told apart from genuine absence
 - A fixed value set declared twice — a literal-union type plus separate `const`s holding the same strings (derive one from the other via `as const`)
 - **Any `switch`**, and any `if`/`else if` chain that dispatches on a closed set of values — convert to a data structure (a `Record` dispatch table, or a config array reduced/found over). This is the default; a `switch` only survives review when the project's `CLAUDE.md` carries the `ts-patterns: allow exhaustive switch` opt-in, and even then only for a discriminated-union tag closed off by `assertNever`
 - Missing error handling in `async` functions
@@ -643,6 +667,7 @@ Before finalising:
 - [ ] Config/lookup objects use `as const satisfies`, not a colon annotation
 - [ ] State is modeled as a discriminated union, not boolean-soup flags
 - [ ] Types are colocated with their consumer — no orphan `types.ts`
+- [ ] Truthy/falsy checks coerce (`!value`, `items.length`, `!errorCount`) rather than compare against the falsy sentinel (`.length === 0`, `=== ""`, `count > 0`), except where a falsy value must be told apart from absence
 - [ ] Complex types have JSDoc comments
 - [ ] Strict compiler flags are enabled
 - [ ] TypeScript compiles without errors (`tsc --noEmit`)
