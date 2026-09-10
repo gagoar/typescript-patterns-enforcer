@@ -1,0 +1,7 @@
+# Vendored dependencies are intentionally NOT ignored wholesale — only the
+# committed `typescript` subtree ships with the plugin (see README "Release:
+# rebuild and re-vendor"). Everything else here is a devDependency, bundled
+# into dist/check.js at build time and never shipped as loose files.
+node_modules/*
+!node_modules/typescript
+*.tsbuildinfo

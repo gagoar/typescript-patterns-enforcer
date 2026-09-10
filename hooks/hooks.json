@@ -1,0 +1,17 @@
+{
+  "description": "Mechanical backstop for a subset of ts-patterns rules (no any, @ts-ignore without a description, magic numbers, .then() chains, switch statements, parameter mutation, raw loops). Self-contained — never reads or writes the target repo's own ESLint/tsconfig. Degrades silently to prose-only enforcement if Node isn't available.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/engine/dist/check.js",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

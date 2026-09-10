@@ -24,16 +24,16 @@ Apply these principles to every TypeScript file you write or edit.
 
 ## Core Rules
 
-1. **No `any`** — use `unknown` and narrow, or define a precise type. Justify every `as` cast with a comment.
+1. **No `any`** — use `unknown` and narrow, or define a precise type. Justify every `as` cast with a comment. (Bare `any` is also caught mechanically by the bundled hook; unguarded `as` casts remain your judgment call.)
 2. **Explicit return types** — annotate public functions; let inference handle private/internal one-liners only.
 3. **Prefer `interface` for extendable shapes; `type` for unions, intersections, and mapped/conditional types.**
 4. **`readonly` by default** — mark properties and arrays immutable unless mutation is required.
-5. **`async/await` only** — no raw `.then()` chains, no callbacks. Return `Promise<T>` explicitly.
+5. **`async/await` only** — no raw `.then()` chains (also caught mechanically by the hook), no callbacks. Return `Promise<T>` explicitly.
 6. **Typed errors** — custom classes extending `Error`, or discriminated-union result types. Never silently swallow.
 7. **Generics with constraints** — `<TEntity extends BaseEntity>` not just `<T>`. Use descriptive names.
 8. **Composition over inheritance** — classes only when necessary; prefer plain functions and utility types.
-9. **No magic strings/numbers in comparisons or branching** — extract a repeated or semantically-meaningful literal (a URL scheme like `"https:"`, a sentinel path segment, a fixed error code) into a named `const`. For a small closed set of mutually-exclusive tags, prefer a string-literal union type (`type Kind = "a" | "b"`) or a `const` object/enum over scattered inline comparisons, so the compiler can narrow exhaustively. Never hardcode a literal a second time when it could instead be derived from an existing named constant — e.g. slicing by the length of a duplicated literal instead of deriving it from that constant.
-10. **Coerce over compare for truthy/falsy intent** — check truthiness directly (`if (!value)` / `if (value)`, `if (!items.length)` / `if (items.length)`, `if (!errorCount)` / `if (errorCount)`) instead of an explicit comparison against the falsy sentinel (`.length === 0`, `.length > 0`, `=== ""`, `!== undefined`, `count === 0`, `count > 0`) when the intent is "does this exist," "is this empty," or "is this non-zero." `.length` is one instance of this, not the whole rule — any number whose only role is its zero/non-zero-ness (an error count, a queue size, a remaining-retries check) gets the same treatment. The coerced form reads as the boolean intent directly; the comparison form makes the reader evaluate an expression to recover that same intent. Exception: when a falsy-but-meaningful value (`0`, `""`, `false`) must be distinguished from genuine absence, name the explicit check for what it tests (`value === undefined`) — don't coerce away a distinction the domain actually cares about.
+9. **No magic strings/numbers in comparisons or branching** — extract a repeated or semantically-meaningful literal (a URL scheme like `"https:"`, a sentinel path segment, a fixed error code) into a named `const`. For a small closed set of mutually-exclusive tags, prefer a string-literal union type (`type Kind = "a" | "b"`) or a `const` object/enum over scattered inline comparisons, so the compiler can narrow exhaustively. (Magic **numbers** are also flagged mechanically by the bundled hook; magic strings and the literal-union preference remain your judgment call.)
+10. **Coerce over compare for truthy/falsy intent** — check truthiness directly (`if (!value)` / `if (items.length)` / `if (!errorCount)`) instead of comparing against the falsy sentinel (`.length === 0`, `.length > 0`, `=== ""`, `!== undefined`, `count === 0`, `count > 0`) when the intent is "does this exist," "is this empty," or "is this non-zero" — any number used only for its zero/non-zero-ness gets the same treatment as `.length`. Exception: when a falsy-but-meaningful value (`0`, `""`, `false`) must be distinguished from genuine absence, name the explicit check for what it tests (`value === undefined`) rather than coercing the distinction away.
 
 ## Core Rule Examples
 
@@ -113,7 +113,7 @@ if (!errorCount) { markHealthy(); }
 if (retryCount === undefined) { retryCount = DEFAULT_RETRIES; }
 ```
 
-**Never mutate function parameters**
+**Never mutate function parameters** *(also enforced mechanically by the bundled hook)*
 
 ```ts
 // Bad
@@ -162,7 +162,7 @@ class MathUtils {
 function add(a: number, b: number): number { return a + b; }
 ```
 
-**`@ts-ignore` needs a follow-up TODO**
+**`@ts-ignore` needs a follow-up TODO** *(also enforced mechanically by the bundled hook)*
 
 ```ts
 // Bad
@@ -307,6 +307,11 @@ export const HTTP_STATUS = Object.freeze({ ok: 200, notFound: 404 } as const);
 
 ## Data Over Logic
 
+The bundled hook mechanically flags the *presence* of a `switch` or a raw
+loop; the *conversion* below — to a `Record` dispatch table, or to a
+pipeline — is the judgment call this section exists to teach, and stays
+yours.
+
 A `switch` — and an `if`/`else if` chain, and a `while` that dispatches — is
 control-flow *logic*: a hand-rolled matcher whose cases grow by editing the
 chain. Replace it with a *data structure* keyed by the value being matched: a
@@ -420,10 +425,9 @@ const applyDecision = (decision: Decision, deps: Deps): boolean => {
 };
 ```
 
-No `ts-pattern` (or any library) here — a plain `Record` and one localized,
-documented cast. A library that adds `.exhaustive()` matching is a separate
-choice a project may make on its own; this skill's rule is only "no `switch`,"
-and the standard-library data structures above satisfy it.
+No pattern-matching library is needed here — a plain `Record` plus one
+documented cast suffices; a project may add `.exhaustive()` matching on its
+own, but this skill's rule is only "no `switch`."
 
 **Prefer pipelines over loops** — express a transform over a collection as
 `.map()`/`.filter()`/`.reduce()`/`Promise.all()`, not a `for`/`while` loop that
@@ -656,18 +660,6 @@ test.each([
 
 ## Review Checklist
 
-Before finalising:
-- [ ] All public APIs have explicit types
-- [ ] `any` is absent or justified
-- [ ] Errors are typed and handled
-- [ ] Immutability enforced where possible
-- [ ] No `switch` survives — branching over a closed set is a `Record` dispatch table or a config array (unless the project's opt-in permits an exhaustive `switch` + `assertNever`)
-- [ ] Types are derived from a canonical value/schema, never hand-copied
-- [ ] External input is validated at the boundary (guard or schema), never cast
-- [ ] Config/lookup objects use `as const satisfies`, not a colon annotation
-- [ ] State is modeled as a discriminated union, not boolean-soup flags
-- [ ] Types are colocated with their consumer — no orphan `types.ts`
-- [ ] Truthy/falsy checks coerce (`!value`, `items.length`, `!errorCount`) rather than compare against the falsy sentinel (`.length === 0`, `=== ""`, `count > 0`), except where a falsy value must be told apart from absence
-- [ ] Complex types have JSDoc comments
-- [ ] Strict compiler flags are enabled
-- [ ] TypeScript compiles without errors (`tsc --noEmit`)
+Before finalising: re-scan the diff against every item in Anti-Patterns to
+Flag above, plus three checks that list doesn't cover — explicit types on
+every public API, JSDoc on complex types, and a clean `tsc --noEmit`.
