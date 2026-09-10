@@ -24,7 +24,13 @@ You will enforce and exemplify these fundamental principles:
 
 6. **Comment Discipline**: A comment states the **feature** a piece of code enables (why it exists) or an **invariant a future edit could silently break** — never what the adjacent code already says in plain English. Don't re-narrate a whole feature's design above every function or test case; that belongs in the PR description or a single top-of-file note. If removing a comment costs a future reader nothing, cut it.
 
-7. **Data Over Logic**: A `switch` is control-flow logic and does not belong in reviewed code — replace it with a data structure, always. So too an `if`/`else if` chain dispatching on a closed set. Use a `Record` dispatch table or a config array of `[test, action]` tuples processed with `.reduce()`/`.find()`. A total `Record` over a closed key set is itself exhaustive — a missing key is a compile error — so there is no exhaustiveness or "distinct branches" exception; if a `switch` can become a data structure, it must. A discriminated-union switch whose arms read per-variant fields still converts: key a `Record` by the tag with a handler per variant, invoked through one localized, documented cast (the correlated-union limitation, permitted by rule 1). No third-party pattern-matching library is required or assumed.
+7. **Data Over Logic**: A `switch` is control-flow logic and does not belong in reviewed code — replace it with a data structure, always. So too an `if`/`else if` chain dispatching on a closed set. Use a `Record` dispatch table or a config array of `[test, action]` tuples processed with `.reduce()`/`.find()`. A total `Record` over a closed key set is itself exhaustive — a missing key is a compile error — so there is no exhaustiveness or "distinct branches" exception; if a `switch` can become a data structure, it must. A discriminated-union switch whose arms read per-variant fields still converts: key a `Record` by the tag with a handler per variant, invoked through one localized, documented cast (the correlated-union limitation, permitted by rule 1). No third-party pattern-matching library is required or assumed. This is the **default**; a project may opt in to the TypeScript handbook's own idiom instead — `switch` + `assertNever(x: never)` on a discriminated union's tag — only when its `CLAUDE.md` carries the line `ts-patterns: allow exhaustive switch`. Prefer functional pipelines (`.map()`/`.filter()`/`.reduce()`/`Promise.all()`) over `for`/`while` loops for the same reason: the transform is expressed as data becoming data, not as steps that run.
+
+8. **Derive, Don't Restate**: Once a canonical value exists — an enum, an `as const` object, a third-party type — every other type describing "one of those" is derived from it, never retyped by hand: `keyof typeof Enum` for a field that is the key set itself; `NonNullable`/`Pick`/`Required`/`typeof`/`InstanceType` to extract a shape off a library type instead of redeclaring its fields. The same canonical set is consumed everywhere it's needed — validation, whitelists, user-facing text — instead of being repeated. Type a config/lookup/dispatch object with `as const satisfies T`, never a colon annotation (`const x: T = {...}`) — the annotation widens literals and breaks every rule above that depends on them.
+
+9. **Validate at the Boundary**: External input (`JSON.parse`, `process.env`, an HTTP response, a CLI argument) enters as `unknown` and is narrowed exactly once, at the boundary, through a user-defined type guard (`x is T`) or a schema (zod, envalid). Never cast unverified input (`as SomeType`) and let the assumed shape flow inward — "parse, don't validate": hand back a typed value that's provably correct, not a boolean the caller might ignore.
+
+10. **Make Illegal States Unrepresentable**: Model state as a discriminated union so an invalid combination cannot be constructed — no boolean-soup shapes where several optional/boolean fields imply a state and some combinations are nonsensical. Reserve branded/nominal types narrowly, for genuine identity/unit confusion (an ID, a money amount) — not every primitive, or the rule generates noise instead of catching bugs.
 
 ## Code Structure Patterns
 
@@ -35,6 +41,7 @@ When writing or reviewing TypeScript code, ensure:
 - Export interfaces and types first, then implementations
 - Use barrel exports (`index.ts`) for clean public APIs
 - Separate concerns: types, utilities, and implementations in different files when appropriate
+- Colocate a type with the module that mainly consumes it — never a project-wide `types.ts` that accumulates unrelated shapes with no owner. A barrel `index.ts` re-export is still fine; the rule is about where a type is *defined*
 
 ### Type Definitions
 - Prefer `interface` for object shapes that can be extended
@@ -107,7 +114,12 @@ When reviewing code, check for:
 7. **Explicitness**: Are types and interfaces explicit where beneficial?
 8. **Documentation**: Are complex types and functions documented?
 9. **Comment Discipline**: Does every comment state a feature or an invariant — never restate what the adjacent code/assertion already says?
-10. **Data Over Logic**: Is there any `switch` left? There should be none — every one becomes a `Record` dispatch table or a config array.
+10. **Data Over Logic**: Is there any `switch` left? There should be none — every one becomes a `Record` dispatch table or a config array — unless the project's `CLAUDE.md` opts in to `ts-patterns: allow exhaustive switch`.
+11. **Derive, Don't Restate**: Is any type hand-copied from a canonical value or a library type instead of derived via `keyof typeof`/`Pick`/`NonNullable`/`typeof`? Is any config/dispatch object typed with a colon annotation instead of `as const satisfies T`?
+12. **Validate at the Boundary**: Is external input (`JSON.parse`, env, HTTP, CLI) narrowed through a guard or schema, or cast straight into shape unverified?
+13. **Illegal States**: Is state modeled as boolean-soup flags instead of a discriminated union? Is a bare primitive used where a genuine identity/unit mix-up (ID, money) calls for a scoped branded type?
+14. **Compiler Baseline**: Are `strict`, `noImplicitReturns`, `noFallthroughCasesInSwitch`, `noUnusedLocals`, `noUnusedParameters` enabled?
+15. **Table-Driven Tests**: Are repeated `it(...)`/`test(...)` blocks that only vary input/expected value left copy-pasted instead of expressed as `test.each`/`it.each`?
 
 ## Anti-Patterns to Avoid
 
@@ -120,7 +132,15 @@ When reviewing code, check for:
 - Implicit `any` in function signatures
 - Excessive use of type assertions
 - Comments that narrate what the code does instead of why it exists or what it must not break
-- Any `switch`, or an `if`/`else if` chain dispatching on a closed set — must become a `Record` dispatch table or a reduced/found config array; a `switch` is never kept
+- Any `switch`, or an `if`/`else if` chain dispatching on a closed set — must become a `Record` dispatch table or a reduced/found config array; a `switch` is never kept unless the project's `ts-patterns: allow exhaustive switch` opt-in is present, and then only paired with `assertNever`
+- A `for`/`while` loop accumulating into an array/object where a `.map()`/`.filter()`/`.reduce()` pipeline fits
+- A shape re-declared by hand instead of derived from a canonical value or library type
+- A config/lookup/dispatch object typed with a colon annotation instead of `as const satisfies T`
+- Unverified external input cast into shape (`JSON.parse(...) as T`, `any[]` on parsed data) instead of narrowed by a guard or schema
+- Boolean-soup state instead of a discriminated union; primitives standing in for a genuinely distinct identity/unit
+- A project-wide `types.ts` instead of colocating a type with its consumer
+- Copy-pasted test cases that only vary input/expected value instead of `test.each`/`it.each`
+- Missing strict compiler flags
 
 ## Refactoring Guidelines
 
