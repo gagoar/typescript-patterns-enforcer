@@ -28,28 +28,30 @@ subpath for raw rule objects — the package's `exports` map blocks arbitrary
 internal paths). `eslint-plugin-promise` has no `exports` map restriction,
 so its rule is required by its real file path directly.
 
-## Release: rebuild and re-vendor
+## Release: rebuild dist/check.js
 
-`dist/check.js` and `node_modules/typescript/` are **checked-in build
-artifacts** — plugins install via git clone with no guaranteed build step,
-so end users get zero install/build of their own. Rebuilding them is a
-release-time task, not something to hand-edit:
+`dist/check.js` is the **only checked-in build artifact** — plugins install
+via git clone with no guaranteed build step, so end users get zero
+install/build of their own. It's a fully self-contained bundle: esbuild
+inlines `eslint`, `@typescript-eslint/parser`, and `typescript` itself (tree-shaken
+down to the parsing path this engine actually reaches, since none of the 7
+checks are type-aware) into one file with zero runtime dependencies.
+Everything under `node_modules/` is build-time-only and gitignored.
+Rebuilding is a release-time task, not something to hand-edit:
 
 ```sh
 cd engine
 npm ci              # exact, pinned deps + lockfile
 npm run typecheck   # tsc --noEmit, strict — the dogfood gate
-npm run build       # esbuild -> dist/check.js
+npm run build       # esbuild -> dist/check.js (bundles everything, ~15-16MB)
 npm test            # fixture suite against the BUILT artifact
 ```
 
-Then commit the resulting `dist/check.js` and `node_modules/typescript/`
-(everything else in `node_modules/` stays gitignored — see `.gitignore`).
-Before committing, sanity-check:
+Then commit the resulting `dist/check.js`. Before committing, sanity-check:
 
 ```sh
-git status --short engine/            # dist/check.js and node_modules/typescript/ show as new/changed
-git check-ignore engine/node_modules/typescript/package.json  # must NOT report it ignored (exit 1)
+git status --short engine/dist/check.js   # shows as new/changed
+echo '{}' | node engine/dist/check.js; echo $?   # confirm it still runs (exits 0 on no file_path)
 ```
 
 ## A note on the deep-path imports

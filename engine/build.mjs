@@ -1,7 +1,9 @@
-// Bundles the hook entrypoint into one self-contained CJS file. `typescript`
-// is externalized deliberately (see README "Release: rebuild and re-vendor")
-// — it's shipped as a real, pinned node_modules/typescript alongside this
-// bundle rather than inlined, since it's large and internally dynamic.
+// Bundles the hook entrypoint into ONE fully self-contained CJS file —
+// `typescript` included. esbuild tree-shakes it down to only the parsing
+// path this engine actually reaches (we never do type-aware linting), so
+// the single bundle ends up smaller than the old split of a 6MB bundle
+// plus a separately vendored ~24MB node_modules/typescript. Zero runtime
+// dependencies: dist/check.js is the entire shipped artifact.
 import { build } from "esbuild";
 
 await build({
@@ -11,12 +13,12 @@ await build({
   format: "cjs",
   target: "node18",
   outfile: "dist/check.js",
-  // `typescript` is vendored separately (see README); `jiti`/`jiti/package.json`
-  // are ESLint core's optional, dynamically-imported loader for .ts-flavored
-  // config files (lib/config/config-loader.js) — a codepath only the CLI
-  // `ESLint` class's config discovery triggers, which we never call. Left
-  // external so esbuild preserves the dynamic import as a real (never-hit)
-  // runtime call instead of failing the build trying to resolve it.
-  external: ["typescript", "jiti", "jiti/package.json"],
+  // `jiti`/`jiti/package.json` are ESLint core's optional, dynamically-imported
+  // loader for .ts-flavored config files (lib/config/config-loader.js) — a
+  // codepath only the CLI `ESLint` class's config discovery triggers, which
+  // we never call. Left external so esbuild preserves the dynamic import as
+  // a real (never-hit) runtime call instead of failing the build trying to
+  // resolve it.
+  external: ["jiti", "jiti/package.json"],
   logLevel: "info",
 });

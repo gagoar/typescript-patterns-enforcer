@@ -22,7 +22,7 @@ is **fully self-contained**: it ships its own pinned ESLint + parser +
 any) already exists in the repo you're editing. If Node isn't available, or
 the check can't run for any reason, it fails silently — the skill's prose
 coverage of these same rules is the fallback, not a second system to keep
-in sync by hand. See `engine/README.md` for how it's built and vendored.
+in sync by hand. See `engine/README.md` for how it's built.
 
 ## Install
 
