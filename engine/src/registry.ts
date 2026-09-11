@@ -107,6 +107,10 @@ export const CHECKS = [
 
 const PLUGIN_NS = "ts-patterns";
 
+// ESLint's own numeric severity codes, named rather than repeated as magic
+// numbers at the one call site that needs them.
+const ESLINT_SEVERITY = { error: 2, warn: 1 } as const;
+
 // Justified cast (Core Rule 1): typescript-eslint's own AST/token types are
 // structurally close to, but not nominally identical to, ESLint core's
 // `AST.Token`/`ESLintParseResult` types (e.g. its BlockComment token type
@@ -132,7 +136,7 @@ const flatConfig: LinterNS.Config = {
     [PLUGIN_NS]: { rules: Object.fromEntries(CHECKS.map((c) => [c.id, c.rule])) },
   },
   rules: Object.fromEntries(
-    CHECKS.map((c) => [`${PLUGIN_NS}/${c.id}`, [c.severity === "error" ? 2 : 1, ...c.options]]),
+    CHECKS.map((c) => [`${PLUGIN_NS}/${c.id}`, [ESLINT_SEVERITY[c.severity], ...c.options]]),
   ),
 };
 

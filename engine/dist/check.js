@@ -371952,49 +371952,53 @@ var noSwitchStatement = {
 
 // src/rules/no-param-reassign.ts
 var FUNCTION_SELECTOR = "FunctionDeclaration, FunctionExpression, ArrowFunctionExpression";
-function collectBindingNames(pattern, into) {
-  switch (pattern.type) {
-    case "Identifier":
-      into.add(pattern.name);
-      return;
-    case "AssignmentPattern":
-      collectBindingNames(pattern.left, into);
-      return;
-    case "RestElement":
-      collectBindingNames(pattern.argument, into);
-      return;
-    case "ObjectPattern":
-      for (const prop of pattern.properties) {
-        const value = prop.type === "RestElement" ? prop.argument : prop.value;
-        collectBindingNames(value, into);
-      }
-      return;
-    case "ArrayPattern":
-      for (const element of pattern.elements) {
-        if (element !== null) collectBindingNames(element, into);
-      }
-      return;
-    default:
-      return;
+var BINDING_COLLECTORS = {
+  Identifier: (pattern, into) => {
+    into.add(pattern.name);
+  },
+  AssignmentPattern: (pattern, into) => {
+    collectBindingNames(pattern.left, into);
+  },
+  RestElement: (pattern, into) => {
+    collectBindingNames(pattern.argument, into);
+  },
+  ObjectPattern: (pattern, into) => {
+    const properties = pattern.properties;
+    properties.forEach((prop) => {
+      const value = prop;
+      collectBindingNames(value.type === "RestElement" ? value.argument : value.value, into);
+    });
+  },
+  ArrayPattern: (pattern, into) => {
+    const elements = pattern.elements;
+    elements.filter((element) => element !== null).forEach((element) => {
+      collectBindingNames(element, into);
+    });
   }
+};
+function collectBindingNames(pattern, into) {
+  BINDING_COLLECTORS[pattern.type]?.(pattern, into);
 }
 function rootIdentifierName(target) {
-  let node = target;
-  while (node.type === "MemberExpression") node = node.object;
-  return node.type === "Identifier" ? node.name : void 0;
+  if (target.type === "MemberExpression") {
+    return rootIdentifierName(target.object);
+  }
+  return target.type === "Identifier" ? target.name : void 0;
 }
 function reportDestructuredTargets(pattern, isParam, context) {
   if (pattern.type === "ObjectPattern") {
-    for (const prop of pattern.properties) {
-      const value = prop.type === "RestElement" ? prop.argument : prop.value;
-      reportDestructuredTargets(value, isParam, context);
-    }
+    const properties = pattern.properties;
+    properties.forEach((prop) => {
+      const value = prop;
+      reportDestructuredTargets(value.type === "RestElement" ? value.argument : value.value, isParam, context);
+    });
     return;
   }
   if (pattern.type === "ArrayPattern") {
-    for (const element of pattern.elements) {
-      if (element !== null) reportDestructuredTargets(element, isParam, context);
-    }
+    const elements = pattern.elements;
+    elements.filter((element) => element !== null).forEach((element) => {
+      reportDestructuredTargets(element, isParam, context);
+    });
     return;
   }
   const name = rootIdentifierName(pattern);
@@ -372017,7 +372021,7 @@ var noParamReassign = {
       [FUNCTION_SELECTOR](node) {
         const params = node.params;
         const names = /* @__PURE__ */ new Set();
-        for (const param of params) collectBindingNames(param, names);
+        params.forEach((param) => collectBindingNames(param, names));
         paramStack.push(names);
       },
       [`${FUNCTION_SELECTOR}:exit`]() {
@@ -372143,6 +372147,7 @@ var CHECKS = [
   }
 ];
 var PLUGIN_NS = "ts-patterns";
+var ESLINT_SEVERITY = { error: 2, warn: 1 };
 var tsParser = { parse: import_parser.parse, parseForESLint: import_parser.parseForESLint, meta: import_parser.meta };
 var flatConfig = {
   // Non-universal on purpose: ESLint's flat config treats a `files` list
@@ -372161,7 +372166,7 @@ var flatConfig = {
     [PLUGIN_NS]: { rules: Object.fromEntries(CHECKS.map((c) => [c.id, c.rule])) }
   },
   rules: Object.fromEntries(
-    CHECKS.map((c) => [`${PLUGIN_NS}/${c.id}`, [c.severity === "error" ? 2 : 1, ...c.options]])
+    CHECKS.map((c) => [`${PLUGIN_NS}/${c.id}`, [ESLINT_SEVERITY[c.severity], ...c.options]])
   )
 };
 var POINTER_BY_ID = Object.fromEntries(
