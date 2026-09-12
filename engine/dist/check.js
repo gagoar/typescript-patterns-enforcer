@@ -371963,6 +371963,12 @@ var BINDING_COLLECTORS = {
   [import_types.AST_NODE_TYPES.RestElement]: (pattern, into) => {
     collectBindingNames(pattern.argument, into);
   },
+  // `constructor(private x: number)` — adversarial testing found this had
+  // no collector at all, so a reassigned parameter property went entirely
+  // untracked. The property wraps an ordinary parameter binding.
+  [import_types.AST_NODE_TYPES.TSParameterProperty]: (pattern, into) => {
+    collectBindingNames(pattern.parameter, into);
+  },
   [import_types.AST_NODE_TYPES.ObjectPattern]: (pattern, into) => {
     const properties = pattern.properties;
     properties.forEach((prop) => {
@@ -372007,6 +372013,10 @@ function reportDestructuredTargets(pattern, isParam, context) {
     context.report({ node: pattern, messageId: "noParamReassign" });
   }
 }
+function isTrackedParam(stack, name) {
+  const nearestMatch = [...stack].reverse().find((frame) => frame.params.has(name) || frame.locals.has(name));
+  return nearestMatch?.params.has(name) ?? false;
+}
 var noParamReassign = {
   meta: {
     type: "suggestion",
@@ -372016,17 +372026,22 @@ var noParamReassign = {
     }
   },
   create(context) {
-    const paramStack = [];
-    const isParam = (name) => paramStack.some((set) => set.has(name));
+    const frames = [];
+    const isParam = (name) => isTrackedParam(frames, name);
     return {
       [FUNCTION_SELECTOR](node) {
         const params = node.params;
-        const names = /* @__PURE__ */ new Set();
-        params.forEach((param) => collectBindingNames(param, names));
-        paramStack.push(names);
+        const paramNames = /* @__PURE__ */ new Set();
+        params.forEach((param) => collectBindingNames(param, paramNames));
+        frames.push({ params: paramNames, locals: /* @__PURE__ */ new Set() });
       },
       [`${FUNCTION_SELECTOR}:exit`]() {
-        paramStack.pop();
+        frames.pop();
+      },
+      VariableDeclarator(node) {
+        const frame = frames[frames.length - 1];
+        if (!frame) return;
+        collectBindingNames(node.id, frame.locals);
       },
       AssignmentExpression(node) {
         const left = node.left;
@@ -372107,7 +372122,20 @@ var CHECKS = [
     skillRule: "Core Rule 9 (magic numbers half)",
     origin: "reuse",
     rule: noMagicNumbers,
-    options: [{ ignore: [0, 1, -1], ignoreArrayIndexes: true, enforceConst: false }],
+    // detectObjects: adversarial testing found the upstream default (false)
+    // exempts every numeric value inside an object literal — config objects
+    // and payload literals are the single most common home for magic
+    // numbers, so leaving this off missed most of what the rule exists for.
+    // ignoreNumericLiteralTypes: a TS literal-type union (`type X = 1 | 2`)
+    // isn't a runtime expression and has no "extract to a const" fix path;
+    // flagging it was pure noise.
+    options: [{
+      ignore: [0, 1, -1],
+      ignoreArrayIndexes: true,
+      ignoreNumericLiteralTypes: true,
+      detectObjects: true,
+      enforceConst: false
+    }],
     severity: "warn",
     pointer: "SKILL.md Core Rule 9 \u2014 extract to a named const"
   },
@@ -372161,6 +372189,9 @@ var flatConfig = {
   files: ["**/*.ts", "**/*.tsx"],
   languageOptions: {
     parser: tsParser,
+    // Justified suppression: an ECMAScript edition year, not an arbitrary
+    // magic number — its meaning is exactly its literal value.
+    // eslint-disable-next-line ts-patterns/no-magic-numbers
     ecmaVersion: 2023,
     sourceType: "module"
   },

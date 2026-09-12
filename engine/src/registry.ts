@@ -63,7 +63,20 @@ export const CHECKS = [
     skillRule: "Core Rule 9 (magic numbers half)",
     origin: "reuse",
     rule: noMagicNumbers,
-    options: [{ ignore: [0, 1, -1], ignoreArrayIndexes: true, enforceConst: false }],
+    // detectObjects: adversarial testing found the upstream default (false)
+    // exempts every numeric value inside an object literal — config objects
+    // and payload literals are the single most common home for magic
+    // numbers, so leaving this off missed most of what the rule exists for.
+    // ignoreNumericLiteralTypes: a TS literal-type union (`type X = 1 | 2`)
+    // isn't a runtime expression and has no "extract to a const" fix path;
+    // flagging it was pure noise.
+    options: [{
+      ignore: [0, 1, -1],
+      ignoreArrayIndexes: true,
+      ignoreNumericLiteralTypes: true,
+      detectObjects: true,
+      enforceConst: false,
+    }],
     severity: "warn",
     pointer: "SKILL.md Core Rule 9 — extract to a named const",
   },
@@ -108,7 +121,10 @@ export const CHECKS = [
 const PLUGIN_NS = "ts-patterns";
 
 // ESLint's own numeric severity codes, named rather than repeated as magic
-// numbers at the one call site that needs them.
+// numbers at the one call site that needs them. Justified suppression: this
+// object *is* the canonical named definition Core Rule 9 asks for — the
+// values are ESLint's own external convention, not arbitrary.
+// eslint-disable-next-line ts-patterns/no-magic-numbers
 const ESLINT_SEVERITY = { error: 2, warn: 1 } as const;
 
 // Justified cast (Core Rule 1): typescript-eslint's own AST/token types are
@@ -129,6 +145,9 @@ const flatConfig: LinterNS.Config = {
   files: ["**/*.ts", "**/*.tsx"],
   languageOptions: {
     parser: tsParser,
+    // Justified suppression: an ECMAScript edition year, not an arbitrary
+    // magic number — its meaning is exactly its literal value.
+    // eslint-disable-next-line ts-patterns/no-magic-numbers
     ecmaVersion: 2023,
     sourceType: "module",
   },

@@ -25,6 +25,12 @@ const BINDING_COLLECTORS: Readonly<Record<string, BindingCollector>> = {
   [AST_NODE_TYPES.RestElement]: (pattern, into) => {
     collectBindingNames((pattern as unknown as { argument: Pattern }).argument, into);
   },
+  // `constructor(private x: number)` — adversarial testing found this had
+  // no collector at all, so a reassigned parameter property went entirely
+  // untracked. The property wraps an ordinary parameter binding.
+  [AST_NODE_TYPES.TSParameterProperty]: (pattern, into) => {
+    collectBindingNames((pattern as unknown as { parameter: Pattern }).parameter, into);
+  },
   [AST_NODE_TYPES.ObjectPattern]: (pattern, into) => {
     const properties = (pattern as unknown as { properties: readonly Rule.Node[] }).properties;
     properties.forEach((prop) => {
@@ -40,10 +46,11 @@ const BINDING_COLLECTORS: Readonly<Record<string, BindingCollector>> = {
   },
 };
 
-// Walks a binding pattern (a function param) and collects every identifier
-// it introduces — default values, destructuring, and rest all bind through
-// to a name that must not be reassigned or mutated. A pattern type with no
-// registered collector (e.g. a bare TS type annotation) contributes nothing.
+// Walks a binding pattern (a function param, or a `let`/`const`/`var`
+// declarator's id) and collects every identifier it introduces — default
+// values, destructuring, rest, and parameter properties all bind through to
+// a name. A pattern type with no registered collector (e.g. a bare TS type
+// annotation) contributes nothing.
 function collectBindingNames(pattern: Pattern, into: Set<string>): void {
   BINDING_COLLECTORS[pattern.type]?.(pattern, into);
 }
@@ -92,15 +99,37 @@ function reportDestructuredTargets(
   }
 }
 
+// One stack frame per enclosing function: `params` are the names this rule
+// flags on reassignment; `locals` are same-scope `let`/`const`/`var`
+// declarations that shadow an outer parameter without being one themselves.
+// Adversarial testing found the earlier single-flat-stack design treated
+// every enclosing frame's params as live everywhere below it, so an inner
+// function's own unrelated local variable sharing an outer parameter's name
+// was flagged as if it were that parameter — a real false positive on
+// ordinary shadowing (a temp/loop variable reusing an outer param's name).
+interface Frame {
+  readonly params: Set<string>;
+  readonly locals: Set<string>;
+}
+
+// Searches innermost frame outward. A name found as a *param* is the
+// parameter being tracked. A name found as a *local* first means some
+// nearer scope has shadowed whatever binding exists further out — stop
+// there rather than falsely attributing it to an outer parameter. Residual,
+// documented imprecision: `let`/`const` are block-scoped, but a shadow
+// recorded anywhere in a function is treated as shadowing for that whole
+// function body, not just the block it's actually declared in — narrower
+// than perfect scope resolution, but the safe direction (a missed detection
+// in a rare nested-block case, not a false positive on ordinary code).
+function isTrackedParam(stack: readonly Frame[], name: string): boolean {
+  const nearestMatch = [...stack].reverse().find((frame) => frame.params.has(name) || frame.locals.has(name));
+  return nearestMatch?.params.has(name) ?? false;
+}
+
 /**
  * Mechanizes "never mutate function parameters": both a direct reassignment
  * (`options = {...}`) and a property mutation (`options.retries ??= 3`, the
  * SKILL.md example) break the same invariant, so both are flagged.
- *
- * Known limitation, documented rather than hidden: tracking is lexical, not
- * scope-resolved — a local variable that happens to shadow a parameter name
- * is not distinguished from the parameter itself. Acceptable for a backstop
- * whose prose (SKILL.md) remains the authority for edge cases.
  */
 export const noParamReassign: Rule.RuleModule = {
   meta: {
@@ -111,18 +140,23 @@ export const noParamReassign: Rule.RuleModule = {
     },
   },
   create(context): Rule.RuleListener {
-    const paramStack: Set<string>[] = [];
-    const isParam = (name: string): boolean => paramStack.some((set) => set.has(name));
+    const frames: Frame[] = [];
+    const isParam = (name: string): boolean => isTrackedParam(frames, name);
 
     return {
       [FUNCTION_SELECTOR](node: Rule.Node): void {
         const params = (node as unknown as { params: Pattern[] }).params;
-        const names = new Set<string>();
-        params.forEach((param) => collectBindingNames(param, names));
-        paramStack.push(names);
+        const paramNames = new Set<string>();
+        params.forEach((param) => collectBindingNames(param, paramNames));
+        frames.push({ params: paramNames, locals: new Set() });
       },
       [`${FUNCTION_SELECTOR}:exit`](): void {
-        paramStack.pop();
+        frames.pop();
+      },
+      VariableDeclarator(node): void {
+        const frame = frames[frames.length - 1];
+        if (!frame) return; // top-level declaration; nothing to shadow
+        collectBindingNames(node.id as Pattern, frame.locals);
       },
       AssignmentExpression(node): void {
         const left = node.left as Pattern;
