@@ -25,7 +25,7 @@ function main(): void {
   const raw = readFileSync(0, "utf8"); // fd 0 = stdin, the hook's JSON payload
   const payload = JSON.parse(raw) as HookPayload;
   const filePath = payload.tool_input?.file_path;
-  if (filePath === undefined || !TS_FILE.test(filePath)) {
+  if (!filePath || !TS_FILE.test(filePath)) {
     process.exit(EXIT_OK);
   }
 

@@ -162,7 +162,7 @@ export function runChecks(code: string, filename: string): readonly Violation[] 
   const linter = new Linter({ configType: "flat", cwd: dirname(filename) });
   const messages = linter.verify(code, flatConfig, filename);
   return messages
-    .filter((m): m is typeof m & { ruleId: string } => m.fatal !== true && m.ruleId !== null)
+    .filter((m): m is typeof m & { ruleId: string } => !m.fatal && Boolean(m.ruleId))
     .map((m) => {
       const id = m.ruleId.startsWith(`${PLUGIN_NS}/`) ? m.ruleId.slice(PLUGIN_NS.length + 1) : m.ruleId;
       return { ruleId: id, line: m.line, column: m.column, text: m.message, pointer: POINTER_BY_ID[id] ?? "" };
