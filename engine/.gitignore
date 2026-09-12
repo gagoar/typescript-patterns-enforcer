@@ -1,0 +1,6 @@
+# All of node_modules is a build-time-only dependency tree now — esbuild
+# bundles everything (including typescript itself) into dist/check.js.
+# Nothing here needs to be committed; only dist/check.js is (see README
+# "Release: rebuild dist/check.js").
+node_modules/
+*.tsbuildinfo
