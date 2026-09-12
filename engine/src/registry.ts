@@ -63,13 +63,12 @@ export const CHECKS = [
     skillRule: "Core Rule 9 (magic numbers half)",
     origin: "reuse",
     rule: noMagicNumbers,
-    // detectObjects: adversarial testing found the upstream default (false)
-    // exempts every numeric value inside an object literal — config objects
-    // and payload literals are the single most common home for magic
-    // numbers, so leaving this off missed most of what the rule exists for.
+    // detectObjects: without this, every numeric value inside an object
+    // literal is exempt — config objects and payload literals are the most
+    // common home for magic numbers, so this option carries most of the
+    // rule's real coverage.
     // ignoreNumericLiteralTypes: a TS literal-type union (`type X = 1 | 2`)
-    // isn't a runtime expression and has no "extract to a const" fix path;
-    // flagging it was pure noise.
+    // isn't a runtime expression and has no "extract to a const" fix path.
     options: [{
       ignore: [0, 1, -1],
       ignoreArrayIndexes: true,

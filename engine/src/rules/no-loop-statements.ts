@@ -1,8 +1,8 @@
 import type { Rule } from "eslint";
 import { AST_NODE_TYPES } from "@typescript-eslint/types";
 
-// Derived from the library's own node-type enum (Core Rule 9/Derive Don't
-// Restate), not retyped string literals.
+// Derived from the library's own node-type enum, not retyped string
+// literals, so these can't silently drift from the real node-type names.
 const LOOP_TYPES = [
   AST_NODE_TYPES.ForStatement,
   AST_NODE_TYPES.ForInStatement,

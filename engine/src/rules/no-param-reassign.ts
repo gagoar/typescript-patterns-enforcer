@@ -7,14 +7,11 @@ const FUNCTION_SELECTOR = "FunctionDeclaration, FunctionExpression, ArrowFunctio
 
 type BindingCollector = (pattern: Pattern, into: Set<string>) => void;
 
-// Dispatch table keyed by the pattern's own discriminant, per SKILL.md's
-// Data Over Logic: a switch on `pattern.type` is the same lookup in
-// disguise. Each handler reads its own variant's fields directly; the
-// generic `Pattern` parameter (not the narrowed member) is the same
-// correlated-union limitation the skill's own worked example documents —
-// one justified cast per handler, not a hand-rolled switch. Keys are
-// AST_NODE_TYPES members (derived from the library, per Core Rule 9/Derive
-// Don't Restate), not retyped string literals.
+// Dispatch table keyed by pattern.type — do not convert this back to a
+// switch. Each handler casts its generic `Pattern` parameter to read its
+// own variant's fields: TS can't correlate a Record's looked-up value with
+// the key that selected it, so the cast is required, not optional. Keys
+// are AST_NODE_TYPES members so they can't drift from the real node names.
 const BINDING_COLLECTORS: Readonly<Record<string, BindingCollector>> = {
   [AST_NODE_TYPES.Identifier]: (pattern, into) => {
     into.add((pattern as unknown as { name: string }).name);
@@ -25,9 +22,9 @@ const BINDING_COLLECTORS: Readonly<Record<string, BindingCollector>> = {
   [AST_NODE_TYPES.RestElement]: (pattern, into) => {
     collectBindingNames((pattern as unknown as { argument: Pattern }).argument, into);
   },
-  // `constructor(private x: number)` — adversarial testing found this had
-  // no collector at all, so a reassigned parameter property went entirely
-  // untracked. The property wraps an ordinary parameter binding.
+  // `constructor(private x: number)` wraps an ordinary parameter binding
+  // one level down — without this entry the wrapped name is never
+  // registered, and a reassignment inside the constructor goes untracked.
   [AST_NODE_TYPES.TSParameterProperty]: (pattern, into) => {
     collectBindingNames((pattern as unknown as { parameter: Pattern }).parameter, into);
   },
@@ -102,11 +99,10 @@ function reportDestructuredTargets(
 // One stack frame per enclosing function: `params` are the names this rule
 // flags on reassignment; `locals` are same-scope `let`/`const`/`var`
 // declarations that shadow an outer parameter without being one themselves.
-// Adversarial testing found the earlier single-flat-stack design treated
-// every enclosing frame's params as live everywhere below it, so an inner
-// function's own unrelated local variable sharing an outer parameter's name
-// was flagged as if it were that parameter — a real false positive on
-// ordinary shadowing (a temp/loop variable reusing an outer param's name).
+// A name must resolve against the nearest frame that declares it at all —
+// treating every enclosing frame's params as live everywhere below them
+// would flag an inner function's own unrelated local for merely sharing an
+// outer parameter's name.
 interface Frame {
   readonly params: Set<string>;
   readonly locals: Set<string>;
