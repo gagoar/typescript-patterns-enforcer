@@ -16,6 +16,7 @@ const CASES = [
   { id: "no-switch-statement", bad: "no-switch-statement.bad.ts", good: "no-switch-statement.good.ts" },
   { id: "no-param-reassign", bad: "no-param-reassign.bad.ts", good: "no-param-reassign.good.ts" },
   { id: "no-loop-statements", bad: "no-loop-statements.bad.ts", good: "no-loop-statements.good.ts" },
+  { id: "no-narrative-comment", bad: "no-narrative-comment.bad.ts", good: "no-narrative-comment.good.ts" },
 ];
 
 function runHook(filePath) {

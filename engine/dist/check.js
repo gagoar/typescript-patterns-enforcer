@@ -372092,6 +372092,46 @@ var noLoopStatements = {
   }
 };
 
+// src/rules/no-narrative-comment.ts
+var NARRATIVE_MARKERS = [
+  "adversarial testing",
+  "we found",
+  "found that",
+  "turns out",
+  "used to be",
+  "previously",
+  "originally",
+  "discovered",
+  "after debugging",
+  "the bug was",
+  "this used to"
+];
+function findMarker(text) {
+  const lower = text.toLowerCase();
+  return NARRATIVE_MARKERS.find((marker) => lower.includes(marker));
+}
+var noNarrativeComment = {
+  meta: {
+    type: "suggestion",
+    schema: [],
+    messages: {
+      narrative: 'comment reads as history ("{{marker}}") \u2014 state the present-tense feature or invariant instead (see SKILL.md Comment Discipline).'
+    }
+  },
+  create(context) {
+    return {
+      Program() {
+        context.sourceCode.getAllComments().forEach((comment) => {
+          const marker = findMarker(comment.value);
+          if (marker && comment.loc) {
+            context.report({ loc: comment.loc, messageId: "narrative", data: { marker } });
+          }
+        });
+      }
+    };
+  }
+};
+
 // src/registry.ts
 var noExplicitAny = import_rules.default["no-explicit-any"];
 var banTsComment = import_rules.default["ban-ts-comment"];
@@ -372173,6 +372213,17 @@ var CHECKS = [
     options: [],
     severity: "warn",
     pointer: "SKILL.md Data Over Logic \u2014 express as .map()/.filter()/.reduce()"
+  },
+  {
+    id: "no-narrative-comment",
+    skillRule: "Comment Discipline",
+    origin: "hand-rolled",
+    rule: noNarrativeComment,
+    options: [],
+    // Lexical proxy for a semantic rule — expect both misses and occasional
+    // false positives, unlike the near-exact checks above.
+    severity: "warn",
+    pointer: "SKILL.md Comment Discipline \u2014 state a feature or invariant, not history"
   }
 ];
 var PLUGIN_NS = "ts-patterns";

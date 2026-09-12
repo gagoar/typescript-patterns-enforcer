@@ -557,7 +557,9 @@ A comment must do one of two things: name the **feature** a piece of code
 enables (why it exists), or state an **invariant a future edit could
 silently break** — a hidden constraint, a subtle ordering requirement, the
 reason a guard exists, the regression a test specifically catches. Never
-restate what the adjacent code already says in plain English.
+restate what the adjacent code already says in plain English. (The bundled
+hook advisorily flags a specific list of narrative-sounding phrases; it's a
+lexical proxy, not a substitute for actually applying this judgment.)
 
 - Bad: `// loop over the array and push each item` above a `.forEach(...)`.
 - Bad: `// assert the result is 2` above `expect(x).toBe(2)`.

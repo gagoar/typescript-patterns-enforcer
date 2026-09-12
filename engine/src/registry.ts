@@ -10,6 +10,7 @@ import preferAwaitToThen from "eslint-plugin-promise/rules/prefer-await-to-then"
 import { noSwitchStatement } from "./rules/no-switch-statement";
 import { noParamReassign } from "./rules/no-param-reassign";
 import { noLoopStatements } from "./rules/no-loop-statements";
+import { noNarrativeComment } from "./rules/no-narrative-comment";
 
 // Justified cast (Core Rule 1): typescript-eslint's rule objects are typed
 // against its own @typescript-eslint/utils RuleContext (extra fields like
@@ -114,6 +115,17 @@ export const CHECKS = [
     options: [],
     severity: "warn",
     pointer: "SKILL.md Data Over Logic — express as .map()/.filter()/.reduce()",
+  },
+  {
+    id: "no-narrative-comment",
+    skillRule: "Comment Discipline",
+    origin: "hand-rolled",
+    rule: noNarrativeComment,
+    options: [],
+    // Lexical proxy for a semantic rule — expect both misses and occasional
+    // false positives, unlike the near-exact checks above.
+    severity: "warn",
+    pointer: "SKILL.md Comment Discipline — state a feature or invariant, not history",
   },
 ] as const satisfies readonly MechanicalCheck[];
 
