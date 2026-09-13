@@ -176,6 +176,7 @@ tr:last-child td { border-bottom: none; }
             <tr><td>standalone <code>types.ts</code></td><td>colocate the type with its consumer</td></tr>
             <tr><td>boolean-soup state</td><td>discriminated union</td></tr>
             <tr><td><code>switch</code> / if-else chain on a closed set</td><td><code>Record</code> dispatch table, or a config array reduced/found over</td></tr>
+            <tr><td>nested ternary</td><td><code>Record</code> dispatch table, or a config array found over</td></tr>
             <tr><td><code>if (url.startsWith("https:"))</code></td><td>extract to a named <code>const</code>: <code>HTTPS_SCHEME</code></td></tr>
             <tr><td><code>options.retries ??= 3</code></td><td><code>return { retries: 3, ...options }</code> (no param mutation)</td></tr>
             <tr><td><code>catch { /* ignored */ }</code></td><td>rethrow a typed error, never swallow silently</td></tr>

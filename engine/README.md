@@ -1,6 +1,6 @@
 # ts-patterns mechanical engine
 
-A self-contained checker for 8 of `ts-patterns`'s rules, invoked by
+A self-contained checker for 9 of `ts-patterns`'s rules, invoked by
 `hooks/hooks.json` after every `.ts`/`.tsx` edit. It never reads or writes
 whatever ESLint/tsconfig setup exists in the repo Claude is editing — it
 brings its own pinned dependencies and runs in total isolation.
@@ -17,11 +17,13 @@ brings its own pinned dependencies and runs in total isolation.
 | `no-param-reassign` | hand-rolled | parameter mutation |
 | `no-loop-statements` | hand-rolled | Data Over Logic pipelines (presence only) |
 | `no-narrative-comment` | hand-rolled, advisory | Comment Discipline |
+| `no-nested-ternary` | hand-rolled | Data Over Logic (presence only) |
 
 See `src/registry.ts` for the full traceability map back to `SKILL.md`. The
 mechanical layer detects *presence*; the *conversion* (switch→`Record`,
-loop→pipeline) is a judgment call that stays in `SKILL.md`'s prose — a
-linter can ban a `switch`, but it can't rewrite one well.
+loop→pipeline, nested ternary→`Record`/`.find()`) is a judgment call that
+stays in `SKILL.md`'s prose — a linter can ban a `switch`, but it can't
+rewrite one well.
 
 `no-narrative-comment` is a different kind of check from the other 7: it's
 a lexical proxy for a semantic rule (does a comment state an invariant, or
