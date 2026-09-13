@@ -429,47 +429,28 @@ No pattern-matching library is needed here — a plain `Record` plus one
 documented cast suffices; a project may add `.exhaustive()` matching on its
 own, but this skill's rule is only "no `switch`."
 
-**Nested ternaries** — a ternary nested inside another ternary's test,
-consequent, or alternate is the same branching-as-logic problem as a `switch`
-or `if`/`else if` chain. Flatten it into a lookup keyed by the input, with
-`??` supplying the fall-through:
+**Nested ternaries** — a ternary in another ternary's test/consequent/alternate
+is branching logic, same as a `switch`. Flatten it to a lookup keyed by the
+input, `??` for the fall-through (a single, non-nested ternary is fine):
 
 ```ts
 // Bad
-function describeStatus(status: string): string {
-  return status === "active" ? "Active" : status === "paused" ? "Paused" : "Unknown";
-}
-
+const label = status === "active" ? "Active" : status === "paused" ? "Paused" : "Unknown";
 // Good
 const STATUS_LABELS: Record<string, string> = { active: "Active", paused: "Paused" };
-function describeStatus(status: string): string {
-  return STATUS_LABELS[status] ?? "Unknown";
-}
+const label = STATUS_LABELS[status] ?? "Unknown";
 ```
 
-A ternary chain that tests a *series of predicates* rather than equality
-against one value — a threshold ladder, for instance — fits the "config array
-+ `.find()`" pattern above instead of a `Record`:
+A predicate ladder maps to the config-array + `.find()` pattern above instead of
+a `Record`:
 
 ```ts
 // Bad
-function gradeFor(score: number): string {
-  return score >= 90 ? "A" : score >= 80 ? "B" : score >= 70 ? "C" : "F";
-}
-
+const grade = score >= 90 ? "A" : score >= 80 ? "B" : "F";
 // Good
-const GRADE_THRESHOLDS: readonly (readonly [min: number, grade: string])[] = [
-  [90, "A"],
-  [80, "B"],
-  [70, "C"],
-];
-function gradeFor(score: number): string {
-  return GRADE_THRESHOLDS.find(([min]) => score >= min)?.[1] ?? "F";
-}
+const GRADES = [[90, "A"], [80, "B"]] as const;
+const grade = GRADES.find(([min]) => score >= min)?.[1] ?? "F";
 ```
-
-A single, non-nested ternary is unaffected by this rule — only a ternary
-nested inside another one is the anti-pattern.
 
 **Prefer pipelines over loops** — express a transform over a collection as
 `.map()`/`.filter()`/`.reduce()`/`Promise.all()`, not a `for`/`while` loop that
