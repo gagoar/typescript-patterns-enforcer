@@ -10,13 +10,13 @@ A Claude Code plugin that enforces TypeScript best practices and patterns — av
 |-----------|-------------|
 | **Skill** `/ts-patterns:check` | Automatically active while writing or editing `.ts`/`.tsx` files. Provides inline guidance on type safety, patterns, and anti-patterns. |
 | **Agent** `ts-patterns:review` | Spawn via the Agent tool for full PR reviews, large refactors, or converting JavaScript to TypeScript. |
-| **Mechanical hook** | A bundled, self-contained checker (`engine/`) runs automatically after every `.ts`/`.tsx` edit via a `PostToolUse` hook, backstopping 8 of the rules below deterministically. |
+| **Mechanical hook** | A bundled, self-contained checker (`engine/`) runs automatically after every `.ts`/`.tsx` edit via a `PostToolUse` hook, backstopping 9 of the rules below deterministically. |
 
 ## Mechanical checks
 
-Eight rules — no `any`, `@ts-ignore` without a description, magic numbers,
-`.then()` chains, `switch` statements, parameter mutation, raw loops, and
-narrative-style comments — are also enforced by a small bundled linting
+Nine rules — no `any`, `@ts-ignore` without a description, magic numbers,
+`.then()` chains, `switch` statements, parameter mutation, raw loops, nested
+ternaries, and narrative-style comments — are also enforced by a small bundled linting
 engine, not just LLM prose. It is **fully self-contained**: it ships its
 own pinned ESLint + parser + `typescript`, and never reads or writes
 whatever ESLint/tsconfig setup (if any) already exists in the repo you're

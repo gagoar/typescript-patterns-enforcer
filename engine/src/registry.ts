@@ -11,6 +11,7 @@ import { noSwitchStatement } from "./rules/no-switch-statement";
 import { noParamReassign } from "./rules/no-param-reassign";
 import { noLoopStatements } from "./rules/no-loop-statements";
 import { noNarrativeComment } from "./rules/no-narrative-comment";
+import { noNestedTernary } from "./rules/no-nested-ternary";
 
 // Justified cast (Core Rule 1): typescript-eslint's rule objects are typed
 // against its own @typescript-eslint/utils RuleContext (extra fields like
@@ -126,6 +127,15 @@ export const CHECKS = [
     // false positives, unlike the near-exact checks above.
     severity: "warn",
     pointer: "SKILL.md Comment Discipline — state a feature or invariant, not history",
+  },
+  {
+    id: "no-nested-ternary",
+    skillRule: "Data Over Logic",
+    origin: "hand-rolled",
+    rule: noNestedTernary,
+    options: [],
+    severity: "error",
+    pointer: "SKILL.md Data Over Logic — flatten or convert nested ternaries to a Record/.find() lookup",
   },
 ] as const satisfies readonly MechanicalCheck[];
 

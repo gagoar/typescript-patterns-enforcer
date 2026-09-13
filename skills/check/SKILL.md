@@ -429,6 +429,48 @@ No pattern-matching library is needed here — a plain `Record` plus one
 documented cast suffices; a project may add `.exhaustive()` matching on its
 own, but this skill's rule is only "no `switch`."
 
+**Nested ternaries** — a ternary nested inside another ternary's test,
+consequent, or alternate is the same branching-as-logic problem as a `switch`
+or `if`/`else if` chain. Flatten it into a lookup keyed by the input, with
+`??` supplying the fall-through:
+
+```ts
+// Bad
+function describeStatus(status: string): string {
+  return status === "active" ? "Active" : status === "paused" ? "Paused" : "Unknown";
+}
+
+// Good
+const STATUS_LABELS: Record<string, string> = { active: "Active", paused: "Paused" };
+function describeStatus(status: string): string {
+  return STATUS_LABELS[status] ?? "Unknown";
+}
+```
+
+A ternary chain that tests a *series of predicates* rather than equality
+against one value — a threshold ladder, for instance — fits the "config array
++ `.find()`" pattern above instead of a `Record`:
+
+```ts
+// Bad
+function gradeFor(score: number): string {
+  return score >= 90 ? "A" : score >= 80 ? "B" : score >= 70 ? "C" : "F";
+}
+
+// Good
+const GRADE_THRESHOLDS: readonly (readonly [min: number, grade: string])[] = [
+  [90, "A"],
+  [80, "B"],
+  [70, "C"],
+];
+function gradeFor(score: number): string {
+  return GRADE_THRESHOLDS.find(([min]) => score >= min)?.[1] ?? "F";
+}
+```
+
+A single, non-nested ternary is unaffected by this rule — only a ternary
+nested inside another one is the anti-pattern.
+
 **Prefer pipelines over loops** — express a transform over a collection as
 `.map()`/`.filter()`/`.reduce()`/`Promise.all()`, not a `for`/`while` loop that
 accumulates by mutation. A pipeline reads as "what the data becomes"; a loop
@@ -648,6 +690,7 @@ test.each([
 - An explicit comparison against the falsy sentinel (`.length === 0`, `.length > 0`, `=== ""`, `!== undefined`, `count === 0`, `count > 0`) for truthy/falsy intent instead of coercing to boolean directly — `.length` is only one case of this, any zero/non-zero check on a number reads the same way — unless a falsy-but-meaningful value (`0`, `""`, `false`) must be told apart from genuine absence
 - A fixed value set declared twice — a literal-union type plus separate `const`s holding the same strings (derive one from the other via `as const`)
 - **Any `switch`**, and any `if`/`else if` chain that dispatches on a closed set of values — convert to a data structure (a `Record` dispatch table, or a config array reduced/found over). This is the default; a `switch` only survives review when the project's `CLAUDE.md` carries the `ts-patterns: allow exhaustive switch` opt-in, and even then only for a discriminated-union tag closed off by `assertNever`
+- A ternary nested inside another ternary's test/consequent/alternate — flatten to a `Record` lookup, or a config array of `[test, value]` tuples found over
 - Missing error handling in `async` functions
 - Classes with no private state (use plain functions instead)
 - `@ts-ignore` without a follow-up TODO
