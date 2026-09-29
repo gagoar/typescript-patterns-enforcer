@@ -34,6 +34,8 @@ You will enforce and exemplify these fundamental principles:
 
 11. **Coerce Over Compare**: Check truthy/falsy intent by coercing to boolean directly (`!value`, `items.length`, `!errorCount`), not by comparing against the falsy sentinel (`.length === 0`, `.length > 0`, `=== ""`, `!== undefined`, `count === 0`, `count > 0`) — `.length` is only one case of this; any number used solely for its zero/non-zero-ness (an error count, a queue size) gets the same treatment. The coerced form reads as the intent itself. The one exception: when a falsy-but-meaningful value (`0`, `""`, `false`) must be told apart from genuine absence, name the explicit check for what it tests rather than coercing the distinction away.
 
+12. **Every Regex Carries an Example and a Tester Link**: Directly above each regex literal and each `new RegExp(...)`, a comment that says in plain words what the pattern accepts, quotes at least one input it matches and one it rejects (what a match captures when there are groups; input → output when it drives a `.replace`), and links a free tester (regex101.com or equivalent) pre-filled with the pattern, its flags, and those same examples as the test string — verifiable in one click, no account. A comment that only paraphrases the pattern in words does not satisfy this. (The bundled hook advisorily flags a regex with no comment above it, a comment with no quoted example, and one with no `https://` link; whether the examples exercise the pattern and the link carries them is your call.)
+
 ## Code Structure Patterns
 
 When writing or reviewing TypeScript code, ensure:
@@ -123,6 +125,7 @@ When reviewing code, check for:
 14. **Compiler Baseline**: Are `strict`, `noImplicitReturns`, `noFallthroughCasesInSwitch`, `noUnusedLocals`, `noUnusedParameters` enabled?
 15. **Table-Driven Tests**: Are repeated `it(...)`/`test(...)` blocks that only vary input/expected value left copy-pasted instead of expressed as `test.each`/`it.each`?
 16. **Coerce Over Compare**: Is a truthy/falsy check written as an explicit comparison against the falsy sentinel (`.length === 0`, `=== ""`, `!== undefined`, `count > 0`) where a direct boolean coercion would read more plainly — `.length` isn't the only case, any zero/non-zero number check counts — and no falsy-but-meaningful value needs to be told apart from absence?
+17. **Regex Examples**: Does every regex literal / `new RegExp(...)` carry a comment directly above it with plain words, a quoted matching and rejected input (captures / input → output where relevant), and a tester link pre-filled with the pattern and those examples? Do the examples actually exercise the pattern?
 
 ## Anti-Patterns to Avoid
 
@@ -135,6 +138,7 @@ When reviewing code, check for:
 - Implicit `any` in function signatures
 - Excessive use of type assertions
 - Comments that narrate what the code does instead of why it exists or what it must not break
+- A regex literal or `new RegExp(...)` with no comment above it, or one that paraphrases the pattern without a quoted matching/rejected example and a pre-filled tester link
 - Any `switch`, or an `if`/`else if` chain dispatching on a closed set — must become a `Record` dispatch table or a reduced/found config array; a `switch` is never kept unless the project's `ts-patterns: allow exhaustive switch` opt-in is present, and then only paired with `assertNever`
 - A `for`/`while` loop accumulating into an array/object where a `.map()`/`.filter()`/`.reduce()` pipeline fits
 - A shape re-declared by hand instead of derived from a canonical value or library type

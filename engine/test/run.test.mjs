@@ -18,6 +18,7 @@ const CASES = [
   { id: "no-loop-statements", bad: "no-loop-statements.bad.ts", good: "no-loop-statements.good.ts" },
   { id: "no-narrative-comment", bad: "no-narrative-comment.bad.ts", good: "no-narrative-comment.good.ts" },
   { id: "no-nested-ternary", bad: "no-nested-ternary.bad.ts", good: "no-nested-ternary.good.ts" },
+  { id: "require-regex-example", bad: "require-regex-example.bad.ts", good: "require-regex-example.good.ts" },
 ];
 
 function runHook(filePath) {

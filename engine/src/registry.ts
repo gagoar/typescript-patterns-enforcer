@@ -12,6 +12,7 @@ import { noParamReassign } from "./rules/no-param-reassign";
 import { noLoopStatements } from "./rules/no-loop-statements";
 import { noNarrativeComment } from "./rules/no-narrative-comment";
 import { noNestedTernary } from "./rules/no-nested-ternary";
+import { requireRegexExample } from "./rules/require-regex-example";
 
 // Justified cast (Core Rule 1): typescript-eslint's rule objects are typed
 // against its own @typescript-eslint/utils RuleContext (extra fields like
@@ -136,6 +137,18 @@ export const CHECKS = [
     options: [],
     severity: "error",
     pointer: "SKILL.md Data Over Logic — flatten or convert nested ternaries to a Record/.find() lookup",
+  },
+  {
+    id: "require-regex-example",
+    skillRule: "Core Rule 11 (every regex carries an example)",
+    origin: "hand-rolled",
+    rule: requireRegexExample,
+    options: [],
+    // Comment presence is exact; "has an example" and "has a tester link"
+    // are lexical proxies (a quoted string and an https:// in the comment),
+    // so kept advisory like no-magic-numbers.
+    severity: "warn",
+    pointer: "SKILL.md Core Rule 11 — comment above: what it accepts, a quoted match/reject, and a pre-filled tester link",
   },
 ] as const satisfies readonly MechanicalCheck[];
 
