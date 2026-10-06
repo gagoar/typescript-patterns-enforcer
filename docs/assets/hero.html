@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1200px;height:560px;background:#FAF9F5;font-family:system-ui,-apple-system,sans-serif;color:#3D3D3A;padding:36px 48px;display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.card{background:#fff;border:2px solid #D1CFC5;border-radius:16px;padding:24px 28px;display:flex;flex-direction:column}
+.card.b{border-top:6px solid #B04A3F}.card.a{border-top:6px solid #788C5D}
+.lab{font-family:ui-monospace,Menlo,monospace;font-size:15px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin-bottom:14px}
+.b .lab{color:#B04A3F}.a .lab{color:#788C5D}
+pre{font-family:ui-monospace,Menlo,monospace;font-size:16px;line-height:1.55;color:#141413;white-space:pre-wrap}
+mark{background:rgba(176,74,63,.16);color:#8a3228;border-radius:4px;padding:0 3px}
+.out{margin-top:auto;background:#141413;border-radius:10px;padding:14px 16px;font-family:ui-monospace,Menlo,monospace;font-size:14px;line-height:1.5;color:#E8E6DE}
+.out .r{color:#D97757}.out .g{color:#9BB07C}
+</style></head><body>
+<div class="card b"><div class="lab">Claude's edit</div>
+<pre>export function describeStatus(status: string): string {
+  return status === "active" ? "Active" : <mark>status === "paused" ? "Paused" : "Unknown"</mark>;
+}</pre>
+<div class="out"><span class="r">ts-patterns:</span> 1 mechanical violation<br>L2:10 no-nested-ternary<br>nested ternary: flatten, or convert to a<br>Record/.find() lookup. <span class="r">exit 2</span></div></div>
+<div class="card a"><div class="lab">After the hook feeds it back</div>
+<pre>const STATUS_LABELS: Record&lt;string, string&gt; = {
+  active: "Active",
+  paused: "Paused",
+};
+
+export function describeStatus(status: string): string {
+  return STATUS_LABELS[status] ?? "Unknown";
+}</pre>
+<div class="out"><span class="g">clean</span> &nbsp;exit 0, no output</div></div>
+</body></html>

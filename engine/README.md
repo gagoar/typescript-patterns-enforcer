@@ -5,7 +5,7 @@ A self-contained checker for 9 of `ts-patterns`'s rules, invoked by
 whatever ESLint/tsconfig setup exists in the repo Claude is editing — it
 brings its own pinned dependencies and runs in total isolation.
 
-## What's checked, and why these 8
+## What's checked, and why these 9
 
 | Check | Origin | Mechanizes |
 |---|---|---|
@@ -25,7 +25,7 @@ loop→pipeline, nested ternary→`Record`/`.find()`) is a judgment call that
 stays in `SKILL.md`'s prose — a linter can ban a `switch`, but it can't
 rewrite one well.
 
-`no-narrative-comment` is a different kind of check from the other 7: it's
+`no-narrative-comment` is a different kind of check from the other 8: it's
 a lexical proxy for a semantic rule (does a comment state an invariant, or
 narrate how the code came to be), not a precise AST match. It flags a
 specific list of backward-looking phrases (`src/rules/no-narrative-comment.ts`)
@@ -46,7 +46,7 @@ so its rule is required by its real file path directly.
 via git clone with no guaranteed build step, so end users get zero
 install/build of their own. It's a fully self-contained bundle: esbuild
 inlines `eslint`, `@typescript-eslint/parser`, and `typescript` itself (tree-shaken
-down to the parsing path this engine actually reaches, since none of the 8
+down to the parsing path this engine actually reaches, since none of the 9
 checks are type-aware) into one file with zero runtime dependencies.
 Everything under `node_modules/` is build-time-only and gitignored.
 Rebuilding is a release-time task, not something to hand-edit:
