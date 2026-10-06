@@ -126,3 +126,5 @@ Full guide: [gagoar.github.io/typescript-patterns-enforcer](https://gagoar.githu
 ## License
 
 MIT. See [LICENSE](./LICENSE).
+
+Icon: "Pattern" by Side Project from [Noun Project](https://thenounproject.com/icon/pattern-8298196/) (CC BY 3.0). See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
