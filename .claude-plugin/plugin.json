@@ -1,13 +1,26 @@
 {
   "name": "ts-patterns",
-  "version": "0.3.1",
-  "description": "Enforce TypeScript best practices and patterns — inline skill guidance plus a dedicated subagent for reviews and refactors.",
+  "displayName": "ts-patterns",
+  "version": "0.3.2",
+  "description": "Enforce TypeScript best practices and patterns \u2014 inline skill guidance plus a dedicated subagent for reviews and refactors.",
   "author": {
     "name": "gagoar",
     "url": "https://github.com/gagoar"
   },
-  "homepage": "https://github.com/gagoar/typescript-patterns-enforcer",
+  "homepage": "https://gagoar.github.io/typescript-patterns-enforcer/",
+  "repository": "https://github.com/gagoar/typescript-patterns-enforcer",
   "license": "MIT",
-  "keywords": ["typescript", "patterns", "code-quality", "linting", "best-practices"],
-  "skills": ["./skills/check"]
+  "keywords": [
+    "typescript",
+    "patterns",
+    "code-quality",
+    "linting",
+    "best-practices",
+    "eslint",
+    "hooks",
+    "code-review"
+  ],
+  "skills": [
+    "./skills/check"
+  ]
 }

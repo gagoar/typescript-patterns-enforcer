@@ -1,214 +1,277 @@
-<title>ts-patterns — TypeScript patterns enforcer for Claude Code</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ts-patterns: TypeScript pattern checks for Claude Code</title>
+<meta name="description" content="A Claude Code plugin that holds Claude's TypeScript to a written standard: an inline skill, a review subagent, and a hook that checks nine rules after every edit.">
+<link rel="canonical" href="https://gagoar.github.io/typescript-patterns-enforcer/">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ts-patterns: Claude writes TypeScript. ts-patterns checks every edit.">
+<meta property="og:description" content="A Claude Code plugin with a skill, a review subagent, and a hook that checks nine rules after every .ts edit.">
+<meta property="og:url" content="https://gagoar.github.io/typescript-patterns-enforcer/">
+<meta property="og:image" content="https://gagoar.github.io/typescript-patterns-enforcer/assets/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ts-patterns: TypeScript pattern checks for Claude Code">
+<meta name="twitter:description" content="A hook checks nine rules after every .ts edit and feeds violations back to Claude.">
+<meta name="twitter:image" content="https://gagoar.github.io/typescript-patterns-enforcer/assets/og.png">
 <style>
 :root {
-  --ivory:    #FAF9F5;
-  --slate:    #141413;
-  --clay:     #D97757;
-  --clay-d:   #B85C3E;
-  --oat:      #E3DACC;
-  --olive:    #788C5D;
-  --rust:     #B04A3F;
-  --gray-150: #F0EEE6;
-  --gray-300: #D1CFC5;
-  --gray-500: #87867F;
-  --gray-700: #3D3D3A;
-  --white:    #FFFFFF;
+  --ivory:#FAF9F5; --slate:#141413; --clay:#D97757; --clay-d:#B85C3E; --oat:#E3DACC;
+  --olive:#788C5D; --rust:#B04A3F; --gray-150:#F0EEE6; --gray-300:#D1CFC5; --gray-500:#87867F;
+  --gray-700:#3D3D3A; --white:#FFFFFF;
   --serif: ui-serif, Georgia, "Times New Roman", serif;
-  --sans:  system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --mono:  ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --radius-panel: 12px;
-  --radius-row:   8px;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --border: 1.5px solid var(--gray-300);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
-body {
-  font-family: var(--sans);
-  background: var(--ivory);
-  color: var(--gray-700);
-  font-size: 15px;
-  line-height: 1.6;
-  padding: 56px 24px 96px;
-  -webkit-font-smoothing: antialiased;
-}
-.page { max-width: 920px; margin: 0 auto; }
-
-h1 { font-family: var(--serif); font-weight: 500; font-size: 38px; letter-spacing: -0.01em; line-height: 1.15; color: var(--slate); margin-bottom: 14px; }
-h2 { font-family: var(--serif); font-weight: 500; font-size: 24px; letter-spacing: -0.01em; color: var(--slate); margin-bottom: 10px; }
-h3 { font-family: var(--serif); font-weight: 500; font-size: 18px; color: var(--slate); margin-bottom: 6px; }
-p { margin-bottom: 14px; }
-p:last-child { margin-bottom: 0; }
-hr.rule { border: none; border-top: 1px solid var(--gray-300); margin: 40px 0; }
-.eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gray-500); margin-bottom: 10px; }
+body { font-family: var(--sans); background: var(--ivory); color: var(--gray-700); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+a { color: var(--clay-d); }
 code { font-family: var(--mono); font-size: 0.9em; background: var(--gray-150); padding: 1px 6px; border-radius: 4px; color: var(--slate); }
+h1, h2, h3 { font-family: var(--serif); font-weight: 500; color: var(--slate); letter-spacing: -0.01em; }
+h2 { font-size: 30px; line-height: 1.2; margin-bottom: 12px; }
+.eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--clay); margin-bottom: 12px; }
+section { padding: 64px 0; }
+.lead { font-size: 18px; max-width: 640px; margin-bottom: 28px; }
 
-.layout { display: grid; grid-template-columns: 190px 1fr; gap: 56px; }
-@media (max-width: 760px) { .layout { grid-template-columns: 1fr; } .toc { display: none; } }
+nav.top { display: flex; justify-content: space-between; align-items: center; padding: 24px 0; }
+nav.top .brand { font-family: var(--serif); font-size: 22px; color: var(--slate); text-decoration: none; display: flex; align-items: center; gap: 10px; }
+nav.top .brand img { width: 28px; height: 28px; }
+nav.top .links { display: flex; gap: 22px; font-size: 14px; }
+nav.top .links a { color: var(--gray-700); text-decoration: none; }
+nav.top .links a:hover { color: var(--clay-d); }
 
-.toc { position: sticky; top: 40px; align-self: start; padding-top: 4px; }
-.toc-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-500); margin-bottom: 10px; }
-.toc a { display: block; font-size: 13px; color: var(--gray-500); text-decoration: none; padding: 5px 12px; border-left: 2px solid var(--gray-300); margin-bottom: 2px; transition: color 0.1s, border-color 0.1s; }
-.toc a:hover, .toc a.active { color: var(--slate); border-left-color: var(--clay); }
+.hero { padding: 56px 0 72px; }
+.hero h1 { font-size: clamp(38px, 6vw, 64px); line-height: 1.05; margin-bottom: 20px; max-width: 760px; }
+.hero h1 em { color: var(--clay); font-style: italic; }
+.hero .lead { color: var(--gray-700); }
 
-.content { min-width: 0; }
-.section { margin-bottom: 56px; }
+.install { background: var(--slate); border-radius: 12px; padding: 18px 22px; position: relative; max-width: 680px; margin-bottom: 20px; }
+.install pre { font-family: var(--mono); font-size: 13px; line-height: 1.8; color: #E8E6DE; overflow-x: auto; padding-right: 76px; }
+.install .c { color: var(--clay); } .install .a { color: #9BB07C; }
+.copy { position: absolute; top: 12px; right: 12px; font-family: var(--mono); font-size: 12px; background: #2a2a28; color: #E8E6DE; border: 1px solid #4a4a46; border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+.copy:hover { background: #3a3a37; }
+.btns { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn { display: inline-block; padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; border: var(--border); color: var(--slate); background: var(--white); }
+.btn.primary { background: var(--clay); border-color: var(--clay); color: var(--white); }
+.btn:hover { border-color: var(--clay); }
 
-.hero { margin-bottom: 56px; }
-.hero-eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--clay); margin-bottom: 14px; }
-.hero-subtitle { font-size: 18px; color: var(--gray-500); font-style: italic; font-family: var(--serif); max-width: 600px; margin-bottom: 20px; line-height: 1.5; }
-.hero-summary { font-size: 15px; color: var(--gray-700); max-width: 580px; padding: 16px 20px; background: var(--white); border: var(--border); border-left: 4px solid var(--clay); border-radius: 0 var(--radius-row) var(--radius-row) 0; }
+.demo { background: var(--white); border: var(--border); border-radius: 14px; padding: 26px; }
+.toggle { display: inline-flex; border: var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+.toggle button { font-family: var(--mono); font-size: 13px; padding: 9px 18px; border: 0; background: var(--white); color: var(--gray-700); cursor: pointer; }
+.toggle button[aria-pressed="true"] { background: var(--slate); color: var(--white); }
+.demo-meta { display: flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 13px; color: var(--gray-500); margin-bottom: 14px; }
+.badge { min-width: 34px; height: 34px; padding: 0 10px; font-size: 15px !important; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-family: var(--serif); font-size: 21px; }
+.badge.d { background: rgba(176,74,63,0.14); color: var(--rust); }
+.badge.a { background: rgba(120,140,93,0.18); color: var(--olive); }
+.sample { font-family: var(--mono); font-size: 14.5px; line-height: 1.7; color: var(--slate); background: var(--gray-150); border-radius: 10px; padding: 16px 18px; min-height: 150px; white-space: pre-wrap; overflow-x: auto; }
+.sample mark { background: rgba(176,74,63,0.16); color: #8a3228; border-radius: 4px; padding: 0 3px; }
+.demo-note { margin-top: 14px; font-size: 14px; color: var(--gray-500); }
 
-.skill-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
-.skill-pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; background: var(--white); border: var(--border); border-radius: var(--radius-row); font-family: var(--mono); font-size: 13px; color: var(--slate); }
-.skill-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--clay); flex-shrink: 0; }
-.skill-pill .dot.green { background: var(--olive); }
+.report { background: var(--slate); border-radius: 12px; padding: 20px 24px; overflow-x: auto; }
+.report pre { font-family: var(--mono); font-size: 12.5px; line-height: 1.7; color: #E8E6DE; }
+.report .k { color: var(--clay); } .report .g { color: #9BB07C; } .report .d { color: #8a8880; }
+.two > * { min-width: 0; }
+.two { display: grid; grid-template-columns: 1fr 1.2fr; gap: 36px; align-items: center; }
+@media (max-width: 760px) { .two { grid-template-columns: 1fr; gap: 24px; } section { padding: 44px 0; } nav.top .links a:not(:last-child) { display: none; } }
 
-.install-card { background: var(--slate); border-radius: var(--radius-panel); padding: 20px 24px; margin-bottom: 16px; }
-.install-card pre { font-family: var(--mono); font-size: 13px; line-height: 1.8; color: #E8E6DE; }
-.install-note { font-size: 13px; color: var(--gray-500); padding: 10px 14px; background: var(--gray-150); border-radius: var(--radius-row); border: var(--border); }
+.rules { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 12px; margin-top: 24px; }
+.rule { background: var(--white); border: var(--border); border-radius: 10px; padding: 14px 16px; }
+.rule .n { font-family: var(--mono); font-size: 11px; color: var(--gray-500); }
+.rule .t { font-family: var(--serif); font-size: 17px; color: var(--slate); margin: 2px 0 4px; }
+.rule .e { font-size: 13px; color: var(--gray-700); line-height: 1.45; }
 
-.callout-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
-.callout-list li { display: flex; gap: 12px; align-items: flex-start; font-size: 14px; }
-.callout-key { font-family: var(--mono); font-size: 11px; background: var(--oat); color: var(--slate); padding: 3px 9px; border-radius: 6px; white-space: nowrap; flex-shrink: 0; margin-top: 1px; font-weight: 600; }
-.callout-val { color: var(--gray-700); line-height: 1.5; }
+.proof { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+@media (max-width: 760px) { .proof { grid-template-columns: 1fr; } }
+.stat { background: var(--white); border: var(--border); border-radius: 12px; padding: 20px 22px; }
+.stat .big { font-family: var(--serif); font-size: 34px; color: var(--slate); line-height: 1.1; }
+.stat p { font-size: 14px; margin-top: 6px; }
 
-table { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--white); border: var(--border); border-radius: var(--radius-panel); overflow: hidden; margin-bottom: 20px; }
-th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gray-500); background: var(--gray-150); padding: 11px 16px; border-bottom: 1px solid var(--gray-300); }
-td { padding: 11px 16px; font-size: 14px; border-bottom: 1px solid var(--gray-150); vertical-align: middle; }
-tr:last-child td { border-bottom: none; }
-
-.footer { border-top: var(--border); padding-top: 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
-.footer-links { display: flex; gap: 20px; }
-.footer-links a { font-size: 13px; color: var(--gray-500); text-decoration: none; }
-.footer-links a:hover { color: var(--slate); }
-.footer-meta { font-family: var(--mono); font-size: 11px; color: var(--gray-500); }
+.cta { text-align: center; background: var(--oat); border-radius: 16px; padding: 48px 24px; }
+.cta .install { margin: 20px auto; text-align: left; }
+footer { border-top: var(--border); padding: 28px 0 48px; margin-top: 56px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--gray-500); }
+footer a { color: var(--gray-500); margin-right: 18px; text-decoration: none; }
+footer a:hover { color: var(--slate); }
+.chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:22px; } .chip { font-family: var(--mono); font-size: 12.5px; background: var(--white); border: var(--border); border-radius: 999px; padding: 4px 12px; color: var(--gray-700); }
+.cards { display:grid; grid-template-columns: repeat(3,1fr); gap:14px; margin-top:22px; } @media (max-width:760px){ .cards{grid-template-columns:1fr;} }
+.card { background: var(--white); border: var(--border); border-radius: 12px; padding: 20px 22px; } .card h3 { font-size: 19px; margin-bottom: 6px; } .card p { font-size: 14px; }
 </style>
+</head>
+<body>
+<div class="wrap">
 
-<div class="page">
-
-  <div class="hero">
-    <div class="hero-eyebrow">Claude Code Plugin</div>
-    <h1>ts-patterns</h1>
-    <p class="hero-subtitle">TypeScript best practices — inline guidance and a dedicated reviewer.</p>
-    <div class="hero-summary">Two components: an inline skill that watches .ts/.tsx files and guides in real time, plus a subagent for full PR reviews, large refactors, and JavaScript-to-TypeScript migrations.</div>
-  </div>
-
-  <div class="layout">
-    <nav class="toc" id="toc">
-      <div class="toc-label">Contents</div>
-      <a href="#install">Install</a>
-      <a href="#components">Components</a>
-      <a href="#principles">Principles</a>
-      <a href="#anti-patterns">Anti-patterns</a>
-    </nav>
-
-    <div class="content">
-
-      <section class="section" id="install">
-        <div class="eyebrow">Getting started</div>
-        <h2>Install</h2>
-        <div class="install-card">
-          <pre><span style="color:var(--gray-500)"># via gago-plugins marketplace</span>
-<span style="color:var(--clay)">/plugin marketplace add</span> <span style="color:var(--olive)">gagoar/gago-plugins</span>
-<span style="color:var(--clay)">/plugin install</span> <span style="color:var(--olive)">ts-patterns@gago-plugins</span>
-<span style="color:var(--clay)">/reload-plugins</span></pre>
-        </div>
-        <div class="install-card">
-          <pre><span style="color:var(--gray-500)"># standalone</span>
-<span style="color:var(--clay)">/plugin marketplace add</span> <span style="color:var(--olive)">gagoar/typescript-patterns-enforcer</span>
-<span style="color:var(--clay)">/plugin install</span> <span style="color:var(--olive)">ts-patterns@ts-patterns</span>
-<span style="color:var(--clay)">/reload-plugins</span></pre>
-        </div>
-      </section>
-
-      <hr class="rule">
-
-      <section class="section" id="components">
-        <div class="eyebrow">What's included</div>
-        <h2>Components</h2>
-        <div class="skill-row">
-          <div class="skill-pill"><span class="dot"></span>/ts-patterns:check — inline skill, always active on .ts/.tsx files</div>
-          <div class="skill-pill"><span class="dot green"></span>ts-patterns:review — subagent, spawn for full reviews</div>
-        </div>
-        <ul class="callout-list">
-          <li><span class="callout-key">/ts-patterns:check</span><span class="callout-val">Automatically active while writing or editing TypeScript. Provides inline guidance on types, patterns, and anti-patterns without being invoked.</span></li>
-          <li><span class="callout-key">ts-patterns:review</span><span class="callout-val">Spawn via the Agent tool for PR reviews, large refactors, or converting JavaScript to TypeScript. Runs as a dedicated subagent.</span></li>
-        </ul>
-      </section>
-
-      <hr class="rule">
-
-      <section class="section" id="principles">
-        <div class="eyebrow">Reference</div>
-        <h2>Core principles</h2>
-        <table>
-          <thead><tr><th>Principle</th><th>Rule</th></tr></thead>
-          <tbody>
-            <tr><td>No 'any'</td><td>Use unknown and narrow, or define precise types</td></tr>
-            <tr><td>Explicit return types</td><td>Required on all public APIs</td></tr>
-            <tr><td>readonly by default</td><td>Use readonly unless mutation is required</td></tr>
-            <tr><td>async/await only</td><td>No callbacks or .then() chains</td></tr>
-            <tr><td>Typed errors</td><td>Custom error classes or discriminated-union results</td></tr>
-            <tr><td>Composition over inheritance</td><td>Prefer interfaces and composition</td></tr>
-            <tr><td>Derive types from data</td><td>keyof typeof, Pick/NonNullable off a library type — never retype a shape by hand</td></tr>
-            <tr><td>Validate at boundaries</td><td>Narrow unknown with a type guard or schema, never cast unverified input</td></tr>
-            <tr><td>Illegal states unrepresentable</td><td>Discriminated unions over boolean-soup flags; scoped branded types for real ID/unit mix-ups</td></tr>
-          </tbody>
-        </table>
-      </section>
-
-      <hr class="rule">
-
-      <section class="section" id="anti-patterns">
-        <div class="eyebrow">Reference</div>
-        <h2>Anti-patterns</h2>
-        <table>
-          <thead><tr><th>Anti-pattern</th><th>Preferred</th></tr></thead>
-          <tbody>
-            <tr><td><code>type Foo = any</code></td><td><code>type Foo = unknown</code> (then narrow)</td></tr>
-            <tr><td><code>function f(): any</code></td><td><code>function f(): ConcreteType</code></td></tr>
-            <tr><td><code>.then(cb).catch(cb)</code></td><td>async/await with try/catch</td></tr>
-            <tr><td><code>class B extends A</code></td><td><code>interface I; class B implements I</code></td></tr>
-            <tr><td><code>try { } catch(e) { e.message }</code></td><td><code>catch(e) { if (e instanceof MyError) ... }</code></td></tr>
-            <tr><td><code>as SomeType</code></td><td>satisfies or explicit narrowing</td></tr>
-            <tr><td><code>const x: T = {...}</code></td><td><code>const x = {...} as const satisfies T</code></td></tr>
-            <tr><td><code>JSON.parse(x) as T</code></td><td>narrow with a type guard or schema (zod, envalid)</td></tr>
-            <tr><td>standalone <code>types.ts</code></td><td>colocate the type with its consumer</td></tr>
-            <tr><td>boolean-soup state</td><td>discriminated union</td></tr>
-            <tr><td><code>switch</code> / if-else chain on a closed set</td><td><code>Record</code> dispatch table, or a config array reduced/found over</td></tr>
-            <tr><td>nested ternary</td><td><code>Record</code> dispatch table, or a config array found over</td></tr>
-            <tr><td><code>if (url.startsWith("https:"))</code></td><td>extract to a named <code>const</code>: <code>HTTPS_SCHEME</code></td></tr>
-            <tr><td><code>options.retries ??= 3</code></td><td><code>return { retries: 3, ...options }</code> (no param mutation)</td></tr>
-            <tr><td><code>catch { /* ignored */ }</code></td><td>rethrow a typed error, never swallow silently</td></tr>
-            <tr><td>class with no private state</td><td>a plain function</td></tr>
-            <tr><td><code>// @ts-ignore</code> alone</td><td><code>// @ts-ignore — TODO(TICKET): ...</code></td></tr>
-            <tr><td><code>items.length === 0</code> / <code>count &gt; 0</code></td><td><code>!items.length</code> / <code>count</code> (coerce any zero-check, not just <code>.length</code>)</td></tr>
-          </tbody>
-        </table>
-      </section>
-
-      <div class="footer">
-        <div class="footer-links">
-          <a href="https://github.com/gagoar/typescript-patterns-enforcer" target="_blank">github.com/gagoar/typescript-patterns-enforcer</a>
-          <a href="https://gagoar.github.io/gago-plugins" target="_blank">gago-plugins hub</a>
-        </div>
-        <div class="footer-meta">MIT license · ts-patterns v0.3.1</div>
-      </div>
-
+  <nav class="top">
+    <a class="brand" href="./"><img src="assets/favicon.svg" alt="">ts-patterns</a>
+    <div class="links">
+      <a href="#demo">Demo</a>
+      <a href="#rules">Rules</a>
+      <a href="guide.html">Guide</a>
+      <a href="https://github.com/gagoar/typescript-patterns-enforcer">GitHub</a>
     </div>
-  </div>
+  </nav>
+
+  <header class="hero">
+    <div class="eyebrow">Claude Code plugin</div>
+    <h1>Claude writes TypeScript. ts-patterns <em>checks every edit.</em></h1>
+    <p class="lead">An inline skill, a review subagent, and a hook that checks nine rules after every <code>.ts</code> edit and sends violations back to Claude.</p>
+    <div class="install">
+      <button class="copy" type="button" data-copy="install">Copy</button>
+<pre><span class="c">/plugin marketplace add</span> <span class="a">gagoar/typescript-patterns-enforcer</span>
+<span class="c">/plugin install</span> <span class="a">ts-patterns@ts-patterns</span>
+<span class="c">/reload-plugins</span></pre>
+    </div>
+    <div class="btns">
+      <a class="btn primary" href="https://github.com/gagoar/typescript-patterns-enforcer">View on GitHub</a>
+      <a class="btn" href="guide.html">Read the guide</a>
+    </div>
+  </header>
+
+  <section id="demo" style="padding-top:0">
+    <div class="eyebrow">See it work</div>
+    <h2>Claude writes it. The hook flags it. Claude fixes it.</h2>
+    <p class="lead">Toggle the same function before and after the hook runs. The highlight is what the hook flags.</p>
+    <div class="demo">
+      <div class="toggle" role="group" aria-label="Before or after">
+        <button type="button" id="btn-before" aria-pressed="true">Claude's edit</button>
+        <button type="button" id="btn-after" aria-pressed="false">After the hook</button>
+      </div>
+      <div class="demo-meta"><span class="badge d" id="badge">1 violation</span><span id="meta">describeStatus.ts</span></div>
+      <pre class="sample" id="sample"></pre>
+      <p class="demo-note" id="note"></p>
+    </div>
+  </section>
+
+  <section>
+    <div class="two">
+      <div>
+        <div class="eyebrow">Automatic</div>
+        <h2>Runs after every edit.</h2>
+        <p class="lead" style="margin-bottom:0">The hook reads the file Claude just edited. If a check fails, the message goes to Claude and Claude fixes the file before moving on. Clean files produce no output.</p>
+      </div>
+      <div class="report">
+<pre><span class="k">ts-patterns:</span> 1 mechanical violation(s) in
+describeStatus.ts:
+  L2:10  <span class="k">no-nested-ternary</span>
+  nested ternary: flatten, or convert
+  to a Record/.find() lookup
+  <span class="d">&rarr; SKILL.md Data Over Logic</span>
+Fix these to satisfy the TypeScript
+patterns before continuing.
+
+<span class="d">exit code</span> <span class="k">2</span>  <span class="d">(stderr goes back to Claude)</span></pre>
+      </div>
+    </div>
+    <div class="chips" aria-label="The nine mechanical checks">
+      <span class="chip">no-explicit-any</span><span class="chip">ban-ts-comment</span><span class="chip">no-magic-numbers</span><span class="chip">prefer-await-to-then</span><span class="chip">no-switch-statement</span><span class="chip">no-param-reassign</span><span class="chip">no-loop-statements</span><span class="chip">no-nested-ternary</span><span class="chip">no-narrative-comment</span>
+    </div>
+  </section>
+
+  <section id="components" style="padding-top:0">
+    <div class="eyebrow">What you get</div>
+    <h2>Three parts, one standard.</h2>
+    <div class="cards">
+      <div class="card"><h3>Skill</h3><p><code>/ts-patterns:check</code> is active while Claude writes or edits TypeScript. It gives inline guidance on type safety, patterns, and anti-patterns.</p></div>
+      <div class="card"><h3>Agent</h3><p><code>ts-patterns:review</code> handles full PR reviews, large refactors, and JavaScript to TypeScript conversions.</p></div>
+      <div class="card"><h3>Hook</h3><p>A bundled checker runs after every <code>.ts</code> or <code>.tsx</code> edit. It brings its own ESLint and parser, and it ignores your repo's config.</p></div>
+    </div>
+  </section>
+
+  <section id="rules" style="padding-top:0">
+    <div class="eyebrow">The core rules</div>
+    <h2>Ten rules for the skill to enforce.</h2>
+    <p class="lead" style="margin-bottom:0">The skill also covers data over logic, validation at the boundary, and comment discipline.</p>
+    <div class="rules" id="rule-grid"></div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="eyebrow">Evidence</div>
+    <h2>Tested before it ships.</h2>
+    <div class="proof" style="margin-top:20px">
+      <div class="stat"><div class="big">9 checks</div><p>Each has a failing fixture and a passing fixture. The test suite runs against the built hook.</p></div>
+      <div class="stat"><div class="big">0 config</div><p>The engine bundles its own ESLint, parser, and TypeScript. It never reads or writes your repo's setup.</p></div>
+      <div class="stat"><div class="big">MIT</div><p>Open source. Fixtures live in <code>engine/test/fixtures/</code>.</p></div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="cta">
+      <h2>Install it in 10 seconds.</h2>
+      <div class="install">
+        <button class="copy" type="button" data-copy="install">Copy</button>
+<pre><span class="c">/plugin marketplace add</span> <span class="a">gagoar/typescript-patterns-enforcer</span>
+<span class="c">/plugin install</span> <span class="a">ts-patterns@ts-patterns</span>
+<span class="c">/reload-plugins</span></pre>
+      </div>
+      <div class="btns" style="justify-content:center">
+        <a class="btn primary" href="https://github.com/gagoar/typescript-patterns-enforcer">Star on GitHub</a>
+        <a class="btn" href="guide.html">Read the guide</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div><a href="https://github.com/gagoar/typescript-patterns-enforcer">GitHub</a><a href="https://github.com/gagoar/typescript-patterns-enforcer/releases">Releases</a><a href="guide.html">Guide</a><a href="https://gagoar.github.io/gago-plugins">gago-plugins</a></div>
+    <div>MIT · v0.3.2 · by <a href="https://github.com/gagoar" style="margin:0">gagoar</a> · Icon: <a href="https://thenounproject.com/icon/pattern-8298196/" style="margin:0">Pattern</a> by Side Project, Noun Project (CC BY 3.0)</div>
+  </footer>
 </div>
+
 <script>
-const sections = document.querySelectorAll('section[id]');
-const tocLinks = document.querySelectorAll('.toc a');
-const observer = new IntersectionObserver(entries => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      tocLinks.forEach(a => a.classList.remove('active'));
-      const active = document.querySelector(`.toc a[href="#${entry.target.id}"]`);
-      if (active) active.classList.add('active');
-    }
+(function () {
+  var before = 'export function describeStatus(status: string): string {\n  return status === "active" ? "Active" : <mark>status === "paused" ? "Paused" : "Unknown"</mark>;\n}';
+  var after = 'const STATUS_LABELS: Record<string, string> = { active: "Active", paused: "Paused" };\n\nexport function describeStatus(status: string): string {\n  return STATUS_LABELS[status] ?? "Unknown";\n}';
+  var sample = document.getElementById('sample'), badge = document.getElementById('badge'),
+      note = document.getElementById('note'),
+      bB = document.getElementById('btn-before'), bA = document.getElementById('btn-after');
+  function show(isAfter) {
+    sample.innerHTML = isAfter ? after.replace(/</g, '&lt;') : before.replace(/<(?!\/?mark)/g, '&lt;');
+    badge.textContent = isAfter ? 'clean' : '1 violation';
+    badge.className = 'badge ' + (isAfter ? 'a' : 'd');
+    note.textContent = isAfter
+      ? 'The nested ternary became a lookup table. The hook finds nothing and prints nothing.'
+      : 'L2:10 no-nested-ternary. The hook exits with code 2 and sends the message to Claude.';
+    bB.setAttribute('aria-pressed', String(!isAfter));
+    bA.setAttribute('aria-pressed', String(isAfter));
+  }
+  bB.onclick = function () { show(false); };
+  bA.onclick = function () { show(true); };
+  show(false);
+
+  var rules = [
+    ['No any', 'Use unknown and narrow, or write a precise type.'],
+    ['Explicit return types', 'Annotate public functions.'],
+    ['interface vs type', 'interface for extendable shapes. type for unions and mapped types.'],
+    ['readonly by default', 'Mutable only when mutation is required.'],
+    ['async/await only', 'No .then() chains. Return Promise<T> explicitly.'],
+    ['Typed errors', 'Custom error classes or discriminated-union results.'],
+    ['Constrained generics', '<TEntity extends BaseEntity>, not <T>.'],
+    ['Composition over inheritance', 'Plain functions and utility types first.'],
+    ['No magic values', 'Name repeated or meaningful literals.'],
+    ['Coerce over compare', 'if (!items.length), not items.length === 0.']
+  ];
+  var grid = document.getElementById('rule-grid');
+  rules.forEach(function (r, i) {
+    var d = document.createElement('div');
+    d.className = 'rule';
+    d.innerHTML = '<div class="n">Rule ' + (i + 1) + '</div><div class="t"></div><div class="e"></div>';
+    d.querySelector('.t').textContent = r[0];
+    d.querySelector('.e').textContent = r[1];
+    grid.appendChild(d);
   });
-}, { rootMargin: '-20% 0px -70% 0px' });
-sections.forEach(s => observer.observe(s));
+
+  var cmd = '/plugin marketplace add gagoar/typescript-patterns-enforcer\n/plugin install ts-patterns@ts-patterns\n/reload-plugins';
+  document.querySelectorAll('.copy').forEach(function (b) {
+    b.onclick = function () {
+      navigator.clipboard.writeText(cmd).then(function () {
+        b.textContent = 'Copied';
+        setTimeout(function () { b.textContent = 'Copy'; }, 1500);
+      });
+    };
+  });
+})();
 </script>
+</body>
+</html>
