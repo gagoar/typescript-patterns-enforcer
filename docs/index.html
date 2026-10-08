@@ -4,17 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ts-patterns: TypeScript pattern checks for Claude Code</title>
-<meta name="description" content="A Claude Code plugin that holds Claude's TypeScript to a written standard: an inline skill, a review subagent, and a hook that checks nine rules after every edit.">
+<meta name="description" content="A Claude Code plugin that holds Claude's TypeScript to a written standard: an inline skill, a review subagent, and a hook that checks ten rules after every edit.">
 <link rel="canonical" href="https://gagoar.github.io/typescript-patterns-enforcer/">
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <meta property="og:type" content="website">
 <meta property="og:title" content="ts-patterns: Claude writes TypeScript. ts-patterns checks every edit.">
-<meta property="og:description" content="A Claude Code plugin with a skill, a review subagent, and a hook that checks nine rules after every .ts edit.">
+<meta property="og:description" content="A Claude Code plugin with a skill, a review subagent, and a hook that checks ten rules after every .ts edit.">
 <meta property="og:url" content="https://gagoar.github.io/typescript-patterns-enforcer/">
 <meta property="og:image" content="https://gagoar.github.io/typescript-patterns-enforcer/assets/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="ts-patterns: TypeScript pattern checks for Claude Code">
-<meta name="twitter:description" content="A hook checks nine rules after every .ts edit and feeds violations back to Claude.">
+<meta name="twitter:description" content="A hook checks ten rules after every .ts edit and feeds violations back to Claude.">
 <meta name="twitter:image" content="https://gagoar.github.io/typescript-patterns-enforcer/assets/og.png">
 <style>
 :root {
@@ -117,7 +117,7 @@ footer a:hover { color: var(--slate); }
   <header class="hero">
     <div class="eyebrow">Claude Code plugin</div>
     <h1>Claude writes TypeScript. ts-patterns <em>checks every edit.</em></h1>
-    <p class="lead">An inline skill, a review subagent, and a hook that checks nine rules after every <code>.ts</code> edit and sends violations back to Claude.</p>
+    <p class="lead">An inline skill, a review subagent, and a hook that checks ten rules after every <code>.ts</code> edit and sends violations back to Claude.</p>
     <div class="install">
       <button class="copy" type="button" data-copy="install">Copy</button>
 <pre><span class="c">/plugin marketplace add</span> <span class="a">gagoar/typescript-patterns-enforcer</span>
@@ -165,8 +165,8 @@ patterns before continuing.
 <span class="d">exit code</span> <span class="k">2</span>  <span class="d">(stderr goes back to Claude)</span></pre>
       </div>
     </div>
-    <div class="chips" aria-label="The nine mechanical checks">
-      <span class="chip">no-explicit-any</span><span class="chip">ban-ts-comment</span><span class="chip">no-magic-numbers</span><span class="chip">prefer-await-to-then</span><span class="chip">no-switch-statement</span><span class="chip">no-param-reassign</span><span class="chip">no-loop-statements</span><span class="chip">no-nested-ternary</span><span class="chip">no-narrative-comment</span>
+    <div class="chips" aria-label="The ten mechanical checks">
+      <span class="chip">no-explicit-any</span><span class="chip">ban-ts-comment</span><span class="chip">no-magic-numbers</span><span class="chip">prefer-await-to-then</span><span class="chip">no-switch-statement</span><span class="chip">no-param-reassign</span><span class="chip">no-loop-statements</span><span class="chip">no-nested-ternary</span><span class="chip">require-regex-example</span><span class="chip">no-narrative-comment</span>
     </div>
   </section>
 
@@ -191,7 +191,7 @@ patterns before continuing.
     <div class="eyebrow">Evidence</div>
     <h2>Tested before it ships.</h2>
     <div class="proof" style="margin-top:20px">
-      <div class="stat"><div class="big">9 checks</div><p>Each has a failing fixture and a passing fixture. The test suite runs against the built hook.</p></div>
+      <div class="stat"><div class="big">10 checks</div><p>Each has a failing fixture and a passing fixture. The test suite runs against the built hook.</p></div>
       <div class="stat"><div class="big">0 config</div><p>The engine bundles its own ESLint, parser, and TypeScript. It never reads or writes your repo's setup.</p></div>
       <div class="stat"><div class="big">MIT</div><p>Open source. Fixtures live in <code>engine/test/fixtures/</code>.</p></div>
     </div>

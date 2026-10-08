@@ -3,6 +3,8 @@ import { runChecks, type Violation } from "./registry";
 
 const EXIT_OK = 0; // informational only, or "not our file" / "couldn't run"
 const EXIT_BLOCK = 2; // per the PostToolUse hook contract: stderr fed back to Claude
+// Matches "src/a.ts" and "App.tsx"; rejects "notes.md" and "a.ts.bak".
+// https://regex101.com/?flavor=javascript&regex=%5C.tsx%3F%24&flags=gm&testString=src%2Fa.ts%0AApp.tsx%0Anotes.md%0Aa.ts.bak
 const TS_FILE = /\.tsx?$/;
 
 interface HookPayload {

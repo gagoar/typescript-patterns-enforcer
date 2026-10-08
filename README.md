@@ -9,7 +9,7 @@
 [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-D97757)](https://gagoar.github.io/typescript-patterns-enforcer/)
 [![Stars](https://img.shields.io/github/stars/gagoar/typescript-patterns-enforcer?style=flat&color=D1CFC5)](https://github.com/gagoar/typescript-patterns-enforcer/stargazers)
 
-A Claude Code plugin that holds Claude's TypeScript to a written standard. It has three parts. An inline skill carries the rules. A review subagent handles large changes. A hook checks nine rules after every `.ts` or `.tsx` edit.
+A Claude Code plugin that holds Claude's TypeScript to a written standard. It has three parts. An inline skill carries the rules. A review subagent handles large changes. A hook checks ten rules after every `.ts` or `.tsx` edit.
 
 ![Claude's edit flagged by the hook, then fixed](docs/assets/before-after.png)
 
@@ -31,7 +31,7 @@ Prefer one marketplace for all gagoar plugins? Use [gago-plugins](https://gagoar
 ## Why
 
 - **It checks the code, not only the prompt.** A hook reads each file Claude edits. A violation returns to Claude as feedback, and Claude fixes it before moving on.
-- **Every check has a test.** Each of the nine checks has a failing fixture and a passing fixture. The suite runs against the built hook.
+- **Every check has a test.** Each of the ten checks has a failing fixture and a passing fixture. The suite runs against the built hook.
 - **It stays out of the project's config.** The engine ships its own parser and rules. It never reads or writes the repo's ESLint or `tsconfig` setup.
 
 ## 30-second tour
@@ -70,7 +70,7 @@ The next check passes with no output.
 |-----------|--------------|
 | Skill `/ts-patterns:check` | Active while Claude writes or edits `.ts` and `.tsx` files. It gives inline guidance on type safety, patterns, and anti-patterns. |
 | Agent `ts-patterns:review` | Runs through the Agent tool for full PR reviews, large refactors, and JavaScript to TypeScript conversions. |
-| Hook | Runs a bundled checker after every `.ts` or `.tsx` edit and backs the skill with nine deterministic checks. |
+| Hook | Runs a bundled checker after every `.ts` or `.tsx` edit and backs the skill with ten deterministic checks. |
 
 ## The core rules
 
@@ -84,10 +84,11 @@ The next check passes with no output.
 8. **Composition over inheritance.**
 9. **No magic strings or numbers** in comparisons or branching.
 10. **Coerce over compare** when the intent is "is it empty" or "is it zero".
+11. **Every regex carries an example.** A comment directly above it: plain words, a quoted match and reject, and a pre-filled regex101 link.
 
 The skill covers more: data over logic, validation at the boundary, comment discipline, and a review checklist. Read `skills/check/SKILL.md` for the full text.
 
-## The nine mechanical checks
+## The ten mechanical checks
 
 | Check | Catches |
 |-------|---------|
@@ -99,6 +100,7 @@ The skill covers more: data over logic, validation at the boundary, comment disc
 | `no-param-reassign` | Parameter mutation |
 | `no-loop-statements` | Raw `for` and `while` loops |
 | `no-nested-ternary` | Nested ternaries |
+| `require-regex-example` | A regex literal with no plain-words comment, example, or tester link above it. Advisory: it checks for a quoted string and an `https://` link. |
 | `no-narrative-comment` | Comments that narrate history. Advisory: it matches a list of phrases, so it misses some and flags some. |
 
 The checks find the pattern. Rewriting it well stays with Claude and the skill, because a linter can ban a `switch` but cannot rewrite one.

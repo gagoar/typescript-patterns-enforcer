@@ -313565,177 +313565,177 @@ var require_ast_spec = __commonJS({
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.AST_TOKEN_TYPES = exports2.AST_NODE_TYPES = void 0;
-    var AST_NODE_TYPES4;
-    (function(AST_NODE_TYPES5) {
-      AST_NODE_TYPES5["AccessorProperty"] = "AccessorProperty";
-      AST_NODE_TYPES5["ArrayExpression"] = "ArrayExpression";
-      AST_NODE_TYPES5["ArrayPattern"] = "ArrayPattern";
-      AST_NODE_TYPES5["ArrowFunctionExpression"] = "ArrowFunctionExpression";
-      AST_NODE_TYPES5["AssignmentExpression"] = "AssignmentExpression";
-      AST_NODE_TYPES5["AssignmentPattern"] = "AssignmentPattern";
-      AST_NODE_TYPES5["AwaitExpression"] = "AwaitExpression";
-      AST_NODE_TYPES5["BinaryExpression"] = "BinaryExpression";
-      AST_NODE_TYPES5["BlockStatement"] = "BlockStatement";
-      AST_NODE_TYPES5["BreakStatement"] = "BreakStatement";
-      AST_NODE_TYPES5["CallExpression"] = "CallExpression";
-      AST_NODE_TYPES5["CatchClause"] = "CatchClause";
-      AST_NODE_TYPES5["ChainExpression"] = "ChainExpression";
-      AST_NODE_TYPES5["ClassBody"] = "ClassBody";
-      AST_NODE_TYPES5["ClassDeclaration"] = "ClassDeclaration";
-      AST_NODE_TYPES5["ClassExpression"] = "ClassExpression";
-      AST_NODE_TYPES5["ConditionalExpression"] = "ConditionalExpression";
-      AST_NODE_TYPES5["ContinueStatement"] = "ContinueStatement";
-      AST_NODE_TYPES5["DebuggerStatement"] = "DebuggerStatement";
-      AST_NODE_TYPES5["Decorator"] = "Decorator";
-      AST_NODE_TYPES5["DoWhileStatement"] = "DoWhileStatement";
-      AST_NODE_TYPES5["EmptyStatement"] = "EmptyStatement";
-      AST_NODE_TYPES5["ExportAllDeclaration"] = "ExportAllDeclaration";
-      AST_NODE_TYPES5["ExportDefaultDeclaration"] = "ExportDefaultDeclaration";
-      AST_NODE_TYPES5["ExportNamedDeclaration"] = "ExportNamedDeclaration";
-      AST_NODE_TYPES5["ExportSpecifier"] = "ExportSpecifier";
-      AST_NODE_TYPES5["ExpressionStatement"] = "ExpressionStatement";
-      AST_NODE_TYPES5["ForInStatement"] = "ForInStatement";
-      AST_NODE_TYPES5["ForOfStatement"] = "ForOfStatement";
-      AST_NODE_TYPES5["ForStatement"] = "ForStatement";
-      AST_NODE_TYPES5["FunctionDeclaration"] = "FunctionDeclaration";
-      AST_NODE_TYPES5["FunctionExpression"] = "FunctionExpression";
-      AST_NODE_TYPES5["Identifier"] = "Identifier";
-      AST_NODE_TYPES5["IfStatement"] = "IfStatement";
-      AST_NODE_TYPES5["ImportAttribute"] = "ImportAttribute";
-      AST_NODE_TYPES5["ImportDeclaration"] = "ImportDeclaration";
-      AST_NODE_TYPES5["ImportDefaultSpecifier"] = "ImportDefaultSpecifier";
-      AST_NODE_TYPES5["ImportExpression"] = "ImportExpression";
-      AST_NODE_TYPES5["ImportNamespaceSpecifier"] = "ImportNamespaceSpecifier";
-      AST_NODE_TYPES5["ImportSpecifier"] = "ImportSpecifier";
-      AST_NODE_TYPES5["JSXAttribute"] = "JSXAttribute";
-      AST_NODE_TYPES5["JSXClosingElement"] = "JSXClosingElement";
-      AST_NODE_TYPES5["JSXClosingFragment"] = "JSXClosingFragment";
-      AST_NODE_TYPES5["JSXElement"] = "JSXElement";
-      AST_NODE_TYPES5["JSXEmptyExpression"] = "JSXEmptyExpression";
-      AST_NODE_TYPES5["JSXExpressionContainer"] = "JSXExpressionContainer";
-      AST_NODE_TYPES5["JSXFragment"] = "JSXFragment";
-      AST_NODE_TYPES5["JSXIdentifier"] = "JSXIdentifier";
-      AST_NODE_TYPES5["JSXMemberExpression"] = "JSXMemberExpression";
-      AST_NODE_TYPES5["JSXNamespacedName"] = "JSXNamespacedName";
-      AST_NODE_TYPES5["JSXOpeningElement"] = "JSXOpeningElement";
-      AST_NODE_TYPES5["JSXOpeningFragment"] = "JSXOpeningFragment";
-      AST_NODE_TYPES5["JSXSpreadAttribute"] = "JSXSpreadAttribute";
-      AST_NODE_TYPES5["JSXSpreadChild"] = "JSXSpreadChild";
-      AST_NODE_TYPES5["JSXText"] = "JSXText";
-      AST_NODE_TYPES5["LabeledStatement"] = "LabeledStatement";
-      AST_NODE_TYPES5["Literal"] = "Literal";
-      AST_NODE_TYPES5["LogicalExpression"] = "LogicalExpression";
-      AST_NODE_TYPES5["MemberExpression"] = "MemberExpression";
-      AST_NODE_TYPES5["MetaProperty"] = "MetaProperty";
-      AST_NODE_TYPES5["MethodDefinition"] = "MethodDefinition";
-      AST_NODE_TYPES5["NewExpression"] = "NewExpression";
-      AST_NODE_TYPES5["ObjectExpression"] = "ObjectExpression";
-      AST_NODE_TYPES5["ObjectPattern"] = "ObjectPattern";
-      AST_NODE_TYPES5["PrivateIdentifier"] = "PrivateIdentifier";
-      AST_NODE_TYPES5["Program"] = "Program";
-      AST_NODE_TYPES5["Property"] = "Property";
-      AST_NODE_TYPES5["PropertyDefinition"] = "PropertyDefinition";
-      AST_NODE_TYPES5["RestElement"] = "RestElement";
-      AST_NODE_TYPES5["ReturnStatement"] = "ReturnStatement";
-      AST_NODE_TYPES5["SequenceExpression"] = "SequenceExpression";
-      AST_NODE_TYPES5["SpreadElement"] = "SpreadElement";
-      AST_NODE_TYPES5["StaticBlock"] = "StaticBlock";
-      AST_NODE_TYPES5["Super"] = "Super";
-      AST_NODE_TYPES5["SwitchCase"] = "SwitchCase";
-      AST_NODE_TYPES5["SwitchStatement"] = "SwitchStatement";
-      AST_NODE_TYPES5["TaggedTemplateExpression"] = "TaggedTemplateExpression";
-      AST_NODE_TYPES5["TemplateElement"] = "TemplateElement";
-      AST_NODE_TYPES5["TemplateLiteral"] = "TemplateLiteral";
-      AST_NODE_TYPES5["ThisExpression"] = "ThisExpression";
-      AST_NODE_TYPES5["ThrowStatement"] = "ThrowStatement";
-      AST_NODE_TYPES5["TryStatement"] = "TryStatement";
-      AST_NODE_TYPES5["UnaryExpression"] = "UnaryExpression";
-      AST_NODE_TYPES5["UpdateExpression"] = "UpdateExpression";
-      AST_NODE_TYPES5["VariableDeclaration"] = "VariableDeclaration";
-      AST_NODE_TYPES5["VariableDeclarator"] = "VariableDeclarator";
-      AST_NODE_TYPES5["WhileStatement"] = "WhileStatement";
-      AST_NODE_TYPES5["WithStatement"] = "WithStatement";
-      AST_NODE_TYPES5["YieldExpression"] = "YieldExpression";
-      AST_NODE_TYPES5["TSAbstractAccessorProperty"] = "TSAbstractAccessorProperty";
-      AST_NODE_TYPES5["TSAbstractKeyword"] = "TSAbstractKeyword";
-      AST_NODE_TYPES5["TSAbstractMethodDefinition"] = "TSAbstractMethodDefinition";
-      AST_NODE_TYPES5["TSAbstractPropertyDefinition"] = "TSAbstractPropertyDefinition";
-      AST_NODE_TYPES5["TSAnyKeyword"] = "TSAnyKeyword";
-      AST_NODE_TYPES5["TSArrayType"] = "TSArrayType";
-      AST_NODE_TYPES5["TSAsExpression"] = "TSAsExpression";
-      AST_NODE_TYPES5["TSAsyncKeyword"] = "TSAsyncKeyword";
-      AST_NODE_TYPES5["TSBigIntKeyword"] = "TSBigIntKeyword";
-      AST_NODE_TYPES5["TSBooleanKeyword"] = "TSBooleanKeyword";
-      AST_NODE_TYPES5["TSCallSignatureDeclaration"] = "TSCallSignatureDeclaration";
-      AST_NODE_TYPES5["TSClassImplements"] = "TSClassImplements";
-      AST_NODE_TYPES5["TSConditionalType"] = "TSConditionalType";
-      AST_NODE_TYPES5["TSConstructorType"] = "TSConstructorType";
-      AST_NODE_TYPES5["TSConstructSignatureDeclaration"] = "TSConstructSignatureDeclaration";
-      AST_NODE_TYPES5["TSDeclareFunction"] = "TSDeclareFunction";
-      AST_NODE_TYPES5["TSDeclareKeyword"] = "TSDeclareKeyword";
-      AST_NODE_TYPES5["TSEmptyBodyFunctionExpression"] = "TSEmptyBodyFunctionExpression";
-      AST_NODE_TYPES5["TSEnumBody"] = "TSEnumBody";
-      AST_NODE_TYPES5["TSEnumDeclaration"] = "TSEnumDeclaration";
-      AST_NODE_TYPES5["TSEnumMember"] = "TSEnumMember";
-      AST_NODE_TYPES5["TSExportAssignment"] = "TSExportAssignment";
-      AST_NODE_TYPES5["TSExportKeyword"] = "TSExportKeyword";
-      AST_NODE_TYPES5["TSExternalModuleReference"] = "TSExternalModuleReference";
-      AST_NODE_TYPES5["TSFunctionType"] = "TSFunctionType";
-      AST_NODE_TYPES5["TSImportEqualsDeclaration"] = "TSImportEqualsDeclaration";
-      AST_NODE_TYPES5["TSImportType"] = "TSImportType";
-      AST_NODE_TYPES5["TSIndexedAccessType"] = "TSIndexedAccessType";
-      AST_NODE_TYPES5["TSIndexSignature"] = "TSIndexSignature";
-      AST_NODE_TYPES5["TSInferType"] = "TSInferType";
-      AST_NODE_TYPES5["TSInstantiationExpression"] = "TSInstantiationExpression";
-      AST_NODE_TYPES5["TSInterfaceBody"] = "TSInterfaceBody";
-      AST_NODE_TYPES5["TSInterfaceDeclaration"] = "TSInterfaceDeclaration";
-      AST_NODE_TYPES5["TSInterfaceHeritage"] = "TSInterfaceHeritage";
-      AST_NODE_TYPES5["TSIntersectionType"] = "TSIntersectionType";
-      AST_NODE_TYPES5["TSIntrinsicKeyword"] = "TSIntrinsicKeyword";
-      AST_NODE_TYPES5["TSLiteralType"] = "TSLiteralType";
-      AST_NODE_TYPES5["TSMappedType"] = "TSMappedType";
-      AST_NODE_TYPES5["TSMethodSignature"] = "TSMethodSignature";
-      AST_NODE_TYPES5["TSModuleBlock"] = "TSModuleBlock";
-      AST_NODE_TYPES5["TSModuleDeclaration"] = "TSModuleDeclaration";
-      AST_NODE_TYPES5["TSNamedTupleMember"] = "TSNamedTupleMember";
-      AST_NODE_TYPES5["TSNamespaceExportDeclaration"] = "TSNamespaceExportDeclaration";
-      AST_NODE_TYPES5["TSNeverKeyword"] = "TSNeverKeyword";
-      AST_NODE_TYPES5["TSNonNullExpression"] = "TSNonNullExpression";
-      AST_NODE_TYPES5["TSNullKeyword"] = "TSNullKeyword";
-      AST_NODE_TYPES5["TSNumberKeyword"] = "TSNumberKeyword";
-      AST_NODE_TYPES5["TSObjectKeyword"] = "TSObjectKeyword";
-      AST_NODE_TYPES5["TSOptionalType"] = "TSOptionalType";
-      AST_NODE_TYPES5["TSParameterProperty"] = "TSParameterProperty";
-      AST_NODE_TYPES5["TSPrivateKeyword"] = "TSPrivateKeyword";
-      AST_NODE_TYPES5["TSPropertySignature"] = "TSPropertySignature";
-      AST_NODE_TYPES5["TSProtectedKeyword"] = "TSProtectedKeyword";
-      AST_NODE_TYPES5["TSPublicKeyword"] = "TSPublicKeyword";
-      AST_NODE_TYPES5["TSQualifiedName"] = "TSQualifiedName";
-      AST_NODE_TYPES5["TSReadonlyKeyword"] = "TSReadonlyKeyword";
-      AST_NODE_TYPES5["TSRestType"] = "TSRestType";
-      AST_NODE_TYPES5["TSSatisfiesExpression"] = "TSSatisfiesExpression";
-      AST_NODE_TYPES5["TSStaticKeyword"] = "TSStaticKeyword";
-      AST_NODE_TYPES5["TSStringKeyword"] = "TSStringKeyword";
-      AST_NODE_TYPES5["TSSymbolKeyword"] = "TSSymbolKeyword";
-      AST_NODE_TYPES5["TSTemplateLiteralType"] = "TSTemplateLiteralType";
-      AST_NODE_TYPES5["TSThisType"] = "TSThisType";
-      AST_NODE_TYPES5["TSTupleType"] = "TSTupleType";
-      AST_NODE_TYPES5["TSTypeAliasDeclaration"] = "TSTypeAliasDeclaration";
-      AST_NODE_TYPES5["TSTypeAnnotation"] = "TSTypeAnnotation";
-      AST_NODE_TYPES5["TSTypeAssertion"] = "TSTypeAssertion";
-      AST_NODE_TYPES5["TSTypeLiteral"] = "TSTypeLiteral";
-      AST_NODE_TYPES5["TSTypeOperator"] = "TSTypeOperator";
-      AST_NODE_TYPES5["TSTypeParameter"] = "TSTypeParameter";
-      AST_NODE_TYPES5["TSTypeParameterDeclaration"] = "TSTypeParameterDeclaration";
-      AST_NODE_TYPES5["TSTypeParameterInstantiation"] = "TSTypeParameterInstantiation";
-      AST_NODE_TYPES5["TSTypePredicate"] = "TSTypePredicate";
-      AST_NODE_TYPES5["TSTypeQuery"] = "TSTypeQuery";
-      AST_NODE_TYPES5["TSTypeReference"] = "TSTypeReference";
-      AST_NODE_TYPES5["TSUndefinedKeyword"] = "TSUndefinedKeyword";
-      AST_NODE_TYPES5["TSUnionType"] = "TSUnionType";
-      AST_NODE_TYPES5["TSUnknownKeyword"] = "TSUnknownKeyword";
-      AST_NODE_TYPES5["TSVoidKeyword"] = "TSVoidKeyword";
-    })(AST_NODE_TYPES4 || (exports2.AST_NODE_TYPES = AST_NODE_TYPES4 = {}));
+    var AST_NODE_TYPES5;
+    (function(AST_NODE_TYPES6) {
+      AST_NODE_TYPES6["AccessorProperty"] = "AccessorProperty";
+      AST_NODE_TYPES6["ArrayExpression"] = "ArrayExpression";
+      AST_NODE_TYPES6["ArrayPattern"] = "ArrayPattern";
+      AST_NODE_TYPES6["ArrowFunctionExpression"] = "ArrowFunctionExpression";
+      AST_NODE_TYPES6["AssignmentExpression"] = "AssignmentExpression";
+      AST_NODE_TYPES6["AssignmentPattern"] = "AssignmentPattern";
+      AST_NODE_TYPES6["AwaitExpression"] = "AwaitExpression";
+      AST_NODE_TYPES6["BinaryExpression"] = "BinaryExpression";
+      AST_NODE_TYPES6["BlockStatement"] = "BlockStatement";
+      AST_NODE_TYPES6["BreakStatement"] = "BreakStatement";
+      AST_NODE_TYPES6["CallExpression"] = "CallExpression";
+      AST_NODE_TYPES6["CatchClause"] = "CatchClause";
+      AST_NODE_TYPES6["ChainExpression"] = "ChainExpression";
+      AST_NODE_TYPES6["ClassBody"] = "ClassBody";
+      AST_NODE_TYPES6["ClassDeclaration"] = "ClassDeclaration";
+      AST_NODE_TYPES6["ClassExpression"] = "ClassExpression";
+      AST_NODE_TYPES6["ConditionalExpression"] = "ConditionalExpression";
+      AST_NODE_TYPES6["ContinueStatement"] = "ContinueStatement";
+      AST_NODE_TYPES6["DebuggerStatement"] = "DebuggerStatement";
+      AST_NODE_TYPES6["Decorator"] = "Decorator";
+      AST_NODE_TYPES6["DoWhileStatement"] = "DoWhileStatement";
+      AST_NODE_TYPES6["EmptyStatement"] = "EmptyStatement";
+      AST_NODE_TYPES6["ExportAllDeclaration"] = "ExportAllDeclaration";
+      AST_NODE_TYPES6["ExportDefaultDeclaration"] = "ExportDefaultDeclaration";
+      AST_NODE_TYPES6["ExportNamedDeclaration"] = "ExportNamedDeclaration";
+      AST_NODE_TYPES6["ExportSpecifier"] = "ExportSpecifier";
+      AST_NODE_TYPES6["ExpressionStatement"] = "ExpressionStatement";
+      AST_NODE_TYPES6["ForInStatement"] = "ForInStatement";
+      AST_NODE_TYPES6["ForOfStatement"] = "ForOfStatement";
+      AST_NODE_TYPES6["ForStatement"] = "ForStatement";
+      AST_NODE_TYPES6["FunctionDeclaration"] = "FunctionDeclaration";
+      AST_NODE_TYPES6["FunctionExpression"] = "FunctionExpression";
+      AST_NODE_TYPES6["Identifier"] = "Identifier";
+      AST_NODE_TYPES6["IfStatement"] = "IfStatement";
+      AST_NODE_TYPES6["ImportAttribute"] = "ImportAttribute";
+      AST_NODE_TYPES6["ImportDeclaration"] = "ImportDeclaration";
+      AST_NODE_TYPES6["ImportDefaultSpecifier"] = "ImportDefaultSpecifier";
+      AST_NODE_TYPES6["ImportExpression"] = "ImportExpression";
+      AST_NODE_TYPES6["ImportNamespaceSpecifier"] = "ImportNamespaceSpecifier";
+      AST_NODE_TYPES6["ImportSpecifier"] = "ImportSpecifier";
+      AST_NODE_TYPES6["JSXAttribute"] = "JSXAttribute";
+      AST_NODE_TYPES6["JSXClosingElement"] = "JSXClosingElement";
+      AST_NODE_TYPES6["JSXClosingFragment"] = "JSXClosingFragment";
+      AST_NODE_TYPES6["JSXElement"] = "JSXElement";
+      AST_NODE_TYPES6["JSXEmptyExpression"] = "JSXEmptyExpression";
+      AST_NODE_TYPES6["JSXExpressionContainer"] = "JSXExpressionContainer";
+      AST_NODE_TYPES6["JSXFragment"] = "JSXFragment";
+      AST_NODE_TYPES6["JSXIdentifier"] = "JSXIdentifier";
+      AST_NODE_TYPES6["JSXMemberExpression"] = "JSXMemberExpression";
+      AST_NODE_TYPES6["JSXNamespacedName"] = "JSXNamespacedName";
+      AST_NODE_TYPES6["JSXOpeningElement"] = "JSXOpeningElement";
+      AST_NODE_TYPES6["JSXOpeningFragment"] = "JSXOpeningFragment";
+      AST_NODE_TYPES6["JSXSpreadAttribute"] = "JSXSpreadAttribute";
+      AST_NODE_TYPES6["JSXSpreadChild"] = "JSXSpreadChild";
+      AST_NODE_TYPES6["JSXText"] = "JSXText";
+      AST_NODE_TYPES6["LabeledStatement"] = "LabeledStatement";
+      AST_NODE_TYPES6["Literal"] = "Literal";
+      AST_NODE_TYPES6["LogicalExpression"] = "LogicalExpression";
+      AST_NODE_TYPES6["MemberExpression"] = "MemberExpression";
+      AST_NODE_TYPES6["MetaProperty"] = "MetaProperty";
+      AST_NODE_TYPES6["MethodDefinition"] = "MethodDefinition";
+      AST_NODE_TYPES6["NewExpression"] = "NewExpression";
+      AST_NODE_TYPES6["ObjectExpression"] = "ObjectExpression";
+      AST_NODE_TYPES6["ObjectPattern"] = "ObjectPattern";
+      AST_NODE_TYPES6["PrivateIdentifier"] = "PrivateIdentifier";
+      AST_NODE_TYPES6["Program"] = "Program";
+      AST_NODE_TYPES6["Property"] = "Property";
+      AST_NODE_TYPES6["PropertyDefinition"] = "PropertyDefinition";
+      AST_NODE_TYPES6["RestElement"] = "RestElement";
+      AST_NODE_TYPES6["ReturnStatement"] = "ReturnStatement";
+      AST_NODE_TYPES6["SequenceExpression"] = "SequenceExpression";
+      AST_NODE_TYPES6["SpreadElement"] = "SpreadElement";
+      AST_NODE_TYPES6["StaticBlock"] = "StaticBlock";
+      AST_NODE_TYPES6["Super"] = "Super";
+      AST_NODE_TYPES6["SwitchCase"] = "SwitchCase";
+      AST_NODE_TYPES6["SwitchStatement"] = "SwitchStatement";
+      AST_NODE_TYPES6["TaggedTemplateExpression"] = "TaggedTemplateExpression";
+      AST_NODE_TYPES6["TemplateElement"] = "TemplateElement";
+      AST_NODE_TYPES6["TemplateLiteral"] = "TemplateLiteral";
+      AST_NODE_TYPES6["ThisExpression"] = "ThisExpression";
+      AST_NODE_TYPES6["ThrowStatement"] = "ThrowStatement";
+      AST_NODE_TYPES6["TryStatement"] = "TryStatement";
+      AST_NODE_TYPES6["UnaryExpression"] = "UnaryExpression";
+      AST_NODE_TYPES6["UpdateExpression"] = "UpdateExpression";
+      AST_NODE_TYPES6["VariableDeclaration"] = "VariableDeclaration";
+      AST_NODE_TYPES6["VariableDeclarator"] = "VariableDeclarator";
+      AST_NODE_TYPES6["WhileStatement"] = "WhileStatement";
+      AST_NODE_TYPES6["WithStatement"] = "WithStatement";
+      AST_NODE_TYPES6["YieldExpression"] = "YieldExpression";
+      AST_NODE_TYPES6["TSAbstractAccessorProperty"] = "TSAbstractAccessorProperty";
+      AST_NODE_TYPES6["TSAbstractKeyword"] = "TSAbstractKeyword";
+      AST_NODE_TYPES6["TSAbstractMethodDefinition"] = "TSAbstractMethodDefinition";
+      AST_NODE_TYPES6["TSAbstractPropertyDefinition"] = "TSAbstractPropertyDefinition";
+      AST_NODE_TYPES6["TSAnyKeyword"] = "TSAnyKeyword";
+      AST_NODE_TYPES6["TSArrayType"] = "TSArrayType";
+      AST_NODE_TYPES6["TSAsExpression"] = "TSAsExpression";
+      AST_NODE_TYPES6["TSAsyncKeyword"] = "TSAsyncKeyword";
+      AST_NODE_TYPES6["TSBigIntKeyword"] = "TSBigIntKeyword";
+      AST_NODE_TYPES6["TSBooleanKeyword"] = "TSBooleanKeyword";
+      AST_NODE_TYPES6["TSCallSignatureDeclaration"] = "TSCallSignatureDeclaration";
+      AST_NODE_TYPES6["TSClassImplements"] = "TSClassImplements";
+      AST_NODE_TYPES6["TSConditionalType"] = "TSConditionalType";
+      AST_NODE_TYPES6["TSConstructorType"] = "TSConstructorType";
+      AST_NODE_TYPES6["TSConstructSignatureDeclaration"] = "TSConstructSignatureDeclaration";
+      AST_NODE_TYPES6["TSDeclareFunction"] = "TSDeclareFunction";
+      AST_NODE_TYPES6["TSDeclareKeyword"] = "TSDeclareKeyword";
+      AST_NODE_TYPES6["TSEmptyBodyFunctionExpression"] = "TSEmptyBodyFunctionExpression";
+      AST_NODE_TYPES6["TSEnumBody"] = "TSEnumBody";
+      AST_NODE_TYPES6["TSEnumDeclaration"] = "TSEnumDeclaration";
+      AST_NODE_TYPES6["TSEnumMember"] = "TSEnumMember";
+      AST_NODE_TYPES6["TSExportAssignment"] = "TSExportAssignment";
+      AST_NODE_TYPES6["TSExportKeyword"] = "TSExportKeyword";
+      AST_NODE_TYPES6["TSExternalModuleReference"] = "TSExternalModuleReference";
+      AST_NODE_TYPES6["TSFunctionType"] = "TSFunctionType";
+      AST_NODE_TYPES6["TSImportEqualsDeclaration"] = "TSImportEqualsDeclaration";
+      AST_NODE_TYPES6["TSImportType"] = "TSImportType";
+      AST_NODE_TYPES6["TSIndexedAccessType"] = "TSIndexedAccessType";
+      AST_NODE_TYPES6["TSIndexSignature"] = "TSIndexSignature";
+      AST_NODE_TYPES6["TSInferType"] = "TSInferType";
+      AST_NODE_TYPES6["TSInstantiationExpression"] = "TSInstantiationExpression";
+      AST_NODE_TYPES6["TSInterfaceBody"] = "TSInterfaceBody";
+      AST_NODE_TYPES6["TSInterfaceDeclaration"] = "TSInterfaceDeclaration";
+      AST_NODE_TYPES6["TSInterfaceHeritage"] = "TSInterfaceHeritage";
+      AST_NODE_TYPES6["TSIntersectionType"] = "TSIntersectionType";
+      AST_NODE_TYPES6["TSIntrinsicKeyword"] = "TSIntrinsicKeyword";
+      AST_NODE_TYPES6["TSLiteralType"] = "TSLiteralType";
+      AST_NODE_TYPES6["TSMappedType"] = "TSMappedType";
+      AST_NODE_TYPES6["TSMethodSignature"] = "TSMethodSignature";
+      AST_NODE_TYPES6["TSModuleBlock"] = "TSModuleBlock";
+      AST_NODE_TYPES6["TSModuleDeclaration"] = "TSModuleDeclaration";
+      AST_NODE_TYPES6["TSNamedTupleMember"] = "TSNamedTupleMember";
+      AST_NODE_TYPES6["TSNamespaceExportDeclaration"] = "TSNamespaceExportDeclaration";
+      AST_NODE_TYPES6["TSNeverKeyword"] = "TSNeverKeyword";
+      AST_NODE_TYPES6["TSNonNullExpression"] = "TSNonNullExpression";
+      AST_NODE_TYPES6["TSNullKeyword"] = "TSNullKeyword";
+      AST_NODE_TYPES6["TSNumberKeyword"] = "TSNumberKeyword";
+      AST_NODE_TYPES6["TSObjectKeyword"] = "TSObjectKeyword";
+      AST_NODE_TYPES6["TSOptionalType"] = "TSOptionalType";
+      AST_NODE_TYPES6["TSParameterProperty"] = "TSParameterProperty";
+      AST_NODE_TYPES6["TSPrivateKeyword"] = "TSPrivateKeyword";
+      AST_NODE_TYPES6["TSPropertySignature"] = "TSPropertySignature";
+      AST_NODE_TYPES6["TSProtectedKeyword"] = "TSProtectedKeyword";
+      AST_NODE_TYPES6["TSPublicKeyword"] = "TSPublicKeyword";
+      AST_NODE_TYPES6["TSQualifiedName"] = "TSQualifiedName";
+      AST_NODE_TYPES6["TSReadonlyKeyword"] = "TSReadonlyKeyword";
+      AST_NODE_TYPES6["TSRestType"] = "TSRestType";
+      AST_NODE_TYPES6["TSSatisfiesExpression"] = "TSSatisfiesExpression";
+      AST_NODE_TYPES6["TSStaticKeyword"] = "TSStaticKeyword";
+      AST_NODE_TYPES6["TSStringKeyword"] = "TSStringKeyword";
+      AST_NODE_TYPES6["TSSymbolKeyword"] = "TSSymbolKeyword";
+      AST_NODE_TYPES6["TSTemplateLiteralType"] = "TSTemplateLiteralType";
+      AST_NODE_TYPES6["TSThisType"] = "TSThisType";
+      AST_NODE_TYPES6["TSTupleType"] = "TSTupleType";
+      AST_NODE_TYPES6["TSTypeAliasDeclaration"] = "TSTypeAliasDeclaration";
+      AST_NODE_TYPES6["TSTypeAnnotation"] = "TSTypeAnnotation";
+      AST_NODE_TYPES6["TSTypeAssertion"] = "TSTypeAssertion";
+      AST_NODE_TYPES6["TSTypeLiteral"] = "TSTypeLiteral";
+      AST_NODE_TYPES6["TSTypeOperator"] = "TSTypeOperator";
+      AST_NODE_TYPES6["TSTypeParameter"] = "TSTypeParameter";
+      AST_NODE_TYPES6["TSTypeParameterDeclaration"] = "TSTypeParameterDeclaration";
+      AST_NODE_TYPES6["TSTypeParameterInstantiation"] = "TSTypeParameterInstantiation";
+      AST_NODE_TYPES6["TSTypePredicate"] = "TSTypePredicate";
+      AST_NODE_TYPES6["TSTypeQuery"] = "TSTypeQuery";
+      AST_NODE_TYPES6["TSTypeReference"] = "TSTypeReference";
+      AST_NODE_TYPES6["TSUndefinedKeyword"] = "TSUndefinedKeyword";
+      AST_NODE_TYPES6["TSUnionType"] = "TSUnionType";
+      AST_NODE_TYPES6["TSUnknownKeyword"] = "TSUnknownKeyword";
+      AST_NODE_TYPES6["TSVoidKeyword"] = "TSVoidKeyword";
+    })(AST_NODE_TYPES5 || (exports2.AST_NODE_TYPES = AST_NODE_TYPES5 = {}));
     var AST_TOKEN_TYPES;
     (function(AST_TOKEN_TYPES2) {
       AST_TOKEN_TYPES2["Boolean"] = "Boolean";
@@ -372157,6 +372157,85 @@ var noNestedTernary = {
   }
 };
 
+// src/rules/require-regex-example.ts
+var import_types4 = __toESM(require_dist10());
+var BLANK_LINE = /^\s*$/;
+var QUOTED_EXAMPLE = /["'`]/;
+var TESTER_LINK = "https://";
+var REGEXP_CONSTRUCTOR = "RegExp";
+function hasLoc(node) {
+  return Boolean(node?.loc);
+}
+function anchorLine(node) {
+  const parent = node.parent;
+  if (!hasLoc(node)) return 0;
+  const sameLineParent = hasLoc(parent) && parent.type !== import_types4.AST_NODE_TYPES.Program && parent.loc.start.line === node.loc.start.line;
+  return sameLineParent ? anchorLine(parent) : node.loc.start.line;
+}
+function previousNonBlankLine(lines, line) {
+  const candidate = line - 1;
+  if (candidate < 1) return 0;
+  return BLANK_LINE.test(lines[candidate - 1] ?? "") ? previousNonBlankLine(lines, candidate) : candidate;
+}
+function commentEndingOn(comments, lines, line) {
+  return comments.filter(hasLoc).find((comment) => {
+    if (comment.loc.end.line !== line) return false;
+    const leading = (lines[comment.loc.start.line - 1] ?? "").slice(0, comment.loc.start.column);
+    return BLANK_LINE.test(leading);
+  });
+}
+function commentBlockEndingOn(comments, lines, line) {
+  const comment = commentEndingOn(comments, lines, line);
+  if (!comment) return [];
+  return [...commentBlockEndingOn(comments, lines, comment.loc.start.line - 1), comment];
+}
+function isRegExpConstruction(node) {
+  const callee = node.callee;
+  return callee?.type === import_types4.AST_NODE_TYPES.Identifier && callee.name === REGEXP_CONSTRUCTOR;
+}
+var requireRegexExample = {
+  meta: {
+    type: "suggestion",
+    schema: [],
+    messages: {
+      missingComment: "regex with no comment above it \u2014 say what it accepts, with a quoted input it matches and one it rejects (see SKILL.md Core Rule 11).",
+      missingExample: "comment above the regex has no quoted example \u2014 add an input it matches and one it rejects (see SKILL.md Core Rule 11).",
+      missingLink: "comment above the regex has no tester link \u2014 add a regex101.com (or equivalent) URL pre-filled with the pattern and the examples (see SKILL.md Core Rule 11)."
+    }
+  },
+  create(context) {
+    const { lines } = context.sourceCode;
+    const comments = context.sourceCode.getAllComments();
+    const check = (node) => {
+      const above = previousNonBlankLine(lines, anchorLine(node));
+      const block = commentBlockEndingOn(comments, lines, above);
+      if (!block.length) {
+        context.report({ node, messageId: "missingComment" });
+        return;
+      }
+      const text = block.map((comment) => comment.value).join("\n");
+      if (!QUOTED_EXAMPLE.test(text)) {
+        context.report({ node, messageId: "missingExample" });
+        return;
+      }
+      if (!text.includes(TESTER_LINK)) {
+        context.report({ node, messageId: "missingLink" });
+      }
+    };
+    return {
+      Literal(node) {
+        if ("regex" in node && node.regex) check(node);
+      },
+      NewExpression(node) {
+        if (isRegExpConstruction(node)) check(node);
+      },
+      CallExpression(node) {
+        if (isRegExpConstruction(node)) check(node);
+      }
+    };
+  }
+};
+
 // src/registry.ts
 var noExplicitAny = import_rules.default["no-explicit-any"];
 var banTsComment = import_rules.default["ban-ts-comment"];
@@ -372258,6 +372337,18 @@ var CHECKS = [
     options: [],
     severity: "error",
     pointer: "SKILL.md Data Over Logic \u2014 flatten or convert nested ternaries to a Record/.find() lookup"
+  },
+  {
+    id: "require-regex-example",
+    skillRule: "Core Rule 11 (every regex carries an example)",
+    origin: "hand-rolled",
+    rule: requireRegexExample,
+    options: [],
+    // Comment presence is exact; "has an example" and "has a tester link"
+    // are lexical proxies (a quoted string and an https:// in the comment),
+    // so kept advisory like no-magic-numbers.
+    severity: "warn",
+    pointer: "SKILL.md Core Rule 11 \u2014 comment above: what it accepts, a quoted match/reject, and a pre-filled tester link"
   }
 ];
 var PLUGIN_NS = "ts-patterns";

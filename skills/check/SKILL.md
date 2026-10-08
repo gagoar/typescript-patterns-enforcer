@@ -34,6 +34,7 @@ Apply these principles to every TypeScript file you write or edit.
 8. **Composition over inheritance** — classes only when necessary; prefer plain functions and utility types.
 9. **No magic strings/numbers in comparisons or branching** — extract a repeated or semantically-meaningful literal (a URL scheme like `"https:"`, a sentinel path segment, a fixed error code) into a named `const`. For a small closed set of mutually-exclusive tags, prefer a string-literal union type (`type Kind = "a" | "b"`) or a `const` object/enum over scattered inline comparisons, so the compiler can narrow exhaustively. (Magic **numbers** are also flagged mechanically by the bundled hook; magic strings and the literal-union preference remain your judgment call.)
 10. **Coerce over compare for truthy/falsy intent** — check truthiness directly (`if (!value)` / `if (items.length)` / `if (!errorCount)`) instead of comparing against the falsy sentinel (`.length === 0`, `.length > 0`, `=== ""`, `!== undefined`, `count === 0`, `count > 0`) when the intent is "does this exist," "is this empty," or "is this non-zero" — any number used only for its zero/non-zero-ness gets the same treatment as `.length`. Exception: when a falsy-but-meaningful value (`0`, `""`, `false`) must be distinguished from genuine absence, name the explicit check for what it tests (`value === undefined`) rather than coercing the distinction away.
+11. **Every regex carries an example and a tester link** — directly above each regex literal (and each `new RegExp(...)`), a comment that (1) says in plain words what the pattern accepts, (2) quotes at least one input it matches and one it rejects — what one match captures when there are groups, input → output when it drives a `.replace` — and (3) links a free tester (regex101.com or equivalent) pre-filled with the pattern, its flags, and those same examples as the test string, so a reviewer verifies it in one click with no account or saved snippet. Regexes accumulate across a codebase and can't be verified by reading; the comment makes each one checkable where it sits. (A regex with no comment directly above it, a comment with no quoted example, or one with no `https://` link is also flagged mechanically by the bundled hook; whether the examples actually exercise the pattern and the link carries them remains your judgment call.)
 
 ## Core Rule Examples
 
@@ -173,6 +174,33 @@ const legacy = require("./legacy-untyped-module");
 // @ts-ignore — TODO(TICKET-123): remove once @types/legacy-module ships
 const legacy = require("./legacy-untyped-module");
 ```
+
+**Every regex carries an example and a tester link** *(comment presence, a quoted example, and a link are also checked mechanically by the bundled hook)*
+
+```ts
+// Bad — nothing to check it against
+const RC_PATTERN = /^(.+)-rc\.([1-9]\d*)$/;
+
+// Bad — paraphrases the pattern; still nothing to check it against, and nowhere to try it
+// digits after -rc.
+const RC_PATTERN = /^(.+)-rc\.([1-9]\d*)$/;
+
+// Good
+// <release>-rc.<n>, n without leading zeros. Matches "v1.2.0-rc.10" → ("v1.2.0", "10"); rejects "v1.2.0-rc.0" and "v1.2.0-rc1".
+// https://regex101.com/?flavor=javascript&regex=%5E%28.%2B%29-rc%5C.%28%5B1-9%5D%5Cd%2A%29%24&flags=gm&testString=v1.2.0-rc.10%0Av1.2.0-rc.0%0Av1.2.0-rc1
+const RC_PATTERN = /^(.+)-rc\.([1-9]\d*)$/;
+
+// Good — a transform shows input → output
+// Runs of whitespace collapse to one dash: "a  b\tc" → "a-b-c"; "abc" is unchanged.
+// https://regex101.com/?flavor=javascript&regex=%5Cs%2B&flags=g&testString=a%20%20b%09c%0Aabc
+const slug = input.replace(/\s+/g, "-");
+```
+
+The link is a plain URL, no account needed:
+`https://regex101.com/?flavor=javascript&regex=<url-encoded pattern>&flags=<flags>&testString=<url-encoded examples>`.
+Put the same inputs the comment quotes into `testString`, one per line; an
+anchored pattern then needs `m` in the link's flags (regex101's default `gm`)
+to be tried against each line.
 
 ## Single Source of Truth for Fixed Sets
 
@@ -675,6 +703,7 @@ test.each([
 - Missing error handling in `async` functions
 - Classes with no private state (use plain functions instead)
 - `@ts-ignore` without a follow-up TODO
+- A regex literal or `new RegExp(...)` without a comment directly above it that says what it accepts, quotes an input it matches and one it rejects (captures / input → output where relevant), and links a free tester pre-filled with the pattern and those examples — a comment that only paraphrases the pattern doesn't count
 - A shape re-declared by hand instead of derived (`keyof typeof`, or `Pick`/`NonNullable`/`typeof` off an existing type)
 - Unverified external input — `JSON.parse(...) as T`, an `any[]` on parsed data, or a cast standing in for a type guard/schema at a boundary
 - A config/lookup/dispatch object typed with a colon annotation (`const x: T = {...}`) instead of `as const satisfies T`

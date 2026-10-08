@@ -1,11 +1,11 @@
 # ts-patterns mechanical engine
 
-A self-contained checker for 9 of `ts-patterns`'s rules, invoked by
+A self-contained checker for 10 of `ts-patterns`'s rules, invoked by
 `hooks/hooks.json` after every `.ts`/`.tsx` edit. It never reads or writes
 whatever ESLint/tsconfig setup exists in the repo Claude is editing — it
 brings its own pinned dependencies and runs in total isolation.
 
-## What's checked, and why these 9
+## What's checked, and why these 10
 
 | Check | Origin | Mechanizes |
 |---|---|---|
@@ -18,6 +18,7 @@ brings its own pinned dependencies and runs in total isolation.
 | `no-loop-statements` | hand-rolled | Data Over Logic pipelines (presence only) |
 | `no-narrative-comment` | hand-rolled, advisory | Comment Discipline |
 | `no-nested-ternary` | hand-rolled | Data Over Logic (presence only) |
+| `require-regex-example` | hand-rolled, advisory | Core Rule 11 (comment above every regex) |
 
 See `src/registry.ts` for the full traceability map back to `SKILL.md`. The
 mechanical layer detects *presence*; the *conversion* (switch→`Record`,
@@ -34,6 +35,13 @@ flag a legitimate comment that happens to use one for another reason —
 kept at `warn` severity for that reason, same as the other heuristic-shaped
 checks (`no-magic-numbers`, `no-loop-statements`).
 
+`require-regex-example` is half of each: the presence of a comment block
+directly above a regex literal / `RegExp(...)` call is an exact check, but
+"gives an example" and "links a tester" are lexical proxies (a quoted string
+and an `https://` in that block). It can't tell whether the quoted inputs
+exercise the pattern or the link is pre-filled with them — that stays with
+the prose — so it's `warn` too.
+
 Two of the reused rules are pulled from `@typescript-eslint/eslint-plugin`'s
 `./use-at-your-own-risk/rules` export (its declared, if informally-named,
 subpath for raw rule objects — the package's `exports` map blocks arbitrary
@@ -46,7 +54,7 @@ so its rule is required by its real file path directly.
 via git clone with no guaranteed build step, so end users get zero
 install/build of their own. It's a fully self-contained bundle: esbuild
 inlines `eslint`, `@typescript-eslint/parser`, and `typescript` itself (tree-shaken
-down to the parsing path this engine actually reaches, since none of the 9
+down to the parsing path this engine actually reaches, since none of the 10
 checks are type-aware) into one file with zero runtime dependencies.
 Everything under `node_modules/` is build-time-only and gitignored.
 Rebuilding is a release-time task, not something to hand-edit:
