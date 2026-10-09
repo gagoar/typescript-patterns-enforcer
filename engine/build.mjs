@@ -20,5 +20,10 @@ await build({
   // a real (never-hit) runtime call instead of failing the build trying to
   // resolve it.
   external: ["jiti", "jiti/package.json"],
+  // Swap the `debug` package for a no-op. The real one enumerates the whole
+  // process environment at load time, which the plugin-directory upload
+  // scanner reads as the installer's credentials being collected. See
+  // src/shims/debug.ts.
+  alias: { debug: "./src/shims/debug.ts" },
   logLevel: "info",
 });
