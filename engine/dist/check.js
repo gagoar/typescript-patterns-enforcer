@@ -292,651 +292,27 @@ var require_package = __commonJS({
   }
 });
 
-// node_modules/ms/index.js
-var require_ms = __commonJS({
-  "node_modules/ms/index.js"(exports2, module2) {
-    var s = 1e3;
-    var m = s * 60;
-    var h = m * 60;
-    var d = h * 24;
-    var w = d * 7;
-    var y = d * 365.25;
-    module2.exports = function(val, options) {
-      options = options || {};
-      var type = typeof val;
-      if (type === "string" && val.length > 0) {
-        return parse2(val);
-      } else if (type === "number" && isFinite(val)) {
-        return options.long ? fmtLong(val) : fmtShort(val);
-      }
-      throw new Error(
-        "val is not a non-empty string or a valid number. val=" + JSON.stringify(val)
-      );
-    };
-    function parse2(str) {
-      str = String(str);
-      if (str.length > 100) {
-        return;
-      }
-      var match = /^(-?(?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|weeks?|w|years?|yrs?|y)?$/i.exec(
-        str
-      );
-      if (!match) {
-        return;
-      }
-      var n = parseFloat(match[1]);
-      var type = (match[2] || "ms").toLowerCase();
-      switch (type) {
-        case "years":
-        case "year":
-        case "yrs":
-        case "yr":
-        case "y":
-          return n * y;
-        case "weeks":
-        case "week":
-        case "w":
-          return n * w;
-        case "days":
-        case "day":
-        case "d":
-          return n * d;
-        case "hours":
-        case "hour":
-        case "hrs":
-        case "hr":
-        case "h":
-          return n * h;
-        case "minutes":
-        case "minute":
-        case "mins":
-        case "min":
-        case "m":
-          return n * m;
-        case "seconds":
-        case "second":
-        case "secs":
-        case "sec":
-        case "s":
-          return n * s;
-        case "milliseconds":
-        case "millisecond":
-        case "msecs":
-        case "msec":
-        case "ms":
-          return n;
-        default:
-          return void 0;
-      }
-    }
-    function fmtShort(ms) {
-      var msAbs = Math.abs(ms);
-      if (msAbs >= d) {
-        return Math.round(ms / d) + "d";
-      }
-      if (msAbs >= h) {
-        return Math.round(ms / h) + "h";
-      }
-      if (msAbs >= m) {
-        return Math.round(ms / m) + "m";
-      }
-      if (msAbs >= s) {
-        return Math.round(ms / s) + "s";
-      }
-      return ms + "ms";
-    }
-    function fmtLong(ms) {
-      var msAbs = Math.abs(ms);
-      if (msAbs >= d) {
-        return plural(ms, msAbs, d, "day");
-      }
-      if (msAbs >= h) {
-        return plural(ms, msAbs, h, "hour");
-      }
-      if (msAbs >= m) {
-        return plural(ms, msAbs, m, "minute");
-      }
-      if (msAbs >= s) {
-        return plural(ms, msAbs, s, "second");
-      }
-      return ms + " ms";
-    }
-    function plural(ms, msAbs, n, name) {
-      var isPlural = msAbs >= n * 1.5;
-      return Math.round(ms / n) + " " + name + (isPlural ? "s" : "");
-    }
-  }
-});
-
-// node_modules/debug/src/common.js
-var require_common = __commonJS({
-  "node_modules/debug/src/common.js"(exports2, module2) {
-    function setup(env) {
-      createDebug.debug = createDebug;
-      createDebug.default = createDebug;
-      createDebug.coerce = coerce;
-      createDebug.disable = disable;
-      createDebug.enable = enable;
-      createDebug.enabled = enabled;
-      createDebug.humanize = require_ms();
-      createDebug.destroy = destroy;
-      Object.keys(env).forEach((key) => {
-        createDebug[key] = env[key];
+// src/shims/debug.ts
+var require_debug = __commonJS({
+  "src/shims/debug.ts"(exports2, module2) {
+    "use strict";
+    function createDebugger(namespace) {
+      const logger = Object.assign(() => void 0, {
+        namespace,
+        enabled: false,
+        useColors: false,
+        extend: (suffix) => createDebugger(`${namespace}:${suffix}`),
+        destroy: () => false
       });
-      createDebug.names = [];
-      createDebug.skips = [];
-      createDebug.formatters = {};
-      function selectColor(namespace) {
-        let hash = 0;
-        for (let i = 0; i < namespace.length; i++) {
-          hash = (hash << 5) - hash + namespace.charCodeAt(i);
-          hash |= 0;
-        }
-        return createDebug.colors[Math.abs(hash) % createDebug.colors.length];
-      }
-      createDebug.selectColor = selectColor;
-      function createDebug(namespace) {
-        let prevTime;
-        let enableOverride = null;
-        let namespacesCache;
-        let enabledCache;
-        function debug2(...args) {
-          if (!debug2.enabled) {
-            return;
-          }
-          const self2 = debug2;
-          const curr = Number(/* @__PURE__ */ new Date());
-          const ms = curr - (prevTime || curr);
-          self2.diff = ms;
-          self2.prev = prevTime;
-          self2.curr = curr;
-          prevTime = curr;
-          args[0] = createDebug.coerce(args[0]);
-          if (typeof args[0] !== "string") {
-            args.unshift("%O");
-          }
-          let index = 0;
-          args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format2) => {
-            if (match === "%%") {
-              return "%";
-            }
-            index++;
-            const formatter = createDebug.formatters[format2];
-            if (typeof formatter === "function") {
-              const val = args[index];
-              match = formatter.call(self2, val);
-              args.splice(index, 1);
-              index--;
-            }
-            return match;
-          });
-          createDebug.formatArgs.call(self2, args);
-          const logFn = self2.log || createDebug.log;
-          logFn.apply(self2, args);
-        }
-        debug2.namespace = namespace;
-        debug2.useColors = createDebug.useColors();
-        debug2.color = createDebug.selectColor(namespace);
-        debug2.extend = extend;
-        debug2.destroy = createDebug.destroy;
-        Object.defineProperty(debug2, "enabled", {
-          enumerable: true,
-          configurable: false,
-          get: () => {
-            if (enableOverride !== null) {
-              return enableOverride;
-            }
-            if (namespacesCache !== createDebug.namespaces) {
-              namespacesCache = createDebug.namespaces;
-              enabledCache = createDebug.enabled(namespace);
-            }
-            return enabledCache;
-          },
-          set: (v) => {
-            enableOverride = v;
-          }
-        });
-        if (typeof createDebug.init === "function") {
-          createDebug.init(debug2);
-        }
-        return debug2;
-      }
-      function extend(namespace, delimiter) {
-        const newDebug = createDebug(this.namespace + (typeof delimiter === "undefined" ? ":" : delimiter) + namespace);
-        newDebug.log = this.log;
-        return newDebug;
-      }
-      function enable(namespaces) {
-        createDebug.save(namespaces);
-        createDebug.namespaces = namespaces;
-        createDebug.names = [];
-        createDebug.skips = [];
-        const split = (typeof namespaces === "string" ? namespaces : "").trim().replace(/\s+/g, ",").split(",").filter(Boolean);
-        for (const ns of split) {
-          if (ns[0] === "-") {
-            createDebug.skips.push(ns.slice(1));
-          } else {
-            createDebug.names.push(ns);
-          }
-        }
-      }
-      function matchesTemplate(search, template) {
-        let searchIndex = 0;
-        let templateIndex = 0;
-        let starIndex = -1;
-        let matchIndex = 0;
-        while (searchIndex < search.length) {
-          if (templateIndex < template.length && (template[templateIndex] === search[searchIndex] || template[templateIndex] === "*")) {
-            if (template[templateIndex] === "*") {
-              starIndex = templateIndex;
-              matchIndex = searchIndex;
-              templateIndex++;
-            } else {
-              searchIndex++;
-              templateIndex++;
-            }
-          } else if (starIndex !== -1) {
-            templateIndex = starIndex + 1;
-            matchIndex++;
-            searchIndex = matchIndex;
-          } else {
-            return false;
-          }
-        }
-        while (templateIndex < template.length && template[templateIndex] === "*") {
-          templateIndex++;
-        }
-        return templateIndex === template.length;
-      }
-      function disable() {
-        const namespaces = [
-          ...createDebug.names,
-          ...createDebug.skips.map((namespace) => "-" + namespace)
-        ].join(",");
-        createDebug.enable("");
-        return namespaces;
-      }
-      function enabled(name) {
-        for (const skip of createDebug.skips) {
-          if (matchesTemplate(name, skip)) {
-            return false;
-          }
-        }
-        for (const ns of createDebug.names) {
-          if (matchesTemplate(name, ns)) {
-            return true;
-          }
-        }
-        return false;
-      }
-      function coerce(val) {
-        if (val instanceof Error) {
-          return val.stack || val.message;
-        }
-        return val;
-      }
-      function destroy() {
-        console.warn("Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.");
-      }
-      createDebug.enable(createDebug.load());
-      return createDebug;
+      return logger;
     }
-    module2.exports = setup;
-  }
-});
-
-// node_modules/debug/src/browser.js
-var require_browser = __commonJS({
-  "node_modules/debug/src/browser.js"(exports2, module2) {
-    exports2.formatArgs = formatArgs;
-    exports2.save = save;
-    exports2.load = load;
-    exports2.useColors = useColors;
-    exports2.storage = localstorage();
-    exports2.destroy = /* @__PURE__ */ (() => {
-      let warned = false;
-      return () => {
-        if (!warned) {
-          warned = true;
-          console.warn("Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`.");
-        }
-      };
-    })();
-    exports2.colors = [
-      "#0000CC",
-      "#0000FF",
-      "#0033CC",
-      "#0033FF",
-      "#0066CC",
-      "#0066FF",
-      "#0099CC",
-      "#0099FF",
-      "#00CC00",
-      "#00CC33",
-      "#00CC66",
-      "#00CC99",
-      "#00CCCC",
-      "#00CCFF",
-      "#3300CC",
-      "#3300FF",
-      "#3333CC",
-      "#3333FF",
-      "#3366CC",
-      "#3366FF",
-      "#3399CC",
-      "#3399FF",
-      "#33CC00",
-      "#33CC33",
-      "#33CC66",
-      "#33CC99",
-      "#33CCCC",
-      "#33CCFF",
-      "#6600CC",
-      "#6600FF",
-      "#6633CC",
-      "#6633FF",
-      "#66CC00",
-      "#66CC33",
-      "#9900CC",
-      "#9900FF",
-      "#9933CC",
-      "#9933FF",
-      "#99CC00",
-      "#99CC33",
-      "#CC0000",
-      "#CC0033",
-      "#CC0066",
-      "#CC0099",
-      "#CC00CC",
-      "#CC00FF",
-      "#CC3300",
-      "#CC3333",
-      "#CC3366",
-      "#CC3399",
-      "#CC33CC",
-      "#CC33FF",
-      "#CC6600",
-      "#CC6633",
-      "#CC9900",
-      "#CC9933",
-      "#CCCC00",
-      "#CCCC33",
-      "#FF0000",
-      "#FF0033",
-      "#FF0066",
-      "#FF0099",
-      "#FF00CC",
-      "#FF00FF",
-      "#FF3300",
-      "#FF3333",
-      "#FF3366",
-      "#FF3399",
-      "#FF33CC",
-      "#FF33FF",
-      "#FF6600",
-      "#FF6633",
-      "#FF9900",
-      "#FF9933",
-      "#FFCC00",
-      "#FFCC33"
-    ];
-    function useColors() {
-      if (typeof window !== "undefined" && window.process && (window.process.type === "renderer" || window.process.__nwjs)) {
-        return true;
-      }
-      if (typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/(edge|trident)\/(\d+)/)) {
-        return false;
-      }
-      let m;
-      return typeof document !== "undefined" && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance || // Is firebug? http://stackoverflow.com/a/398120/376773
-      typeof window !== "undefined" && window.console && (window.console.firebug || window.console.exception && window.console.table) || // Is firefox >= v31?
-      // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
-      typeof navigator !== "undefined" && navigator.userAgent && (m = navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/)) && parseInt(m[1], 10) >= 31 || // Double check webkit in userAgent just in case we are in a worker
-      typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/);
-    }
-    function formatArgs(args) {
-      args[0] = (this.useColors ? "%c" : "") + this.namespace + (this.useColors ? " %c" : " ") + args[0] + (this.useColors ? "%c " : " ") + "+" + module2.exports.humanize(this.diff);
-      if (!this.useColors) {
-        return;
-      }
-      const c = "color: " + this.color;
-      args.splice(1, 0, c, "color: inherit");
-      let index = 0;
-      let lastC = 0;
-      args[0].replace(/%[a-zA-Z%]/g, (match) => {
-        if (match === "%%") {
-          return;
-        }
-        index++;
-        if (match === "%c") {
-          lastC = index;
-        }
-      });
-      args.splice(lastC, 0, c);
-    }
-    exports2.log = console.debug || console.log || (() => {
+    var createDebug = Object.assign(createDebugger, {
+      enabled: () => false,
+      enable: () => void 0,
+      disable: () => "",
+      formatters: {}
     });
-    function save(namespaces) {
-      try {
-        if (namespaces) {
-          exports2.storage.setItem("debug", namespaces);
-        } else {
-          exports2.storage.removeItem("debug");
-        }
-      } catch (error) {
-      }
-    }
-    function load() {
-      let r;
-      try {
-        r = exports2.storage.getItem("debug") || exports2.storage.getItem("DEBUG");
-      } catch (error) {
-      }
-      if (!r && typeof process !== "undefined" && "env" in process) {
-        r = process.env.DEBUG;
-      }
-      return r;
-    }
-    function localstorage() {
-      try {
-        return localStorage;
-      } catch (error) {
-      }
-    }
-    module2.exports = require_common()(exports2);
-    var { formatters } = module2.exports;
-    formatters.j = function(v) {
-      try {
-        return JSON.stringify(v);
-      } catch (error) {
-        return "[UnexpectedJSONParseError]: " + error.message;
-      }
-    };
-  }
-});
-
-// node_modules/debug/src/node.js
-var require_node = __commonJS({
-  "node_modules/debug/src/node.js"(exports2, module2) {
-    var tty = require("tty");
-    var util = require("util");
-    exports2.init = init;
-    exports2.log = log;
-    exports2.formatArgs = formatArgs;
-    exports2.save = save;
-    exports2.load = load;
-    exports2.useColors = useColors;
-    exports2.destroy = util.deprecate(
-      () => {
-      },
-      "Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`."
-    );
-    exports2.colors = [6, 2, 3, 4, 5, 1];
-    try {
-      const supportsColor = require("supports-color");
-      if (supportsColor && (supportsColor.stderr || supportsColor).level >= 2) {
-        exports2.colors = [
-          20,
-          21,
-          26,
-          27,
-          32,
-          33,
-          38,
-          39,
-          40,
-          41,
-          42,
-          43,
-          44,
-          45,
-          56,
-          57,
-          62,
-          63,
-          68,
-          69,
-          74,
-          75,
-          76,
-          77,
-          78,
-          79,
-          80,
-          81,
-          92,
-          93,
-          98,
-          99,
-          112,
-          113,
-          128,
-          129,
-          134,
-          135,
-          148,
-          149,
-          160,
-          161,
-          162,
-          163,
-          164,
-          165,
-          166,
-          167,
-          168,
-          169,
-          170,
-          171,
-          172,
-          173,
-          178,
-          179,
-          184,
-          185,
-          196,
-          197,
-          198,
-          199,
-          200,
-          201,
-          202,
-          203,
-          204,
-          205,
-          206,
-          207,
-          208,
-          209,
-          214,
-          215,
-          220,
-          221
-        ];
-      }
-    } catch (error) {
-    }
-    exports2.inspectOpts = Object.keys(process.env).filter((key) => {
-      return /^debug_/i.test(key);
-    }).reduce((obj, key) => {
-      const prop = key.substring(6).toLowerCase().replace(/_([a-z])/g, (_, k) => {
-        return k.toUpperCase();
-      });
-      let val = process.env[key];
-      if (/^(yes|on|true|enabled)$/i.test(val)) {
-        val = true;
-      } else if (/^(no|off|false|disabled)$/i.test(val)) {
-        val = false;
-      } else if (val === "null") {
-        val = null;
-      } else {
-        val = Number(val);
-      }
-      obj[prop] = val;
-      return obj;
-    }, {});
-    function useColors() {
-      return "colors" in exports2.inspectOpts ? Boolean(exports2.inspectOpts.colors) : tty.isatty(process.stderr.fd);
-    }
-    function formatArgs(args) {
-      const { namespace: name, useColors: useColors2 } = this;
-      if (useColors2) {
-        const c = this.color;
-        const colorCode = "\x1B[3" + (c < 8 ? c : "8;5;" + c);
-        const prefix = `  ${colorCode};1m${name} \x1B[0m`;
-        args[0] = prefix + args[0].split("\n").join("\n" + prefix);
-        args.push(colorCode + "m+" + module2.exports.humanize(this.diff) + "\x1B[0m");
-      } else {
-        args[0] = getDate() + name + " " + args[0];
-      }
-    }
-    function getDate() {
-      if (exports2.inspectOpts.hideDate) {
-        return "";
-      }
-      return (/* @__PURE__ */ new Date()).toISOString() + " ";
-    }
-    function log(...args) {
-      return process.stderr.write(util.formatWithOptions(exports2.inspectOpts, ...args) + "\n");
-    }
-    function save(namespaces) {
-      if (namespaces) {
-        process.env.DEBUG = namespaces;
-      } else {
-        delete process.env.DEBUG;
-      }
-    }
-    function load() {
-      return process.env.DEBUG;
-    }
-    function init(debug2) {
-      debug2.inspectOpts = {};
-      const keys = Object.keys(exports2.inspectOpts);
-      for (let i = 0; i < keys.length; i++) {
-        debug2.inspectOpts[keys[i]] = exports2.inspectOpts[keys[i]];
-      }
-    }
-    module2.exports = require_common()(exports2);
-    var { formatters } = module2.exports;
-    formatters.o = function(v) {
-      this.inspectOpts.colors = this.useColors;
-      return util.inspect(v, this.inspectOpts).split("\n").map((str) => str.trim()).join(" ");
-    };
-    formatters.O = function(v) {
-      this.inspectOpts.colors = this.useColors;
-      return util.inspect(v, this.inspectOpts);
-    };
-  }
-});
-
-// node_modules/debug/src/index.js
-var require_src = __commonJS({
-  "node_modules/debug/src/index.js"(exports2, module2) {
-    if (typeof process === "undefined" || process.type === "renderer" || process.browser === true || process.__nwjs) {
-      module2.exports = require_browser();
-    } else {
-      module2.exports = require_node();
-    }
+    module2.exports = createDebug;
   }
 });
 
@@ -944,7 +320,7 @@ var require_src = __commonJS({
 var require_lazy_loading_rule_map = __commonJS({
   "node_modules/eslint/lib/rules/utils/lazy-loading-rule-map.js"(exports2, module2) {
     "use strict";
-    var debug2 = require_src()("eslint:rules");
+    var debug2 = require_debug()("eslint:rules");
     var LazyLoadingRuleMap = class _LazyLoadingRuleMap extends Map {
       /**
        * Initialize this map.
@@ -45310,7 +44686,7 @@ var require_traverser = __commonJS({
   "node_modules/eslint/lib/shared/traverser.js"(exports2, module2) {
     "use strict";
     var vk = require_eslint_visitor_keys();
-    var debug2 = require_src()("eslint:traverser");
+    var debug2 = require_debug()("eslint:traverser");
     function noop() {
     }
     function isNode(x) {
@@ -61711,7 +61087,7 @@ var require_token_store = __commonJS({
 var require_debug_helpers = __commonJS({
   "node_modules/eslint/lib/linter/code-path-analysis/debug-helpers.js"(exports2, module2) {
     "use strict";
-    var debug2 = require_src()("eslint:code-path");
+    var debug2 = require_debug()("eslint:code-path");
     function getId(segment) {
       return segment.id + (segment.reachable ? "" : "!");
     }
@@ -70233,7 +69609,7 @@ var require_js = __commonJS({
   "node_modules/eslint/lib/languages/js/index.js"(exports2, module2) {
     "use strict";
     var { SourceCode } = require_source_code2();
-    var createDebug = require_src();
+    var createDebug = require_debug();
     var astUtils = require_ast_utils();
     var espree = require_espree();
     var eslintScope = require_eslint_scope();
@@ -75485,7 +74861,7 @@ var require_cjs3 = __commonJS({
     var posixPath = require_posix();
     var windowsPath = require_windows();
     var minimatch = require_commonjs3();
-    var createDebug = require_src();
+    var createDebug = require_debug();
     var objectSchema = require_cjs2();
     function _interopNamespaceDefault(e) {
       var n = /* @__PURE__ */ Object.create(null);
@@ -83620,7 +82996,7 @@ var require_apply_disable_directives = __commonJS({
 var require_source_code_fixer = __commonJS({
   "node_modules/eslint/lib/linter/source-code-fixer.js"(exports2, module2) {
     "use strict";
-    var debug2 = require_src()("eslint:source-code-fixer");
+    var debug2 = require_debug()("eslint:source-code-fixer");
     var BOM = "\uFEFF";
     function compareMessagesByFixRange(a, b) {
       return a.fix.range[0] - b.fix.range[0] || a.fix.range[1] - b.fix.range[1];
@@ -86084,7 +85460,7 @@ var require_linter = __commonJS({
       inactiveFlags,
       getInactivityReasonMessage
     } = require_flags();
-    var debug2 = require_src()("eslint:linter");
+    var debug2 = require_debug()("eslint:linter");
     var MAX_AUTOFIX_PASSES = 10;
     var DEFAULT_ECMA_VERSION = 5;
     var commentParser = new ConfigCommentParser();
@@ -87152,7 +86528,7 @@ var require_message_counts = __commonJS({
 });
 
 // node_modules/hookified/dist/node/index.cjs
-var require_node2 = __commonJS({
+var require_node = __commonJS({
   "node_modules/hookified/dist/node/index.cjs"(exports2, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
@@ -87863,7 +87239,7 @@ var require_node2 = __commonJS({
 });
 
 // node_modules/hashery/dist/node/index.cjs
-var require_node3 = __commonJS({
+var require_node2 = __commonJS({
   "node_modules/hashery/dist/node/index.cjs"(exports2, module2) {
     "use strict";
     var __defProp2 = Object.defineProperty;
@@ -87895,7 +87271,7 @@ var require_node3 = __commonJS({
       WebCrypto: () => WebCrypto
     });
     module2.exports = __toCommonJS(index_exports);
-    var import_hookified = require_node2();
+    var import_hookified = require_node();
     var Cache = class {
       _enabled = true;
       _maxSize = 4e3;
@@ -89894,7 +89270,7 @@ var require_dist2 = __commonJS({
 var require_dist3 = __commonJS({
   "node_modules/@cacheable/utils/dist/index.cjs"(exports2) {
     Object.defineProperty(exports2, Symbol.toStringTag, { value: "Module" });
-    var hashery = require_node3();
+    var hashery = require_node2();
     var keyv = require_dist2();
     var shorthandToMilliseconds = (shorthand) => {
       let milliseconds;
@@ -91098,7 +90474,7 @@ var require_dist4 = __commonJS({
   "node_modules/@cacheable/memory/dist/index.cjs"(exports2) {
     Object.defineProperty(exports2, Symbol.toStringTag, { value: "Module" });
     var _cacheable_utils = require_dist3();
-    var hookified = require_node2();
+    var hookified = require_node();
     var keyv = require_dist2();
     var ListNode = class {
       value;
@@ -91944,7 +91320,7 @@ var require_dist4 = __commonJS({
 });
 
 // node_modules/qified/node_modules/hookified/dist/node/index.cjs
-var require_node4 = __commonJS({
+var require_node3 = __commonJS({
   "node_modules/qified/node_modules/hookified/dist/node/index.cjs"(exports2) {
     Object.defineProperty(exports2, Symbol.toStringTag, { value: "Module" });
     var ERROR_EVENT = "error";
@@ -92820,7 +92196,7 @@ var require_node4 = __commonJS({
 var require_dist5 = __commonJS({
   "node_modules/qified/dist/index.cjs"(exports2) {
     Object.defineProperty(exports2, Symbol.toStringTag, { value: "Module" });
-    var hookified = require_node4();
+    var hookified = require_node3();
     var MemoryMessageProvider = class {
       _subscriptions;
       _id;
@@ -93460,7 +92836,7 @@ var require_dist6 = __commonJS({
     Object.defineProperty(exports2, Symbol.toStringTag, { value: "Module" });
     var _cacheable_memory = require_dist4();
     var _cacheable_utils = require_dist3();
-    var hookified = require_node2();
+    var hookified = require_node();
     var keyv = require_dist2();
     var qified = require_dist5();
     var CacheableHooks = /* @__PURE__ */ (function(CacheableHooks2) {
@@ -94865,7 +94241,7 @@ var require_dist7 = __commonJS({
     node_path = __toESM2(node_path, 1);
     var cacheable = require_dist6();
     var flatted = require_cjs4();
-    var hookified = require_node2();
+    var hookified = require_node();
     var FlatCacheEvents = /* @__PURE__ */ (function(FlatCacheEvents2) {
       FlatCacheEvents2["SAVE"] = "save";
       FlatCacheEvents2["LOAD"] = "load";
@@ -95906,7 +95282,7 @@ var require_lint_result_cache = __commonJS({
     var pkg = require_package();
     var assert = require_assert();
     var hash = require_hash();
-    var debug2 = require_src()("eslint:lint-result-cache");
+    var debug2 = require_debug()("eslint:lint-result-cache");
     var configHashCache = /* @__PURE__ */ new WeakMap();
     var nodeVersion = process && process.version;
     var validCacheStrategies = ["metadata", "content"];
@@ -96367,7 +95743,7 @@ var require_config_loader = __commonJS({
     var fs = require("node:fs/promises");
     var findUp = require_find_up();
     var { pathToFileURL } = require("node:url");
-    var debug2 = require_src()("eslint:config-loader");
+    var debug2 = require_debug()("eslint:config-loader");
     var { FlatConfigArray } = require_flat_config_array();
     var { WarningService } = require_warning_service();
     var FLAT_CONFIG_FILENAMES = [
@@ -98272,7 +97648,7 @@ var require_eslint_helpers = __commonJS({
     var { calculateStatsPerFile } = require_message_counts();
     var LintResultCache = require_lint_result_cache();
     var { ConfigLoader } = require_config_loader();
-    var createDebug = require_src();
+    var createDebug = require_debug();
     var { SuppressionsService } = require_suppressions_service();
     var Minimatch = minimatch.Minimatch;
     var MINIMATCH_OPTIONS = { dot: true };
@@ -322382,7 +321758,7 @@ var require_getWatchProgramsForProjects = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.clearWatchCaches = clearWatchCaches;
     exports2.getWatchProgramsForProjects = getWatchProgramsForProjects;
-    var debug_1 = __importDefault(require_src());
+    var debug_1 = __importDefault(require_debug());
     var node_fs_1 = __importDefault(require("node:fs"));
     var ts = __importStar(require_typescript());
     var source_files_1 = require_source_files();
@@ -322651,7 +322027,7 @@ var require_constants = __commonJS({
 });
 
 // node_modules/semver/internal/debug.js
-var require_debug = __commonJS({
+var require_debug2 = __commonJS({
   "node_modules/semver/internal/debug.js"(exports2, module2) {
     "use strict";
     var debug2 = typeof process === "object" && process.env && process.env.NODE_DEBUG && /\bsemver\b/i.test(process.env.NODE_DEBUG) ? (...args) => console.error("SEMVER", ...args) : () => {
@@ -322669,7 +322045,7 @@ var require_re = __commonJS({
       MAX_SAFE_BUILD_LENGTH,
       MAX_LENGTH
     } = require_constants();
-    var debug2 = require_debug();
+    var debug2 = require_debug2();
     exports2 = module2.exports = {};
     var re = exports2.re = [];
     var safeRe = exports2.safeRe = [];
@@ -322796,7 +322172,7 @@ var require_identifiers = __commonJS({
 var require_semver = __commonJS({
   "node_modules/semver/classes/semver.js"(exports2, module2) {
     "use strict";
-    var debug2 = require_debug();
+    var debug2 = require_debug2();
     var { MAX_LENGTH, MAX_SAFE_INTEGER } = require_constants();
     var { safeRe: re, t } = require_re();
     var parseOptions = require_parse_options();
@@ -323691,7 +323067,7 @@ var require_range = __commonJS({
     var cache = new LRU();
     var parseOptions = require_parse_options();
     var Comparator = require_comparator();
-    var debug2 = require_debug();
+    var debug2 = require_debug2();
     var SemVer = require_semver();
     var {
       safeRe: re,
@@ -324034,7 +323410,7 @@ var require_comparator = __commonJS({
     var parseOptions = require_parse_options();
     var { safeRe: re, t } = require_re();
     var cmp = require_cmp();
-    var debug2 = require_debug();
+    var debug2 = require_debug2();
     var SemVer = require_semver();
     var Range = require_range();
   }
@@ -331234,7 +330610,7 @@ var require_createIsolatedProgram = __commonJS({
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.createIsolatedProgram = createIsolatedProgram;
-    var debug_1 = __importDefault(require_src());
+    var debug_1 = __importDefault(require_debug());
     var ts = __importStar(require_typescript());
     var getScriptKind_1 = require_getScriptKind();
     var shared_1 = require_shared();
@@ -331407,7 +330783,7 @@ var require_createProjectProgram = __commonJS({
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.createProjectProgram = createProjectProgram;
-    var debug_1 = __importDefault(require_src());
+    var debug_1 = __importDefault(require_debug());
     var node_utils_1 = require_node_utils();
     var createProjectProgramError_1 = require_createProjectProgramError();
     var shared_1 = require_shared();
@@ -331470,7 +330846,7 @@ var require_createSourceFile = __commonJS({
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.createSourceFile = createSourceFile;
     exports2.createNoProgram = createNoProgram;
-    var debug_1 = __importDefault(require_src());
+    var debug_1 = __importDefault(require_debug());
     var ts = __importStar(require_typescript());
     var source_files_1 = require_source_files();
     var getScriptKind_1 = require_getScriptKind();
@@ -331547,7 +330923,7 @@ var require_useProvidedPrograms = __commonJS({
     exports2.useProvidedPrograms = useProvidedPrograms;
     exports2.createProgramFromConfigFile = createProgramFromConfigFile;
     var tsconfig_utils_1 = require_dist12();
-    var debug_1 = __importDefault(require_src());
+    var debug_1 = __importDefault(require_debug());
     var path2 = __importStar(require("node:path"));
     var ts = __importStar(require_typescript());
     var shared_1 = require_shared();
@@ -331660,7 +331036,7 @@ var require_createProjectService = __commonJS({
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.createProjectService = createProjectService;
-    var debug_1 = __importDefault(require_src());
+    var debug_1 = __importDefault(require_debug());
     var getParsedConfigFileFromTSServer_js_1 = require_getParsedConfigFileFromTSServer();
     var DEFAULT_PROJECT_MATCHED_FILES_THRESHOLD = 8;
     var log = (0, debug_1.default)("typescript-eslint:project-service:createProjectService");
@@ -331946,7 +331322,7 @@ var require_getProjectConfigFiles = __commonJS({
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.getProjectConfigFiles = getProjectConfigFiles;
-    var debug_1 = __importDefault(require_src());
+    var debug_1 = __importDefault(require_debug());
     var fs = __importStar(require("node:fs"));
     var path2 = __importStar(require("node:path"));
     var log = (0, debug_1.default)("typescript-eslint:typescript-estree:parseSettings:getProjectConfigFiles");
@@ -334655,7 +334031,7 @@ var require_resolveProjectList = __commonJS({
     exports2.clearGlobCache = clearGlobCache;
     exports2.resolveProjectList = resolveProjectList;
     exports2.clearGlobResolutionCache = clearGlobResolutionCache;
-    var debug_1 = __importDefault(require_src());
+    var debug_1 = __importDefault(require_debug());
     var tinyglobby_1 = require_dist15();
     var shared_1 = require_shared();
     var ExpiringCache_1 = require_ExpiringCache();
@@ -334978,7 +334354,7 @@ var require_createParseSettings = __commonJS({
     exports2.clearTSConfigMatchCache = clearTSConfigMatchCache;
     exports2.clearTSServerProjectService = clearTSServerProjectService;
     var project_service_1 = require_dist13();
-    var debug_1 = __importDefault(require_src());
+    var debug_1 = __importDefault(require_debug());
     var node_path_1 = __importDefault(require("node:path"));
     var ts = __importStar(require_typescript());
     var shared_1 = require_shared();
@@ -335293,7 +334669,7 @@ var require_useProgramFromProjectService = __commonJS({
     };
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.useProgramFromProjectService = useProgramFromProjectService;
-    var debug_1 = __importDefault(require_src());
+    var debug_1 = __importDefault(require_debug());
     var minimatch_1 = require_commonjs3();
     var node_path_1 = __importDefault(require("node:path"));
     var node_util_1 = __importDefault(require("node:util"));
@@ -335453,7 +334829,7 @@ var require_parser = __commonJS({
     exports2.parse = parse2;
     exports2.clearParseAndGenerateServicesCalls = clearParseAndGenerateServicesCalls;
     exports2.parseAndGenerateServices = parseAndGenerateServices;
-    var debug_1 = __importDefault(require_src());
+    var debug_1 = __importDefault(require_debug());
     var ast_converter_1 = require_ast_converter();
     var convert_1 = require_convert();
     var createIsolatedProgram_1 = require_createIsolatedProgram();
@@ -335678,7 +335054,7 @@ var require_parser2 = __commonJS({
     var scope_manager_1 = require_dist11();
     var typescript_estree_1 = require_dist16();
     var visitor_keys_1 = require_dist9();
-    var debug_1 = __importDefault(require_src());
+    var debug_1 = __importDefault(require_debug());
     var typescript_1 = require_typescript();
     var log = (0, debug_1.default)("typescript-eslint:parser:parser");
     function validateBoolean(value, fallback = false) {
@@ -338955,7 +338331,7 @@ var require_predicates3 = __commonJS({
     exports2.typeIsOrHasBaseType = typeIsOrHasBaseType;
     exports2.isTypeBigIntLiteralType = isTypeBigIntLiteralType;
     exports2.isTypeTemplateLiteralType = isTypeTemplateLiteralType;
-    var debug_1 = __importDefault(require_src());
+    var debug_1 = __importDefault(require_debug());
     var tsutils = __importStar(require_lib7());
     var ts = __importStar(require_typescript());
     var typeFlagUtils_1 = require_typeFlagUtils();
