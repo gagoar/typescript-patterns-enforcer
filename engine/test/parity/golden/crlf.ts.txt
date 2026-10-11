@@ -1,0 +1,6 @@
+exit 2
+ts-patterns: 3 mechanical violation(s) in <FILE>:
+  L2:8  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L4:1  no-switch-statement  switch statement — convert to a Record dispatch table (see SKILL.md Data Over Logic).  → SKILL.md Data Over Logic — convert to a Record dispatch table
+  L4:19  no-magic-numbers  No magic number: 44.  → SKILL.md Core Rule 9 — extract to a named const
+Fix these to satisfy the TypeScript patterns before continuing.

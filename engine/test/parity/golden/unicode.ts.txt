@@ -1,0 +1,4 @@
+exit 2
+ts-patterns: 1 mechanical violation(s) in <FILE>:
+  L1:48  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+Fix these to satisfy the TypeScript patterns before continuing.

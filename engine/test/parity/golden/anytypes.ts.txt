@@ -1,0 +1,31 @@
+exit 2
+ts-patterns: 28 mechanical violation(s) in <FILE>:
+  L1:8  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L2:15  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L2:29  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L2:37  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L3:15  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L3:28  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L4:12  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L4:16  no-magic-numbers  No magic number: 5.  → SKILL.md Core Rule 9 — extract to a named const
+  L5:18  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L5:36  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L5:46  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L5:52  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L6:17  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L7:17  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L7:38  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L7:54  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L7:70  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L8:21  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L8:31  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L9:29  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L10:26  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L11:37  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L11:54  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L12:13  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L13:39  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L16:23  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L17:9  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L17:17  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+Fix these to satisfy the TypeScript patterns before continuing.

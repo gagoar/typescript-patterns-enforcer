@@ -1,0 +1,11 @@
+exit 2
+ts-patterns: 8 mechanical violation(s) in <FILE>:
+  L1:1  no-narrative-comment  comment reads as history ("we found") — state the present-tense feature or invariant instead (see SKILL.md Comment Discipline).  → SKILL.md Comment Discipline — state a feature or invariant, not history
+  L3:1  no-narrative-comment  comment reads as history ("previously") — state the present-tense feature or invariant instead (see SKILL.md Comment Discipline).  → SKILL.md Comment Discipline — state a feature or invariant, not history
+  L5:1  no-narrative-comment  comment reads as history ("turns out") — state the present-tense feature or invariant instead (see SKILL.md Comment Discipline).  → SKILL.md Comment Discipline — state a feature or invariant, not history
+  L6:1  no-narrative-comment  comment reads as history ("originally") — state the present-tense feature or invariant instead (see SKILL.md Comment Discipline).  → SKILL.md Comment Discipline — state a feature or invariant, not history
+  L11:31  no-narrative-comment  comment reads as history ("used to be") — state the present-tense feature or invariant instead (see SKILL.md Comment Discipline).  → SKILL.md Comment Discipline — state a feature or invariant, not history
+  L12:1  no-narrative-comment  comment reads as history ("adversarial testing") — state the present-tense feature or invariant instead (see SKILL.md Comment Discipline).  → SKILL.md Comment Discipline — state a feature or invariant, not history
+  L13:1  no-narrative-comment  comment reads as history ("discovered") — state the present-tense feature or invariant instead (see SKILL.md Comment Discipline).  → SKILL.md Comment Discipline — state a feature or invariant, not history
+  L14:1  no-narrative-comment  comment reads as history ("after debugging") — state the present-tense feature or invariant instead (see SKILL.md Comment Discipline).  → SKILL.md Comment Discipline — state a feature or invariant, not history
+Fix these to satisfy the TypeScript patterns before continuing.

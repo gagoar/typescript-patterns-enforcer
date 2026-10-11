@@ -1,0 +1,15 @@
+exit 2
+ts-patterns: 12 mechanical violation(s) in <FILE>:
+  L1:12  require-regex-example  regex with no comment above it — say what it accepts, with a quoted input it matches and one it rejects (see SKILL.md Core Rule 11).  → SKILL.md Core Rule 11 — comment above: what it accepts, a quoted match/reject, and a pre-filled tester link
+  L3:12  require-regex-example  comment above the regex has no tester link — add a regex101.com (or equivalent) URL pre-filled with the pattern and the examples (see SKILL.md Core Rule 11).  → SKILL.md Core Rule 11 — comment above: what it accepts, a quoted match/reject, and a pre-filled tester link
+  L10:12  require-regex-example  comment above the regex has no tester link — add a regex101.com (or equivalent) URL pre-filled with the pattern and the examples (see SKILL.md Core Rule 11).  → SKILL.md Core Rule 11 — comment above: what it accepts, a quoted match/reject, and a pre-filled tester link
+  L15:12  require-regex-example  regex with no comment above it — say what it accepts, with a quoted input it matches and one it rejects (see SKILL.md Core Rule 11).  → SKILL.md Core Rule 11 — comment above: what it accepts, a quoted match/reject, and a pre-filled tester link
+  L19:13  require-regex-example  comment above the regex has no tester link — add a regex101.com (or equivalent) URL pre-filled with the pattern and the examples (see SKILL.md Core Rule 11).  → SKILL.md Core Rule 11 — comment above: what it accepts, a quoted match/reject, and a pre-filled tester link
+  L21:13  require-regex-example  comment above the regex has no quoted example — add an input it matches and one it rejects (see SKILL.md Core Rule 11).  → SKILL.md Core Rule 11 — comment above: what it accepts, a quoted match/reject, and a pre-filled tester link
+  L26:3  require-regex-example  regex with no comment above it — say what it accepts, with a quoted input it matches and one it rejects (see SKILL.md Core Rule 11).  → SKILL.md Core Rule 11 — comment above: what it accepts, a quoted match/reject, and a pre-filled tester link
+  L29:6  require-regex-example  regex with no comment above it — say what it accepts, with a quoted input it matches and one it rejects (see SKILL.md Core Rule 11).  → SKILL.md Core Rule 11 — comment above: what it accepts, a quoted match/reject, and a pre-filled tester link
+  L35:11  require-regex-example  regex with no comment above it — say what it accepts, with a quoted input it matches and one it rejects (see SKILL.md Core Rule 11).  → SKILL.md Core Rule 11 — comment above: what it accepts, a quoted match/reject, and a pre-filled tester link
+  L35:30  require-regex-example  regex with no comment above it — say what it accepts, with a quoted input it matches and one it rejects (see SKILL.md Core Rule 11).  → SKILL.md Core Rule 11 — comment above: what it accepts, a quoted match/reject, and a pre-filled tester link
+  L36:18  no-magic-numbers  No magic number: 4.  → SKILL.md Core Rule 9 — extract to a named const
+  L36:22  no-magic-numbers  No magic number: 2.  → SKILL.md Core Rule 9 — extract to a named const
+Fix these to satisfy the TypeScript patterns before continuing.

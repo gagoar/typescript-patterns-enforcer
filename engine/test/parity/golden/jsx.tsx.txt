@@ -1,0 +1,5 @@
+exit 2
+ts-patterns: 2 mechanical violation(s) in <FILE>:
+  L2:21  require-regex-example  regex with no comment above it — say what it accepts, with a quoted input it matches and one it rejects (see SKILL.md Core Rule 11).  → SKILL.md Core Rule 11 — comment above: what it accepts, a quoted match/reject, and a pre-filled tester link
+  L3:34  no-magic-numbers  No magic number: 30.  → SKILL.md Core Rule 9 — extract to a named const
+Fix these to satisfy the TypeScript patterns before continuing.
