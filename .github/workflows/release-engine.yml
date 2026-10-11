@@ -1,0 +1,68 @@
+name: release-engine
+
+# Builds the engine bundle from source in CI, checks it against the committed
+# engine/dist/check.js, and attaches it (plus SHA256SUMS) to the GitHub Release.
+#   - pull request: build and verify only; nothing is published
+#   - push of a v* tag: build, verify, publish to that tag's release
+#   - manual run: attach the engine to an EXISTING release (give the tag)
+# Uses the workflow's own GITHUB_TOKEN; no PAT.
+
+on:
+  pull_request:
+    paths: ["engine/**", ".github/workflows/release-engine.yml"]
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag to attach the engine to (e.g. v0.3.2)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  engine:
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Tag matches plugin.json
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          want="$(sed -n 's/.*"version": *"\([^"]*\)".*/\1/p' .claude-plugin/plugin.json | head -1)"
+          [ "$TAG" = "v$want" ] || { echo "tag $TAG != v$want (plugin.json)"; exit 1; }
+
+      - name: Build the engine
+        working-directory: engine
+        run: |
+          npm ci
+          npm run typecheck
+          npm run build
+
+      - name: The committed bundle must reproduce
+        run: git diff --exit-code -- engine/dist/check.js
+
+      - name: Test
+        working-directory: engine
+        run: node --test test/run.test.mjs
+
+      - name: Publish to the release
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cd engine/dist
+          sha256sum check.js > SHA256SUMS
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "$TAG" --generate-notes
+          gh release upload "$TAG" check.js SHA256SUMS --clobber
