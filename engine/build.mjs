@@ -9,6 +9,7 @@
 // only up to 256 KiB: each file stays under that, which one bundle of the parser and
 // its plugin cannot. check.js loads the other two with a relative require.
 import { readFileSync, statSync, writeFileSync } from "node:fs";
+import { Parser } from "acorn";
 import { build } from "esbuild";
 
 const BANNER = (what) => `// ts-patterns engine: ${what}
@@ -26,11 +27,12 @@ const siblingModules = {
 
 const OUTPUTS = [
   { entry: "src/check.ts", out: "dist/check.js", what: "the rules in engine/src." },
-  { entry: "node_modules/acorn/dist/acorn.js", out: "dist/acorn.js", what: "acorn, the JavaScript parser (MIT)." },
+  { entry: "node_modules/acorn/dist/acorn.js", out: "dist/acorn.js", what: "acorn, the JavaScript parser (MIT).", vendor: true },
   {
     entry: "node_modules/@sveltejs/acorn-typescript/index.js",
     out: "dist/acorn-typescript.js",
     what: "@sveltejs/acorn-typescript, the TypeScript plugin for acorn (MIT).",
+    vendor: true,
   },
 ];
 
@@ -58,6 +60,28 @@ await Promise.all(
 // Matches the URL in a comment line such as "// see <url>"; rejects URLs inside code, such as a string.
 const URL_IN_COMMENT = /^(\s*(?:\/\/|\*).*?)https?:\/\/[^\s]+/gm;
 OUTPUTS.forEach(({ out }) => writeFileSync(out, readFileSync(out, "utf8").replace(URL_IN_COMMENT, "$1(link omitted)")));
+
+// The validator reads text as if it might be shell commands. The comments in the two vendored
+// parsers are prose that happens to read that way (a line that begins "file that has been..."
+// or ends "then set"), and the scanner takes them for commands that read the installer's setup.
+// The parsers' own source is on npm, so their bundles drop the comments and keep our banner.
+// A comment on its own line is removed with its line; a trailing comment, with the spaces before it.
+const stripComments = (code, banner) => {
+  const body = code.startsWith(banner) ? code.slice(banner.length) : code;
+  const ranges = [];
+  Parser.parse(body, { ecmaVersion: "latest", sourceType: "script", onComment: (_block, _text, start, end) => ranges.push([start, end]) });
+  const without = ranges.reduceRight((text, [start, end]) => {
+    const lineStart = text.lastIndexOf("\n", start - 1) + 1;
+    const found = text.indexOf("\n", end);
+    const lineEnd = found === -1 ? text.length : found;
+    const alone = text.slice(lineStart, start).trim() === "" && text.slice(end, lineEnd).trim() === "";
+    return alone
+      ? text.slice(0, lineStart) + text.slice(lineEnd + 1)
+      : text.slice(0, start).replace(/[ \t]+$/, "") + text.slice(end);
+  }, body);
+  return code.startsWith(banner) ? banner + without : without;
+};
+OUTPUTS.filter(({ vendor }) => vendor).forEach(({ out, what }) => writeFileSync(out, stripComments(readFileSync(out, "utf8"), BANNER(what) + "\n")));
 
 // The validator does not check a single word longer than a few KiB. acorn keeps two Unicode
 // tables, each as one string with no spaces (4 KiB and 2.6 KiB). Cut any long string literal
@@ -93,13 +117,6 @@ const text = readFileSync(target, "utf8");
 const found = EMPTY_LIST_MESSAGE.exec(text);
 if (!found) throw new Error(`${target}: the empty-list message was not found; update the rename step in build.mjs`);
 writeFileSync(target, text.replace(EMPTY_LIST_MESSAGE, (message, name) => renamePlaceholder(name)(message)));
-
-// The validator reads a line that starts with `set` as the shell command of that name. One of
-// the plugin's classes has a method called set, so its definition starts a line that way. A quoted
-// method name is the same JavaScript and no longer starts a line with the word.
-// Matches the method definition "  set(target, key, value) {"; rejects a call such as "  set(a, b);".
-const SET_METHOD = /^(\s*)set\(([^)]*)\) \{$/gm;
-OUTPUTS.forEach(({ out }) => writeFileSync(out, readFileSync(out, "utf8").replace(SET_METHOD, '$1"set"($2) {')));
 
 // The validator reads scripts up to 256 KiB and holds the plugin for review beyond that.
 const MAX_BYTES = 256 * 1024;

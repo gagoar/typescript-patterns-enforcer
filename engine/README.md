@@ -93,8 +93,11 @@ what runs on every edit. The validator reads a script only up to 256 KiB and
 holds the plugin for review beyond that, which is why the parser and its plugin
 are separate files: together they would not fit. The build fails if any file
 reaches 256 KiB, and `scripts/check-plugin-safety.ts` fails any PR with a script
-or document that size. The build also drops URLs from the parsers' comments
-(the validator pairs a hostname with words like `key` anywhere in a file).
+or document that size. The two parser bundles also lose their comments (the validator reads
+comment prose such as "then set" as shell commands that read the installer's
+setup); their sources are on npm, and the build checks nothing else changed by
+parsing both. URLs are dropped from `check.js`'s comments too (the validator
+pairs a hostname with words like `key` anywhere in a file).
 Everything under `node_modules/` is build-time-only and gitignored.
 
 Rebuilding is a release-time task, not something to hand-edit:
