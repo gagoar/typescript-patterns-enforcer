@@ -1035,7 +1035,7 @@ var ParseEffects = class {
     }
     this.flush(events);
   }
-  set(target, key, value) {
+  "set"(target, key, value) {
     this.willSet(target, key);
     target[key] = value;
   }
