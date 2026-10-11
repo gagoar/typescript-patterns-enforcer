@@ -136,6 +136,16 @@ Rules and checks live in `engine/src/`. Run `npm ci && npm run release` inside `
 
 Full guide: [gagoar.github.io/typescript-patterns-enforcer](https://gagoar.github.io/typescript-patterns-enforcer/guide.html)
 
+## Privacy
+
+This plugin collects nothing. The hook reads the path of the file Claude just edited, then reads that one `.ts` or `.tsx` file from your disk and checks it in the same process. It writes no files, makes no network calls, starts no other process, and keeps no state between runs. The skill and the review agent are text that Claude reads as part of your session; the plugin itself sends that text nowhere.
+
+Claude Code handles your session under Anthropic's own terms and privacy policy, which this plugin does not change.
+
+## Terms
+
+The plugin is provided under the MIT license (see [LICENSE](./LICENSE)), as is, without warranty. The mechanical checks flag patterns; they do not guarantee that code is correct, secure or compliant with any standard. For help or to report a problem, open an issue at [github.com/gagoar/typescript-patterns-enforcer/issues](https://github.com/gagoar/typescript-patterns-enforcer/issues).
+
 ## License
 
 MIT. See [LICENSE](./LICENSE).
@@ -153,6 +163,6 @@ claude plugin validate . --strict
 
 The gate fails on three things the plugin-directory upload scanner holds for review:
 
-- A skill, agent, or command that pre-approves `Write`, `Edit`, or `Bash` with no path scope. Write `Write(./docs/**)`, not `Write`.
+- A skill, agent, or command that pre-approves `Write`, `Edit`, or `Bash` with no path scope. Write `Write(./src/**)`, not `Write`.
 - Shipped code that copies the whole environment (spreading or enumerating the whole environment object). Read the named variables you need.
 - A committed native executable. The scanner cannot read it.
