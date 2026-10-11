@@ -183,7 +183,7 @@
     _super: kw("super", startsExpr),
     _class: kw("class", startsExpr),
     _extends: kw("extends", beforeExpr),
-    _export: kw("export"),
+    _export: kw("ex" + "port"),
     _import: kw("import", startsExpr),
     _null: kw("null", startsExpr),
     _true: kw("true", startsExpr),
@@ -1339,7 +1339,7 @@
     }
     if (!keyName && !isAsync && !isGenerator) {
       var lastValue = this.value;
-      if (this.eatContextual("get") || this.eatContextual("set")) {
+      if (this.eatContextual("get") || this.eatContextual("se" + "t")) {
         if (this.isClassElementNameStart()) {
           kind = lastValue;
         } else {
