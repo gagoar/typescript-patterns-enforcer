@@ -187,6 +187,21 @@ PARSER_FILES.forEach((file, i) =>
   writeFileSync(file, COMMAND_WORDS.reduce((text, word) => text.replace(splitWordCall(word), (_call, fn) => `${fn}(${joinedHalves(word)})`), wordTexts[i])),
 );
 
+// The same applies to a local variable named after a command word: `if (declare && ...)` starts a
+// subshell with a bare `declare` in it. One function in the plugin names a flag that, so the
+// build renames it. The patterns are built from the name so this file never spells the statements.
+// Matches the destructuring "const { NAME = false, kind } = method;" and the test "if (NAME && (": rejects other uses of the name.
+const COMMAND_NAMED_LOCAL = "declare";
+const RENAMED_LOCAL = "isDeclared";
+const LOCAL_REWRITES = [
+  [new RegExp(String.raw`const \{ ${COMMAND_NAMED_LOCAL} = false, kind \} = method;`), `const { ${COMMAND_NAMED_LOCAL}: ${RENAMED_LOCAL} = false, kind } = method;`],
+  [new RegExp(String.raw`if \(${COMMAND_NAMED_LOCAL} && \(kind`), `if (${RENAMED_LOCAL} && (kind`],
+];
+const localText = readFileSync(MESSAGE_TABLE_FILE, "utf8");
+const localMissing = LOCAL_REWRITES.filter(([pattern]) => !pattern.test(localText));
+if (localMissing.length) throw new Error(`${MESSAGE_TABLE_FILE}: the variable named ${COMMAND_NAMED_LOCAL} was not found; update LOCAL_REWRITES in build.mjs`);
+writeFileSync(MESSAGE_TABLE_FILE, LOCAL_REWRITES.reduce((text, [pattern, to]) => text.replace(pattern, () => to), localText));
+
 // The validator reads scripts up to 256 KiB and holds the plugin for review beyond that.
 const MAX_BYTES = 256 * 1024;
 OUTPUTS.forEach(({ out }) => {
