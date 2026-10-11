@@ -2,7 +2,7 @@
   "name": "ts-patterns-engine",
   "private": true,
   "version": "0.4.0",
-  "description": "Self-contained mechanical gate for the ts-patterns plugin. Bundled at release time with @babel/parser; never reads or writes the target repo's own ESLint/tsconfig.",
+  "description": "Self-contained mechanical gate for the ts-patterns plugin. Bundled at release time with acorn and its TypeScript plugin; never reads or writes the target repo's own ESLint/tsconfig.",
   "type": "commonjs",
   "scripts": {
     "build": "node build.mjs",
@@ -12,9 +12,9 @@
     "release": "npm ci && npm run typecheck && npm run build && npm test"
   },
   "devDependencies": {
-    "@babel/parser": "7.29.9",
-    "@babel/types": "7.29.8",
+    "@sveltejs/acorn-typescript": "1.0.13",
     "@types/node": "22.10.2",
+    "acorn": "8.19.0",
     "esbuild": "0.28.2",
     "typescript": "6.0.3"
   }

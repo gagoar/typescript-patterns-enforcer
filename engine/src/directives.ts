@@ -69,7 +69,7 @@ function parseComment(comment: Comment): Parsed {
   if (!match) return none;
   const [, kind, list] = match;
   const rules = ruleIdsIn(list);
-  const isBlock = comment.type === "CommentBlock";
+  const isBlock = comment.type === "Block";
   const singleLine = comment.loc.start.line === comment.loc.end.line;
   if (kind === "eslint-disable-next-line") {
     return { lines: [{ line: comment.loc.end.line + FIRST_LINE_OFFSET, rules }], blocks: [] };

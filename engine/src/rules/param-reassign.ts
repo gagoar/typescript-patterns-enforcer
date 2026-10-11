@@ -12,9 +12,6 @@ const FUNCTION_TYPES: ReadonlySet<string> = new Set([
   "FunctionDeclaration",
   "FunctionExpression",
   "ArrowFunctionExpression",
-  "ObjectMethod",
-  "ClassMethod",
-  "ClassPrivateMethod",
 ]);
 
 type BindingCollector = (pattern: AstNode, into: Set<string>) => void;

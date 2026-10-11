@@ -63,6 +63,9 @@ function commentBlockEndingOn(comments: readonly Comment[], lines: readonly stri
   return [...commentBlockEndingOn(comments, lines, comment.loc.start.line - 1), comment];
 }
 
+// A regex literal is a `Literal` whose `regex` field holds its pattern and flags.
+const isRegExpLiteral = (node: AstNode): boolean => node.type === "Literal" && node["regex"] !== undefined;
+
 function isRegExpConstruction(node: AstNode): boolean {
   const callee = child(node, "callee");
   return CONSTRUCTIONS.has(node.type) && callee?.type === "Identifier" && nameOf(callee) === REGEXP_CONSTRUCTOR;
@@ -71,7 +74,7 @@ function isRegExpConstruction(node: AstNode): boolean {
 export const requireRegexExample: Rule = {
   id: "require-regex-example",
   enter: ({ node, ancestors }, context) => {
-    if (node.type !== "RegExpLiteral" && !isRegExpConstruction(node)) return;
+    if (!isRegExpLiteral(node) && !isRegExpConstruction(node)) return;
     const above = previousNonBlankLine(context.lines, anchorLine(node, ancestors));
     const block = commentBlockEndingOn(context.comments, context.lines, above);
     if (!block.length) {

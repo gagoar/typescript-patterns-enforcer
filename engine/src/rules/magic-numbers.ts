@@ -15,10 +15,10 @@ type Num = number | bigint;
 const IGNORED: ReadonlySet<Num> = new Set([0, 1, -1]);
 const MAX_ARRAY_LENGTH = 4_294_967_295; // 2 ** 32 - 1: no array index reaches it
 const RADIX_ARGUMENT = 1; // parseInt(text, radix)
-const NUMERIC_TYPES: ReadonlySet<string> = new Set(["NumericLiteral", "BigIntLiteral"]);
-const MEMBER_TYPES: ReadonlySet<string> = new Set(["MemberExpression", "OptionalMemberExpression"]);
-const CALL_TYPES: ReadonlySet<string> = new Set(["CallExpression", "OptionalCallExpression"]);
-const CLASS_FIELD_TYPES: ReadonlySet<string> = new Set(["ClassProperty", "ClassPrivateProperty"]);
+const LITERAL = "Literal";
+const MEMBER = "MemberExpression";
+const CALL = "CallExpression";
+const CLASS_FIELD = "PropertyDefinition";
 const SIGNS: readonly string[] = ["-", "+"];
 
 // How far above the number a node sits, counted from the number's full form
@@ -38,15 +38,14 @@ interface Number_ {
 const negate = (value: Num): Num => -value;
 const signed = (value: Num, sign: string | undefined): Num => (sign === "-" ? negate(value) : value);
 
+// The value of a numeric literal; strings, booleans, regexes and null have none.
 function magnitudeOf(node: AstNode): Num | undefined {
   const value = node["value"];
-  if (node.type === "NumericLiteral") return typeof value === "number" ? value : undefined;
-  return typeof value === "string" ? BigInt(value) : undefined;
+  return typeof value === "number" || typeof value === "bigint" ? value : undefined;
 }
 
 function rawOf(node: AstNode): string {
-  const extra = node["extra"];
-  const raw = typeof extra === "object" && extra !== null && "raw" in extra ? extra.raw : undefined;
+  const raw = node["raw"];
   return typeof raw === "string" ? raw : String(node["value"]);
 }
 
@@ -57,7 +56,7 @@ function signOf(parent: AstNode | undefined): string | undefined {
 
 function toNumber_(visit: Visit): Number_ | undefined {
   const { node, ancestors } = visit;
-  const magnitude = NUMERIC_TYPES.has(node.type) ? magnitudeOf(node) : undefined;
+  const magnitude = node.type === LITERAL ? magnitudeOf(node) : undefined;
   if (magnitude === undefined) return undefined;
   const sign = signOf(ancestors.at(-PARENT));
   const hasSign = sign !== undefined;
@@ -90,18 +89,17 @@ function isInsideIndexedAccessType({ above }: Number_): boolean {
 
 function isReadonlyClassField({ above }: Number_): boolean {
   const parent = above.at(-PARENT);
-  return parent !== undefined && CLASS_FIELD_TYPES.has(parent.type) && parent["readonly"] === true;
+  return parent?.type === CLASS_FIELD && parent["readonly"] === true;
 }
 
 function isParseIntRadix({ above, full }: Number_): boolean {
   const call = above.at(-PARENT);
-  if (call === undefined || !CALL_TYPES.has(call.type)) return false;
+  if (call?.type !== CALL) return false;
   if (childList(call, "arguments")[RADIX_ARGUMENT] !== full) return false;
   const callee = child(call, "callee");
   const isParseInt = callee?.type === "Identifier" && nameOf(callee) === "parseInt";
   const isNumberParseInt =
-    callee !== undefined &&
-    MEMBER_TYPES.has(callee.type) &&
+    callee?.type === MEMBER &&
     nameOf(child(callee, "object")) === "Number" &&
     nameOf(child(callee, "property")) === "parseInt";
   return isParseInt || isNumberParseInt;
@@ -112,7 +110,7 @@ const isJsxNumber = ({ above }: Number_): boolean => above.at(-PARENT)?.type.sta
 // An integer index that fits in an array: a[0], a[2], a[0xAB]; not a[-1] or a[2.5].
 function isArrayIndex({ above, full, magnitude, sign }: Number_): boolean {
   const access = above.at(-PARENT);
-  if (access === undefined || !MEMBER_TYPES.has(access.type) || child(access, "property") !== full) return false;
+  if (access?.type !== MEMBER || child(access, "property") !== full) return false;
   const value = signed(magnitude, sign);
   const isInteger = typeof value === "bigint" || Number.isInteger(value);
   return isInteger && value >= 0 && value < MAX_ARRAY_LENGTH;

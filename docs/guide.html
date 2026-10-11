@@ -1,4 +1,4 @@
-<title>ts-patterns — TypeScript patterns enforcer for Claude Code</title>
+<title>TypeScript Patterns Enforcer — TypeScript patterns for Claude Code</title>
 <style>
 :root {
   --ivory:    #FAF9F5;
@@ -88,7 +88,7 @@ tr:last-child td { border-bottom: none; }
 
   <div class="hero">
     <div class="hero-eyebrow">Claude Code Plugin</div>
-    <h1>ts-patterns</h1>
+    <h1>TypeScript Patterns Enforcer</h1>
     <p class="hero-subtitle">TypeScript best practices — inline guidance and a dedicated reviewer.</p>
     <div class="hero-summary">Two components: an inline skill that watches .ts/.tsx files and guides in real time, plus a subagent for full PR reviews, large refactors, and JavaScript-to-TypeScript migrations.</div>
   </div>
@@ -110,13 +110,13 @@ tr:last-child td { border-bottom: none; }
         <div class="install-card">
           <pre><span style="color:var(--gray-500)"># via gago-plugins marketplace</span>
 <span style="color:var(--clay)">/plugin marketplace add</span> <span style="color:var(--olive)">gagoar/gago-plugins</span>
-<span style="color:var(--clay)">/plugin install</span> <span style="color:var(--olive)">ts-patterns@gago-plugins</span>
+<span style="color:var(--clay)">/plugin install</span> <span style="color:var(--olive)">typescript-patterns-enforcer@gago-plugins</span>
 <span style="color:var(--clay)">/reload-plugins</span></pre>
         </div>
         <div class="install-card">
           <pre><span style="color:var(--gray-500)"># standalone</span>
 <span style="color:var(--clay)">/plugin marketplace add</span> <span style="color:var(--olive)">gagoar/typescript-patterns-enforcer</span>
-<span style="color:var(--clay)">/plugin install</span> <span style="color:var(--olive)">ts-patterns@ts-patterns</span>
+<span style="color:var(--clay)">/plugin install</span> <span style="color:var(--olive)">typescript-patterns-enforcer@typescript-patterns-enforcer</span>
 <span style="color:var(--clay)">/reload-plugins</span></pre>
         </div>
       </section>
@@ -127,12 +127,12 @@ tr:last-child td { border-bottom: none; }
         <div class="eyebrow">What's included</div>
         <h2>Components</h2>
         <div class="skill-row">
-          <div class="skill-pill"><span class="dot"></span>/ts-patterns:check — inline skill, always active on .ts/.tsx files</div>
-          <div class="skill-pill"><span class="dot green"></span>ts-patterns:review — subagent, spawn for full reviews</div>
+          <div class="skill-pill"><span class="dot"></span>/typescript-patterns-enforcer:check — inline skill, always active on .ts/.tsx files</div>
+          <div class="skill-pill"><span class="dot green"></span>typescript-patterns-enforcer:review — subagent, spawn for full reviews</div>
         </div>
         <ul class="callout-list">
-          <li><span class="callout-key">/ts-patterns:check</span><span class="callout-val">Automatically active while writing or editing TypeScript. Provides inline guidance on types, patterns, and anti-patterns without being invoked.</span></li>
-          <li><span class="callout-key">ts-patterns:review</span><span class="callout-val">Spawn via the Agent tool for PR reviews, large refactors, or converting JavaScript to TypeScript. Runs as a dedicated subagent.</span></li>
+          <li><span class="callout-key">/typescript-patterns-enforcer:check</span><span class="callout-val">Automatically active while writing or editing TypeScript. Provides inline guidance on types, patterns, and anti-patterns without being invoked.</span></li>
+          <li><span class="callout-key">typescript-patterns-enforcer:review</span><span class="callout-val">Spawn via the Agent tool for PR reviews, large refactors, or converting JavaScript to TypeScript. Runs as a dedicated subagent.</span></li>
         </ul>
       </section>
 
@@ -192,7 +192,7 @@ tr:last-child td { border-bottom: none; }
           <a href="https://github.com/gagoar/typescript-patterns-enforcer" target="_blank">github.com/gagoar/typescript-patterns-enforcer</a>
           <a href="https://gagoar.github.io/gago-plugins" target="_blank">gago-plugins hub</a>
         </div>
-        <div class="footer-meta">MIT license · ts-patterns v0.4.0</div>
+        <div class="footer-meta">MIT license · TypeScript Patterns Enforcer v0.5.0</div>
       </div>
 
     </div>

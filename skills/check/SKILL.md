@@ -1,7 +1,7 @@
 ---
 name: check
 description: >
-  /ts-patterns:check — Enforce TypeScript best practices inline while writing or editing
+  /typescript-patterns-enforcer:check — Enforce TypeScript best practices inline while writing or editing
   .ts/.tsx files: no any, explicit return types, readonly by default, async/await only.
 
   Trigger automatically when:
@@ -15,7 +15,7 @@ description: >
   this TS file", "enforce patterns", "check type safety", "improve types".
 
   This skill applies inline. For full PR reviews or large multi-file refactors, the
-  ts-patterns agent is available for deeper delegated work.
+  typescript-patterns-enforcer agent is available for deeper delegated work.
 ---
 
 # TypeScript Pattern Enforcement
