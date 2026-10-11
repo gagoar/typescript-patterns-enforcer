@@ -119,6 +119,9 @@ tr:last-child td { border-bottom: none; }
 <span style="color:var(--clay)">/plugin install</span> <span style="color:var(--olive)">typescript-patterns-enforcer@typescript-patterns-enforcer</span>
 <span style="color:var(--clay)">/reload-plugins</span></pre>
         </div>
+        <h3>Renamed from ts-patterns</h3>
+        <p>Before v0.5.0 this plugin was called <code>ts-patterns</code>. The plugin directory held that name as too close to other plugins. If you installed the old name, run <code>/plugin uninstall ts-patterns@gago-plugins</code>, then install the new one.</p>
+        <p>The skill is now <code>/typescript-patterns-enforcer:check</code> and the agent is <code>typescript-patterns-enforcer:review</code>. Three things keep the old name, so nothing you wrote needs to change: the <code>ts-patterns:</code> prefix on the hook's messages, the <code>ts-patterns/&lt;rule&gt;</code> names in <code>eslint-disable</code> comments, and the <code>ts-patterns: allow exhaustive switch</code> line in a project's <code>CLAUDE.md</code>.</p>
       </section>
 
       <hr class="rule">
