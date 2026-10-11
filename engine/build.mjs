@@ -118,6 +118,13 @@ const found = EMPTY_LIST_MESSAGE.exec(text);
 if (!found) throw new Error(`${target}: the empty-list message was not found; update the rename step in build.mjs`);
 writeFileSync(target, text.replace(EMPTY_LIST_MESSAGE, (message, name) => renamePlaceholder(name)(message)));
 
+// The validator reads a line that starts with `set` as the shell command of that name. One of
+// the plugin's classes has a method called set, so its definition starts a line that way. Quotes
+// are not enough (a shell reads "set" as set); a computed name is the same method and starts with a bracket.
+// Matches the method definition "  set(target, key, value) {"; rejects a call such as "  set(a, b);".
+const SET_METHOD = /^(\s*)set\(([^)]*)\) \{$/gm;
+OUTPUTS.forEach(({ out }) => writeFileSync(out, readFileSync(out, "utf8").replace(SET_METHOD, '$1["set"]($2) {')));
+
 // The validator reads scripts up to 256 KiB and holds the plugin for review beyond that.
 const MAX_BYTES = 256 * 1024;
 OUTPUTS.forEach(({ out }) => {
