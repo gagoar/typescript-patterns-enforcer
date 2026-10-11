@@ -1,7 +1,7 @@
 {
   "name": "ts-patterns",
   "displayName": "ts-patterns",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Enforce TypeScript best practices and patterns \u2014 inline skill guidance plus a dedicated subagent for reviews and refactors.",
   "author": {
     "name": "gagoar",
