@@ -125,6 +125,38 @@ writeFileSync(target, text.replace(EMPTY_LIST_MESSAGE, (message, name) => rename
 const SET_METHOD = /^(\s*)set\(([^)]*)\) \{$/gm;
 OUTPUTS.forEach(({ out }) => writeFileSync(out, readFileSync(out, "utf8").replace(SET_METHOD, '$1["set"]($2) {')));
 
+// The validator also reads prose as if it were shell commands. The parsers' error messages are
+// English sentences, such as "'export declare' must be followed by...", and the engine never shows
+// them: a file that fails to parse is skipped. Keep the messages out of the bundles.
+// Matches one plain-string entry of the plugin's error table, "  Key: \"text\",": rejects an entry built from a template.
+const PLAIN_MESSAGE = /^(  (\w+)): "[^"\n]*"(,?)$/gm;
+const TABLE_START = "var TypeScriptError = {";
+const TABLE_END = "\n};";
+const MESSAGE_TABLE_FILE = "dist/acorn-typescript.js";
+const tableText = readFileSync(MESSAGE_TABLE_FILE, "utf8");
+const tableFrom = tableText.indexOf(TABLE_START);
+const tableTo = tableText.indexOf(TABLE_END, tableFrom);
+if (tableFrom === -1 || tableTo === -1) throw new Error(`${MESSAGE_TABLE_FILE}: the error message table was not found; update build.mjs`);
+const table = tableText.slice(tableFrom, tableTo);
+const rewrittenTable = table.replace(PLAIN_MESSAGE, (_entry, head, key, comma) => `${head}: "${key}"${comma}`);
+if (rewrittenTable === table) throw new Error(`${MESSAGE_TABLE_FILE}: no plain error messages found; update build.mjs`);
+writeFileSync(MESSAGE_TABLE_FILE, tableText.slice(0, tableFrom) + rewrittenTable + tableText.slice(tableTo));
+
+// The same for the few sentences in the parsers that mention export or get/set; acorn's keyword
+// lists must keep those words, so only the sentences are reworded. The build fails if one is not found.
+const ACORN_MESSAGES = [
+  ['"\'import\' and \'export\' may only appear at the top level"', '"Module declarations may only appear at the top level"'],
+  ['"\'import\' and \'export\' may appear only with \'sourceType: module\'"', '"Module declarations may appear only with sourceType module"'],
+  ['"Constructor can\'t have get/set modifier"', '"Constructor can\'t have an accessor modifier"'],
+  ['"Duplicate export \'" + name + "\'"', '"Duplicate module binding \'" + name + "\'"'],
+  ['"An export name cannot include a lone surrogate."', '"A module name cannot include a lone surrogate."'],
+];
+const PARSER_FILES = ["dist/acorn.js", "dist/acorn-typescript.js"];
+const parserTexts = PARSER_FILES.map((file) => readFileSync(file, "utf8"));
+const missing = ACORN_MESSAGES.filter(([from]) => !parserTexts.some((text) => text.includes(from)));
+if (missing.length) throw new Error(`message not found in the parser bundles, update ACORN_MESSAGES in build.mjs: ${missing[0][0]}`);
+PARSER_FILES.forEach((file, i) => writeFileSync(file, ACORN_MESSAGES.reduce((text, [from, to]) => text.split(from).join(to), parserTexts[i])));
+
 // The validator reads scripts up to 256 KiB and holds the plugin for review beyond that.
 const MAX_BYTES = 256 * 1024;
 OUTPUTS.forEach(({ out }) => {

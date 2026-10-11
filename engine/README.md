@@ -96,7 +96,9 @@ reaches 256 KiB, and `scripts/check-plugin-safety.ts` fails any PR with a script
 or document that size. The two parser bundles also lose their comments (the validator reads
 comment prose such as "then set" as shell commands that read the installer's
 setup); their sources are on npm, and the build checks nothing else changed by
-parsing both. URLs are dropped from `check.js`'s comments too (the validator
+parsing both. The error messages are replaced too (the engine never shows a parse
+error, and sentences such as "'export declare' must be followed by..." read as
+shell commands to the validator). URLs are dropped from `check.js`'s comments too (the validator
 pairs a hostname with words like `key` anywhere in a file).
 Everything under `node_modules/` is build-time-only and gitignored.
 
