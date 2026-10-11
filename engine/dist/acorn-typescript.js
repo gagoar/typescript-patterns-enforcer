@@ -4163,8 +4163,8 @@ function tsPlugin(options) {
             this.raise(typeParameters.start, TypeScriptError.ConstructorHasTypeParameters);
           }
         }
-        const { declare = false, kind } = method;
-        if (declare && (kind === "get" || kind === "set")) {
+        const { declare: isDeclared = false, kind } = method;
+        if (isDeclared && (kind === "get" || kind === "set")) {
           this.raise(method.start, TypeScriptError.DeclareAccessor({ kind }));
         }
         if (typeParameters) method.typeParameters = typeParameters;
