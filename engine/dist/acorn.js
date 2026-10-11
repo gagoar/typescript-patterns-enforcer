@@ -818,10 +818,10 @@
         }
         if (!this.options.allowImportExportEverywhere) {
           if (!topLevel) {
-            this.raise(this.start, "'import' and 'export' may only appear at the top level");
+            this.raise(this.start, "Module declarations may only appear at the top level");
           }
           if (!this.inModule) {
-            this.raise(this.start, "'import' and 'export' may appear only with 'sourceType: module'");
+            this.raise(this.start, "Module declarations may appear only with sourceType module");
           }
         }
         return starttype === types$1._import ? this.parseImport(node) : this.parseExport(node, exports$1);
@@ -1359,7 +1359,7 @@
       var isConstructor = !node.static && checkKeyName(node, "constructor");
       var allowsDirectSuper = isConstructor && constructorAllowsSuper;
       if (isConstructor && kind !== "method") {
-        this.raise(node.key.start, "Constructor can't have get/set modifier");
+        this.raise(node.key.start, "Constructor can't have an accessor modifier");
       }
       node.kind = isConstructor ? "constructor" : kind;
       this.parseClassMethod(node, isGenerator, isAsync, allowsDirectSuper);
@@ -1599,7 +1599,7 @@
       name = name.type === "Identifier" ? name.name : name.value;
     }
     if (hasOwn(exports$1, name)) {
-      this.raiseRecoverable(pos, "Duplicate export '" + name + "'");
+      this.raiseRecoverable(pos, "Duplicate module binding '" + name + "'");
     }
     exports$1[name] = true;
   };
@@ -1775,7 +1775,7 @@
     if (this.options.ecmaVersion >= 13 && this.type === types$1.string) {
       var stringLiteral = this.parseLiteral(this.value);
       if (loneSurrogate.test(stringLiteral.value)) {
-        this.raise(stringLiteral.start, "An export name cannot include a lone surrogate.");
+        this.raise(stringLiteral.start, "A module name cannot include a lone surrogate.");
       }
       return stringLiteral;
     }
