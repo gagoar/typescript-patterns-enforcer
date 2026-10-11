@@ -130,3 +130,18 @@ Full guide: [gagoar.github.io/typescript-patterns-enforcer](https://gagoar.githu
 MIT. See [LICENSE](./LICENSE).
 
 Icon: "Pattern" by Side Project from [Noun Project](https://thenounproject.com/icon/pattern-8298196/) (CC BY 3.0). See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## Automated gate
+
+CI runs `scripts/check-plugin-safety.ts` and `claude plugin validate --strict` on every PR. Run both before you push:
+
+```
+node scripts/check-plugin-safety.ts .
+claude plugin validate . --strict
+```
+
+The gate fails on three things the plugin-directory upload scanner holds for review:
+
+- A skill, agent, or command that pre-approves `Write`, `Edit`, or `Bash` with no path scope. Write `Write(./docs/**)`, not `Write`.
+- Shipped code that copies the whole environment (`...process.env`, `Object.keys(process.env)`). Read the named variables you need.
+- A committed native executable. The scanner cannot read it.
