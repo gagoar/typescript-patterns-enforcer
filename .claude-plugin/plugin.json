@@ -8,6 +8,10 @@
     "url": "https://github.com/gagoar"
   },
   "homepage": "https://gagoar.github.io/typescript-patterns-enforcer/",
+  "documentationUrl": "https://gagoar.github.io/typescript-patterns-enforcer/guide.html",
+  "supportUrl": "https://github.com/gagoar/typescript-patterns-enforcer/issues",
+  "privacyPolicyUrl": "https://github.com/gagoar/typescript-patterns-enforcer#privacy",
+  "termsOfServiceUrl": "https://github.com/gagoar/typescript-patterns-enforcer#terms",
   "repository": "https://github.com/gagoar/typescript-patterns-enforcer",
   "license": "MIT",
   "keywords": [
@@ -16,7 +20,7 @@
     "code-quality",
     "linting",
     "best-practices",
-        "hooks",
+    "hooks",
     "code-review"
   ],
   "skills": [

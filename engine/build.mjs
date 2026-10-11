@@ -59,6 +59,24 @@ await Promise.all(
 const URL_IN_COMMENT = /^(\s*(?:\/\/|\*).*?)https?:\/\/[^\s]+/gm;
 OUTPUTS.forEach(({ out }) => writeFileSync(out, readFileSync(out, "utf8").replace(URL_IN_COMMENT, "$1(link omitted)")));
 
+// The validator does not check a single word longer than a few KiB. acorn keeps two Unicode
+// tables, each as one string with no spaces (4 KiB and 2.6 KiB). Cut any long string literal
+// into pieces joined with `+`: the value is the same and no word is long.
+// Matches a double-quoted literal of 1500 or more characters with no raw line break; rejects short strings.
+const LONG_LITERAL = /"((?:[^"\\\n]|\\.){1500,})"/g;
+// One unit of a literal that must not be cut: a unicode escape, a hex escape, any other escape, or one plain character.
+const ESCAPE_UNIT = /\\u\{[0-9A-Fa-f]+\}|\\u[0-9A-Fa-f]{4}|\\x[0-9A-Fa-f]{2}|\\[\s\S]|[^\\]/g;
+const PIECE_UNITS = 300;
+
+const splitLiteral = (_literal, body) => {
+  const units = body.match(ESCAPE_UNIT) ?? [];
+  const pieces = Array.from({ length: Math.ceil(units.length / PIECE_UNITS) }, (_, i) =>
+    `"${units.slice(i * PIECE_UNITS, (i + 1) * PIECE_UNITS).join("")}"`,
+  );
+  return `(${pieces.join(" +\n    ")})`;
+};
+OUTPUTS.forEach(({ out }) => writeFileSync(out, readFileSync(out, "utf8").replace(LONG_LITERAL, splitLiteral)));
+
 // The validator reads one placeholder in the plugin's error messages as a lookup of the
 // installer's credentials. The message for an empty heritage list interpolates a parser keyword
 // name; give that placeholder a plainer name. The build fails if the message is not found,

@@ -136,6 +136,16 @@ Rules and checks live in `engine/src/`. Run `npm ci && npm run release` inside `
 
 Full guide: [gagoar.github.io/typescript-patterns-enforcer](https://gagoar.github.io/typescript-patterns-enforcer/guide.html)
 
+## Privacy
+
+This plugin collects nothing. The hook reads the path of the file Claude just edited, then reads that one `.ts` or `.tsx` file from your disk and checks it in the same process. It writes no files, makes no network calls, starts no other process, and keeps no state between runs. The skill and the review agent are text that Claude reads as part of your session; the plugin itself sends that text nowhere.
+
+Claude Code handles your session under Anthropic's own terms and privacy policy, which this plugin does not change.
+
+## Terms
+
+The plugin is provided under the MIT license (see [LICENSE](./LICENSE)), as is, without warranty. The mechanical checks flag patterns; they do not guarantee that code is correct, secure or compliant with any standard. For help or to report a problem, open an issue at [github.com/gagoar/typescript-patterns-enforcer/issues](https://github.com/gagoar/typescript-patterns-enforcer/issues).
+
 ## License
 
 MIT. See [LICENSE](./LICENSE).
