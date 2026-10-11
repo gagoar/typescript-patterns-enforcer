@@ -1,6 +1,6 @@
-// A dependency-free view of the Babel AST: just enough structure for the rules
-// to read node types, child links and source positions. The parser itself is
-// the only runtime dependency (see parse.ts).
+// A dependency-free view of the ESTree AST (with the TypeScript nodes the parser
+// adds): just enough structure for the rules to read node types, child links and
+// source positions. The parser itself is the only runtime dependency (see parse.ts).
 
 export interface Position {
   readonly line: number; // 1-based
@@ -21,7 +21,7 @@ export interface AstNode {
 }
 
 export interface Comment {
-  readonly type: "CommentBlock" | "CommentLine";
+  readonly type: "Block" | "Line";
   readonly value: string;
   readonly loc: Loc;
 }
@@ -38,17 +38,8 @@ export interface Visitor {
   readonly exit?: (visit: Visit) => void;
 }
 
-// Keys that hold bookkeeping, not syntax: following them would walk comments
-// twice or leave the tree.
-const NON_CHILD_KEYS: ReadonlySet<string> = new Set([
-  "loc",
-  "extra",
-  "leadingComments",
-  "trailingComments",
-  "innerComments",
-  "comments",
-  "errors",
-]);
+// Keys that hold positions, not syntax.
+const NON_CHILD_KEYS: ReadonlySet<string> = new Set(["loc"]);
 
 export function isNode(value: unknown): value is AstNode {
   return typeof value === "object" && value !== null && "type" in value && typeof value.type === "string";

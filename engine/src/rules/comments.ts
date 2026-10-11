@@ -40,7 +40,7 @@ function execDirective(pattern: RegExp, text: string): Directive | undefined {
 }
 
 function findDirective(comment: Comment): Directive | undefined {
-  if (comment.type === "CommentLine") {
+  if (comment.type === "Line") {
     return execDirective(PRAGMA_LINE, `//${comment.value}`) ?? execDirective(DIRECTIVE_LINE, comment.value);
   }
   const lines = comment.value.split(LINE_BREAK);
@@ -55,10 +55,7 @@ function graphemeCount(text: string): number {
 // The first statement decides whether a `@ts-nocheck` is a real file pragma;
 // "use strict" style directives count as statements, as they do in ESTree.
 function firstStatementLine(program: AstNode): number | undefined {
-  const first = [...childList(program, "directives"), ...childList(program, "body")]
-    .sort((a, b) => a.start - b.start)
-    .at(0);
-  return first?.loc.start.line;
+  return childList(program, "body").at(0)?.loc.start.line;
 }
 
 export const banTsComment: Rule = {

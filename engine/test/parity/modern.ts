@@ -3,7 +3,7 @@ import x = require("x");
 export = x;
 declare module "m" { export const v: number; }
 namespace N { export const n = 1; }
-abstract class Q<in out T> { abstract accessor v: number; static { Q.z = 1; } #p = 2; override m(): void {} }
+abstract class Q<in out T> extends Base { abstract accessor v: number; static { Q.z = 1; } #p = 2; override m(): void {} }
 function ov(a: string): void;
 function ov(a: number): void;
 function ov(a: any): void {}

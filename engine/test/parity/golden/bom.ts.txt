@@ -1,0 +1,5 @@
+exit 2
+ts-patterns: 2 mechanical violation(s) in <FILE>:
+  L1:13  no-magic-numbers  No magic number: 42.  → SKILL.md Core Rule 9 — extract to a named const
+  L2:10  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+Fix these to satisfy the TypeScript patterns before continuing.

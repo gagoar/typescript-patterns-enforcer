@@ -5,6 +5,7 @@
 //   2. shipped code copies the whole environment (every secret in it) instead of named variables
 //   3. a native executable is committed (the scanner cannot read it)
 //   4. any file is over 5 MiB (the plugin directory rejects it)
+//   5. a script or document is over 256 KiB (the scanner reads only that much, then holds the plugin)
 // Usage: node scripts/check-plugin-safety.ts [plugin-root ...]   (default: .)
 import { closeSync, existsSync, openSync, readdirSync, readFileSync, readSync, statSync } from "node:fs";
 import type { Dirent } from "node:fs";
@@ -14,7 +15,11 @@ const SELF = "check-plugin-safety.ts";
 const SKIP_DIRS: ReadonlySet<string> = new Set([".git", "node_modules"]);
 const MAX_SCAN_BYTES = 67_108_864;
 const MAX_FILE_BYTES = 5_242_880; // the directory's per-file limit: 5 MiB
+const MAX_TEXT_BYTES = 262_144; // the scanner reads scripts and documents only up to 256 KiB
 const BYTES_PER_MIB = 1_048_576;
+const BYTES_PER_KIB = 1024;
+// Images and fonts are let through unread, so the 256 KiB reading limit does not apply to them.
+const MEDIA_EXTENSIONS: ReadonlySet<string> = new Set([".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".woff", ".woff2", ".ttf", ".otf"]);
 const HEAD_CHARS = 200;
 const SNIPPET_CHARS = 100;
 const ARGV_ROOTS_START = 2; // argv[0] is node, argv[1] is this script
@@ -183,9 +188,13 @@ function grantProblems(root: string, path: string): readonly string[] {
 
 function sizeProblems(path: string): readonly string[] {
   const size = statSync(path).size;
-  return size > MAX_FILE_BYTES
-    ? [`${(size / BYTES_PER_MIB).toFixed(1)} MiB; the plugin directory rejects any file over 5 MiB. Shrink it, or fetch it at run time`]
-    : [];
+  if (size > MAX_FILE_BYTES) {
+    return [`${(size / BYTES_PER_MIB).toFixed(1)} MiB; the plugin directory rejects any file over 5 MiB. Shrink it, or fetch it at run time`];
+  }
+  if (size >= MAX_TEXT_BYTES && !MEDIA_EXTENSIONS.has(extname(path).toLowerCase())) {
+    return [`${Math.round(size / BYTES_PER_KIB)} KiB; the scanner reads scripts and documents only up to 256 KiB and holds the plugin for review beyond that. Split it into smaller files`];
+  }
+  return [];
 }
 
 function fileProblems(root: string, path: string): readonly string[] {

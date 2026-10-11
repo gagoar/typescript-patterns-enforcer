@@ -1,8 +1,8 @@
-# ts-patterns
+# TypeScript Patterns Enforcer
 
 <img src="docs/assets/icon.svg" alt="" width="72" align="right">
 
-**Claude writes TypeScript. ts-patterns checks every edit.**
+**Claude writes TypeScript. TypeScript Patterns Enforcer checks every edit.**
 
 [![Release](https://img.shields.io/github/v/release/gagoar/typescript-patterns-enforcer?color=D97757)](https://github.com/gagoar/typescript-patterns-enforcer/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-788C5D)](LICENSE)
@@ -11,13 +11,13 @@
 
 A Claude Code plugin that holds Claude's TypeScript to a written standard. It has three parts. An inline skill carries the rules. A review subagent handles large changes. A hook checks ten rules after every `.ts` or `.tsx` edit.
 
-![Claude's edit flagged by the hook, then fixed](docs/assets/before-after.png)
+![Claude's edit flagged by the hook, then fixed](https://gagoar.github.io/typescript-patterns-enforcer/assets/before-after.png)
 
 ## Install
 
 ```
 /plugin marketplace add gagoar/typescript-patterns-enforcer
-/plugin install ts-patterns@ts-patterns
+/plugin install typescript-patterns-enforcer@typescript-patterns-enforcer
 /reload-plugins
 ```
 
@@ -25,7 +25,7 @@ Prefer one marketplace for all gagoar plugins? Use [gago-plugins](https://gagoar
 
 ```
 /plugin marketplace add gagoar/gago-plugins
-/plugin install ts-patterns@gago-plugins
+/plugin install typescript-patterns-enforcer@gago-plugins
 ```
 
 ## Why
@@ -68,8 +68,8 @@ The next check passes with no output.
 
 | Component | What it does |
 |-----------|--------------|
-| Skill `/ts-patterns:check` | Active while Claude writes or edits `.ts` and `.tsx` files. It gives inline guidance on type safety, patterns, and anti-patterns. |
-| Agent `ts-patterns:review` | Runs through the Agent tool for full PR reviews, large refactors, and JavaScript to TypeScript conversions. |
+| Skill `/typescript-patterns-enforcer:check` | Active while Claude writes or edits `.ts` and `.tsx` files. It gives inline guidance on type safety, patterns, and anti-patterns. |
+| Agent `typescript-patterns-enforcer:review` | Runs through the Agent tool for full PR reviews, large refactors, and JavaScript to TypeScript conversions. |
 | Hook | Runs a bundled checker after every `.ts` or `.tsx` edit and backs the skill with ten deterministic checks. |
 
 ## The core rules
@@ -113,7 +113,7 @@ The engine's own code writes nothing to disk, makes no network calls, and starts
 
 ## FAQ
 
-**Does it need ESLint in my project?** No. The engine bundles its own parser (Babel's) and runs its own rules. It uses no config from the repo.
+**Does it need ESLint in my project?** No. The engine bundles its own parser (acorn) and runs its own rules. It uses no config from the repo.
 
 **What does it cost?** The skill is prose in Claude's context. The hook runs locally and uses no tokens.
 
@@ -143,5 +143,5 @@ claude plugin validate . --strict
 The gate fails on three things the plugin-directory upload scanner holds for review:
 
 - A skill, agent, or command that pre-approves `Write`, `Edit`, or `Bash` with no path scope. Write `Write(./docs/**)`, not `Write`.
-- Shipped code that copies the whole environment (`...process.env`, `Object.keys(process.env)`). Read the named variables you need.
+- Shipped code that copies the whole environment (spreading or enumerating the whole environment object). Read the named variables you need.
 - A committed native executable. The scanner cannot read it.

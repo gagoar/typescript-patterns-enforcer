@@ -10,8 +10,8 @@ import type { Rule } from "./types";
 //   - in a Cypress `cy` chain.
 
 const PROMISE_METHODS: ReadonlySet<string> = new Set(["then", "catch", "finally"]);
-const CALL_TYPES: ReadonlySet<string> = new Set(["CallExpression", "OptionalCallExpression"]);
-const MEMBER_TYPES: ReadonlySet<string> = new Set(["MemberExpression", "OptionalMemberExpression"]);
+const CALL = "CallExpression";
+const MEMBER = "MemberExpression";
 const AWAIT_OR_YIELD: ReadonlySet<string> = new Set(["AwaitExpression", "YieldExpression"]);
 const CYPRESS = "cy";
 
@@ -23,9 +23,6 @@ const SCOPE_TYPES: ReadonlySet<string> = new Set([
   "FunctionDeclaration",
   "FunctionExpression",
   "ArrowFunctionExpression",
-  "ObjectMethod",
-  "ClassMethod",
-  "ClassPrivateMethod",
   "ClassDeclaration",
   "ClassExpression",
   "StaticBlock",
@@ -48,12 +45,12 @@ function declaresLexically(node: AstNode): boolean {
 }
 
 const opensScope = (node: AstNode): boolean => SCOPE_TYPES.has(node.type) || declaresLexically(node);
-const isConstructor = (node: AstNode): boolean => node.type === "ClassMethod" && node["kind"] === "constructor";
+const isConstructor = (node: AstNode): boolean => node.type === "MethodDefinition" && node["kind"] === "constructor";
 
 // `cy.get(...).then(...)`: a call chain that starts at the identifier `cy`.
 function isCypressCall(call: AstNode): boolean {
   const callee = child(call, "callee");
-  if (!CALL_TYPES.has(call.type) || callee === undefined || !MEMBER_TYPES.has(callee.type)) return false;
+  if (call.type !== CALL || callee?.type !== MEMBER) return false;
   const object = child(callee, "object");
   return nameOf(object) === CYPRESS || (object !== undefined && isCypressCall(object));
 }
@@ -61,9 +58,9 @@ function isCypressCall(call: AstNode): boolean {
 export const preferAwaitToThen: Rule = {
   id: "prefer-await-to-then",
   enter: ({ node, ancestors }, context) => {
-    if (!CALL_TYPES.has(node.type)) return;
+    if (node.type !== CALL) return;
     const callee = child(node, "callee");
-    if (callee === undefined || !MEMBER_TYPES.has(callee.type)) return;
+    if (callee?.type !== MEMBER) return;
     const property = child(callee, "property");
     const method = property?.type === "Identifier" ? nameOf(property) : undefined;
     if (property === undefined || method === undefined || !PROMISE_METHODS.has(method)) return;
