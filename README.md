@@ -161,8 +161,10 @@ node scripts/check-plugin-safety.ts .
 claude plugin validate . --strict
 ```
 
-The gate fails on three things the plugin-directory upload scanner holds for review:
+The gate fails on five things the plugin-directory upload scanner holds for review:
 
 - A skill, agent, or command that pre-approves `Write`, `Edit`, or `Bash` with no path scope. Write `Write(./src/**)`, not `Write`.
 - Shipped code that copies the whole environment (spreading or enumerating the whole environment object). Read the named variables you need.
 - A committed native executable. The scanner cannot read it.
+- A shell command word that prints the environment (`declare`, `set`, `export`, `env`, `printenv`, `typeset`, `unset`) on its own in a call or a condition, in code, a comment or a document. The scanner splits a line on parentheses and reads that as the command run with no arguments.
+- A template placeholder whose expression names a credential (`key`, `token`, `secret`, `password`, `auth`, ...). The scanner reads it as a credential lookup.
