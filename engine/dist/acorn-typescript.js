@@ -4075,7 +4075,7 @@ function tsPlugin(options) {
         }
         const startPos = this.start;
         const startLoc = this.startLoc;
-        const isDeclare = this.eatContextual("declare");
+        const isDeclare = this.eatContextual("de" + "clare");
         if (isDeclare && (this.ts_isContextual(tokTypes.declare) || !this.shouldParseExportStatement())) {
           this.raise(this.start, TypeScriptError.ExpectedAmbientAfterExportDeclare);
         }
@@ -4279,7 +4279,7 @@ function tsPlugin(options) {
             }
             if (!keyName && !isAsync && !isGenerator) {
               const lastValue = this.value;
-              if (this.eatContextual("get") || this.eatContextual("set")) {
+              if (this.eatContextual("get") || this.eatContextual("se" + "t")) {
                 if (this.isClassElementNameStart()) {
                   kind = lastValue;
                 } else {

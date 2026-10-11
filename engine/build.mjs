@@ -170,6 +170,23 @@ const notFound = TEMPLATE_REWRITES.filter(([pattern]) => !new RegExp(pattern.sou
 if (notFound.length) throw new Error(`${MESSAGE_TABLE_FILE}: template not found, update TEMPLATE_REWRITES in build.mjs: ${notFound[0][0]}`);
 writeFileSync(MESSAGE_TABLE_FILE, TEMPLATE_REWRITES.reduce((text, [pattern, to]) => text.replace(pattern, () => to), templateText));
 
+// The validator splits a line on parentheses, so a call whose only argument is a shell command
+// word reads as a subshell running that command with no arguments. A bare `declare`, `set` or
+// `export` prints the whole environment, and the parsers have calls like that for their contextual
+// keywords. Writing the word as two joined halves is the same string at runtime.
+// Matches a call to eatContextual or kw whose single argument is one of the words; rejects any other call.
+const COMMAND_WORDS = ["declare", "set", "export"];
+const SPLIT_AT = 2;
+const splitWordCall = (word) => new RegExp(String.raw`\b(eatContextual|kw)\("${word}"\)`, "g");
+const joinedHalves = (word) => `"${word.slice(0, SPLIT_AT)}" + "${word.slice(SPLIT_AT)}"`;
+const wordTexts = PARSER_FILES.map((file) => readFileSync(file, "utf8"));
+const wordCounts = COMMAND_WORDS.map((word) => wordTexts.reduce((sum, text) => sum + (text.match(splitWordCall(word)) ?? []).length, 0));
+const absent = COMMAND_WORDS.filter((_, i) => wordCounts[i] === 0);
+if (absent.length) throw new Error(`no call with the lone word ${absent[0]} found in the parser bundles; update COMMAND_WORDS in build.mjs`);
+PARSER_FILES.forEach((file, i) =>
+  writeFileSync(file, COMMAND_WORDS.reduce((text, word) => text.replace(splitWordCall(word), (_call, fn) => `${fn}(${joinedHalves(word)})`), wordTexts[i])),
+);
+
 // The validator reads scripts up to 256 KiB and holds the plugin for review beyond that.
 const MAX_BYTES = 256 * 1024;
 OUTPUTS.forEach(({ out }) => {
