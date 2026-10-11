@@ -26,6 +26,19 @@ Prefer one marketplace for all gagoar plugins? Use [gago-plugins](https://gagoar
 /plugin install typescript-patterns-enforcer@gago-plugins
 ```
 
+### Renamed from ts-patterns
+
+Before v0.5.0 this plugin was called `ts-patterns`. The plugin directory held that name as too close to other plugins, so it is now `typescript-patterns-enforcer`.
+
+If you installed the old name, remove it and install the new one:
+
+```
+/plugin uninstall ts-patterns@gago-plugins
+/plugin install typescript-patterns-enforcer@gago-plugins
+```
+
+The skill is now `/typescript-patterns-enforcer:check` and the agent is `typescript-patterns-enforcer:review`. Three things keep the old name, so nothing you wrote needs to change: the `ts-patterns:` prefix on the hook's messages, the `ts-patterns/<rule>` names in `eslint-disable` comments, and the `ts-patterns: allow exhaustive switch` line in a project's `CLAUDE.md`.
+
 ## Why
 
 - **It checks the code, not only the prompt.** A hook reads each file Claude edits. A violation returns to Claude as feedback, and Claude fixes it before moving on.
