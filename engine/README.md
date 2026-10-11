@@ -57,13 +57,23 @@ inlines `eslint`, `@typescript-eslint/parser`, and `typescript` itself (tree-sha
 down to the parsing path this engine actually reaches, since none of the 10
 checks are type-aware) into one file with zero runtime dependencies.
 Everything under `node_modules/` is build-time-only and gitignored.
+
+**The bundle is minified and pruned, and must stay under 5 MiB.** The plugin
+directory rejects any file over 5 MiB. `typescript` alone is 9.5 MiB unminified,
+so the build minifies, and `build.mjs` replaces the typescript-eslint and ESLint
+rule indexes (148 and 305 rules) with modules that load only the rules in use.
+That takes the bundle from 15.5 MiB to under 5. The build fails if the result
+passes 5 MiB, and `scripts/check-plugin-safety.ts` fails any PR with a file that
+size. If you add a rule that needs another ESLint or typescript-eslint rule, add
+it to the plugin in `build.mjs`.
+
 Rebuilding is a release-time task, not something to hand-edit:
 
 ```sh
 cd engine
 npm ci              # exact, pinned deps + lockfile
 npm run typecheck   # tsc --noEmit, strict — the dogfood gate
-npm run build       # esbuild -> dist/check.js (bundles everything, ~15-16MB)
+npm run build       # esbuild -> dist/check.js (minified, ~4.8 MiB; fails over 5 MiB)
 npm test            # fixture suite against the BUILT artifact
 ```
 

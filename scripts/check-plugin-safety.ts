@@ -4,6 +4,7 @@
 //   1. a skill/agent/command pre-approves a write- or exec-capable tool with no path scope
 //   2. shipped code copies the whole environment (every secret in it) instead of named variables
 //   3. a native executable is committed (the scanner cannot read it)
+//   4. any file is over 5 MiB (the plugin directory rejects it)
 // Usage: node scripts/check-plugin-safety.ts [plugin-root ...]   (default: .)
 import { closeSync, existsSync, openSync, readdirSync, readFileSync, readSync, statSync } from "node:fs";
 import type { Dirent } from "node:fs";
@@ -12,6 +13,8 @@ import { basename, extname, join, relative, resolve } from "node:path";
 const SELF = "check-plugin-safety.ts";
 const SKIP_DIRS: ReadonlySet<string> = new Set([".git", "node_modules"]);
 const MAX_SCAN_BYTES = 67_108_864;
+const MAX_FILE_BYTES = 5_242_880; // the directory's per-file limit: 5 MiB
+const BYTES_PER_MIB = 1_048_576;
 const HEAD_CHARS = 200;
 const SNIPPET_CHARS = 100;
 const ARGV_ROOTS_START = 2; // argv[0] is node, argv[1] is this script
@@ -178,8 +181,15 @@ function grantProblems(root: string, path: string): readonly string[] {
   });
 }
 
+function sizeProblems(path: string): readonly string[] {
+  const size = statSync(path).size;
+  return size > MAX_FILE_BYTES
+    ? [`${(size / BYTES_PER_MIB).toFixed(1)} MiB; the plugin directory rejects any file over 5 MiB. Shrink it, or fetch it at run time`]
+    : [];
+}
+
 function fileProblems(root: string, path: string): readonly string[] {
-  const grants = grantProblems(root, path);
+  const grants = [...grantProblems(root, path), ...sizeProblems(path)];
   const kind = nativeKind(path);
   if (kind !== undefined) {
     return [...grants, `${kind} committed; the scanner cannot read it. Ship source and fetch a pinned build instead`];
