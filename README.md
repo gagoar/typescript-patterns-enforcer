@@ -11,8 +11,6 @@
 
 A Claude Code plugin that holds Claude's TypeScript to a written standard. It has three parts. An inline skill carries the rules. A review subagent handles large changes. A hook checks ten rules after every `.ts` or `.tsx` edit.
 
-![Claude's edit flagged by the hook, then fixed](https://gagoar.github.io/typescript-patterns-enforcer/assets/before-after.png)
-
 ## Install
 
 ```

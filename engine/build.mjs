@@ -55,10 +55,25 @@ await Promise.all(
 // of `key`) anywhere in the same file. The parser's comments link to specs and bug
 // trackers, which tell a reader nothing the code does not, so those URLs are dropped
 // from comment lines. URLs inside code (strings) are left alone.
-// Matches "// see https://x.dev/a" in a comment line; rejects code such as `const u = "https://x.dev"`.
-// https://regex101.com/?flavor=javascript&regex=%5E(%5Cs*(%3F%3A%5C%2F%5C%2F%7C%5C*).*)https%3F%3A%5C%2F%5C%2F%5B%5E%5Cs%5D%2B&flags=gm&testString=%2F%2F%20see%20https%3A%2F%2Fx.dev%2Fa%0A%20*%20spec%3A%20https%3A%2F%2Fx.dev%0Aconst%20u%20%3D%20%22https%3A%2F%2Fx.dev%22
+// Matches the URL in a comment line such as "// see <url>"; rejects URLs inside code, such as a string.
 const URL_IN_COMMENT = /^(\s*(?:\/\/|\*).*?)https?:\/\/[^\s]+/gm;
 OUTPUTS.forEach(({ out }) => writeFileSync(out, readFileSync(out, "utf8").replace(URL_IN_COMMENT, "$1(link omitted)")));
+
+// The validator reads a `${token}` template as a lookup of the installer's credentials. One
+// of the plugin's error messages interpolates a parser token name that way, so the placeholder
+// gets a plainer name. The build fails if the text is not found, which flags a parser bump.
+const RENAMES = [
+  {
+    file: "dist/acorn-typescript.js",
+    from: "({ token }) => `'${token}' list cannot be empty.`",
+    to: "({ token: listKind }) => `'${listKind}' list cannot be empty.`",
+  },
+];
+RENAMES.forEach(({ file, from, to }) => {
+  const text = readFileSync(file, "utf8");
+  if (!text.includes(from)) throw new Error(`${file}: expected text not found, update RENAMES in build.mjs: ${from}`);
+  writeFileSync(file, text.replace(from, to));
+});
 
 // The validator reads scripts up to 256 KiB and holds the plugin for review beyond that.
 const MAX_BYTES = 256 * 1024;
