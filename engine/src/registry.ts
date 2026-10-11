@@ -110,7 +110,13 @@ interface Finding {
   readonly text: string;
 }
 
-function analyze(code: string, filename: string): readonly Finding[] {
+const BYTE_ORDER_MARK = "\uFEFF";
+
+// A byte-order mark is not part of the first line: columns count from the first real character.
+const withoutBom = (code: string): string => (code.startsWith(BYTE_ORDER_MARK) ? code.slice(BYTE_ORDER_MARK.length) : code);
+
+function analyze(source: string, filename: string): readonly Finding[] {
+  const code = withoutBom(source);
   const parsed = parseTypeScript(code, filename);
   if (!parsed) return [];
   const findings: Finding[] = [];

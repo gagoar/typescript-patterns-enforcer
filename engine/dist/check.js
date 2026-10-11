@@ -94,13 +94,20 @@ var import_acorn_typescript = require("./acorn-typescript.js");
 var TSX_FILE = /\.tsx$/;
 var DECLARATION_FILE = /\.d\.[cm]?ts$/;
 function keepGoing(base) {
-  return class extends base {
+  const Base = base;
+  class Lenient extends Base {
     raiseRecoverable() {
     }
-    // The plugin rejects `<T extends X>(p) => p` in a .tsx file, which TypeScript accepts.
     reportReservedArrowTypeParam() {
     }
-  };
+    tsParseNoneModifiers(node) {
+      this.tsParseClassTypeParameterModifiers(node);
+    }
+    parseExprList(close, allowTrailingComma, allowEmpty, refDestructuringErrors) {
+      return super.parseExprList(close, allowTrailingComma || close === import_acorn.tokTypes.parenR, allowEmpty, refDestructuringErrors);
+    }
+  }
+  return Lenient;
 }
 var isLineComment = (comment) => comment.type === "Line";
 function attempt(code, filename) {
@@ -614,7 +621,10 @@ var CHECKS = [
 ];
 var POINTER_BY_ID = Object.fromEntries(CHECKS.map((check) => [check.id, check.pointer]));
 var LINE_BREAK2 = /\r\n|[\r\n\u2028\u2029]/;
-function analyze(code, filename) {
+var BYTE_ORDER_MARK = "\uFEFF";
+var withoutBom = (code) => code.startsWith(BYTE_ORDER_MARK) ? code.slice(BYTE_ORDER_MARK.length) : code;
+function analyze(source, filename) {
+  const code = withoutBom(source);
   const parsed = parseTypeScript(code, filename);
   if (!parsed) return [];
   const findings = [];

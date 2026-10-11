@@ -1,0 +1,4 @@
+exit 2
+ts-patterns: 1 mechanical violation(s) in <FILE>:
+  L10:42  no-magic-numbers  No magic number: 360.  → SKILL.md Core Rule 9 — extract to a named const
+Fix these to satisfy the TypeScript patterns before continuing.
