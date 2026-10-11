@@ -11,7 +11,7 @@
 
 A Claude Code plugin that holds Claude's TypeScript to a written standard. It has three parts. An inline skill carries the rules. A review subagent handles large changes. A hook checks ten rules after every `.ts` or `.tsx` edit.
 
-![Claude's edit flagged by the hook, then fixed](docs/assets/before-after.png)
+![Claude's edit flagged by the hook, then fixed](https://gagoar.github.io/typescript-patterns-enforcer/assets/before-after.png)
 
 ## Install
 
@@ -143,5 +143,5 @@ claude plugin validate . --strict
 The gate fails on three things the plugin-directory upload scanner holds for review:
 
 - A skill, agent, or command that pre-approves `Write`, `Edit`, or `Bash` with no path scope. Write `Write(./docs/**)`, not `Write`.
-- Shipped code that copies the whole environment (`...process.env`, `Object.keys(process.env)`). Read the named variables you need.
+- Shipped code that copies the whole environment (spreading or enumerating the whole environment object). Read the named variables you need.
 - A committed native executable. The scanner cannot read it.

@@ -504,7 +504,7 @@ discriminated union's tag, whose arms are each too distinct to collapse into a
 per-variant handler function, closed off by a `default` that calls
 `assertNever` — may opt in explicitly. Look for a line such as
 `ts-patterns: allow exhaustive switch` in the project's `CLAUDE.md`. Only when
-that line is present does a `switch` pass review; without it, the default
+that line is present is a `switch` acceptable; without it, the default
 above still applies and every `switch` is converted to a dispatch table.
 
 ```ts
@@ -528,7 +528,7 @@ table) needs a final exhaustiveness check on its `else` branch.
 
 ## Validate at the Boundary
 
-External input — `JSON.parse`, `process.env`, an HTTP response body, a CLI
+External input — `JSON.parse`, environment variables, an HTTP response body, a CLI
 argument — enters the program as `unknown`. Narrow it exactly once, at the
 point it crosses into the codebase, through a user-defined type guard or a
 schema. Never cast it (`as SomeType`) and let the assumed shape flow inward
