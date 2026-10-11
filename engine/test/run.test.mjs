@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -49,3 +50,24 @@ test("missing file_path is ignored", () => {
   const result = spawnSync(process.execPath, [CHECK], { input: "{}", encoding: "utf8" });
   assert.equal(result.status, 0);
 });
+
+// Parity suite: each file in test/parity is run through the hook and its output must
+// match test/parity/golden/<name>.txt exactly (exit code, rule ids, positions and
+// message text). The goldens were recorded from the previous, ESLint-based engine, so
+// they pin the behavior of every rule: the ESLint and typescript-eslint rules this
+// engine reimplements, and the quirks that came with them. The one deliberate
+// difference is `disable.ts`: that engine also reported "Definition for rule
+// '@typescript-eslint/...' was not found" for eslint-disable comments naming another
+// plugin's rules; this one ignores such comments.
+const PARITY = join(HERE, "parity");
+const parityFiles = readdirSync(PARITY).filter((name) => name !== "golden");
+
+for (const name of parityFiles) {
+  test(`parity: ${name} matches the recorded output exactly`, () => {
+    const file = join(PARITY, name);
+    const r = runHook(file);
+    const actual = `exit ${r.code}\n${r.stderr.split(file).join("<FILE>")}`;
+    const expected = readFileSync(join(PARITY, "golden", `${name}.txt`), "utf8");
+    assert.equal(actual, expected);
+  });
+}

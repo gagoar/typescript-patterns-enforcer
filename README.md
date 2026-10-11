@@ -113,7 +113,7 @@ The engine's own code writes nothing to disk, makes no network calls, and starts
 
 ## FAQ
 
-**Does it need ESLint in my project?** No. The engine bundles its own ESLint, parser, and TypeScript. It uses no config from the repo.
+**Does it need ESLint in my project?** No. The engine bundles its own parser (Babel's) and runs its own rules. It uses no config from the repo.
 
 **What does it cost?** The skill is prose in Claude's context. The hook runs locally and uses no tokens.
 

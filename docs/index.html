@@ -176,7 +176,7 @@ patterns before continuing.
     <div class="cards">
       <div class="card"><h3>Skill</h3><p><code>/ts-patterns:check</code> is active while Claude writes or edits TypeScript. It gives inline guidance on type safety, patterns, and anti-patterns.</p></div>
       <div class="card"><h3>Agent</h3><p><code>ts-patterns:review</code> handles full PR reviews, large refactors, and JavaScript to TypeScript conversions.</p></div>
-      <div class="card"><h3>Hook</h3><p>A bundled checker runs after every <code>.ts</code> or <code>.tsx</code> edit. It brings its own ESLint and parser, and it ignores your repo's config.</p></div>
+      <div class="card"><h3>Hook</h3><p>A bundled checker runs after every <code>.ts</code> or <code>.tsx</code> edit. It brings its own parser, and it ignores your repo's config.</p></div>
     </div>
   </section>
 
@@ -192,7 +192,7 @@ patterns before continuing.
     <h2>Tested before it ships.</h2>
     <div class="proof" style="margin-top:20px">
       <div class="stat"><div class="big">10 checks</div><p>Each has a failing fixture and a passing fixture. The test suite runs against the built hook.</p></div>
-      <div class="stat"><div class="big">0 config</div><p>The engine bundles its own ESLint, parser, and TypeScript. It never reads or writes your repo's setup.</p></div>
+      <div class="stat"><div class="big">0 config</div><p>The engine bundles its own parser and rules. It never reads or writes your repo's setup.</p></div>
       <div class="stat"><div class="big">MIT</div><p>Open source. Fixtures live in <code>engine/test/fixtures/</code>.</p></div>
     </div>
   </section>
@@ -215,7 +215,7 @@ patterns before continuing.
 
   <footer>
     <div><a href="https://github.com/gagoar/typescript-patterns-enforcer">GitHub</a><a href="https://github.com/gagoar/typescript-patterns-enforcer/releases">Releases</a><a href="guide.html">Guide</a><a href="https://gagoar.github.io/gago-plugins">gago-plugins</a></div>
-    <div>MIT · v0.3.3 · by <a href="https://github.com/gagoar" style="margin:0">gagoar</a> · Icon: <a href="https://thenounproject.com/icon/pattern-8298196/" style="margin:0">Pattern</a> by Side Project, Noun Project (CC BY 3.0)</div>
+    <div>MIT · v0.4.0 · by <a href="https://github.com/gagoar" style="margin:0">gagoar</a> · Icon: <a href="https://thenounproject.com/icon/pattern-8298196/" style="margin:0">Pattern</a> by Side Project, Noun Project (CC BY 3.0)</div>
   </footer>
 </div>
 

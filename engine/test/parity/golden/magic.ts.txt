@@ -1,0 +1,55 @@
+exit 2
+ts-patterns: 52 mechanical violation(s) in <FILE>:
+  L6:5  no-magic-numbers  No magic number: 13.  → SKILL.md Core Rule 9 — extract to a named const
+  L7:6  no-magic-numbers  No magic number: 3.  → SKILL.md Core Rule 9 — extract to a named const
+  L8:18  no-magic-numbers  No magic number: 5.  → SKILL.md Core Rule 9 — extract to a named const
+  L8:21  no-magic-numbers  No magic number: 8.  → SKILL.md Core Rule 9 — extract to a named const
+  L8:42  no-magic-numbers  No magic number: 11.  → SKILL.md Core Rule 9 — extract to a named const
+  L8:49  no-magic-numbers  No magic number: 21.  → SKILL.md Core Rule 9 — extract to a named const
+  L9:14  no-magic-numbers  No magic number: 4.  → SKILL.md Core Rule 9 — extract to a named const
+  L9:17  no-magic-numbers  No magic number: 5.  → SKILL.md Core Rule 9 — extract to a named const
+  L9:20  no-magic-numbers  No magic number: 6.  → SKILL.md Core Rule 9 — extract to a named const
+  L10:30  no-magic-numbers  No magic number: 2.5.  → SKILL.md Core Rule 9 — extract to a named const
+  L10:40  no-magic-numbers  No magic number: 4294967295.  → SKILL.md Core Rule 9 — extract to a named const
+  L12:16  no-magic-numbers  No magic number: 5.  → SKILL.md Core Rule 9 — extract to a named const
+  L12:25  no-magic-numbers  No magic number: 6.  → SKILL.md Core Rule 9 — extract to a named const
+  L12:67  no-magic-numbers  No magic number: 99.  → SKILL.md Core Rule 9 — extract to a named const
+  L13:16  no-magic-numbers  No magic number: 17.  → SKILL.md Core Rule 9 — extract to a named const
+  L13:27  no-magic-numbers  No magic number: 30.  → SKILL.md Core Rule 9 — extract to a named const
+  L13:32  no-magic-numbers  No magic number: 31.  → SKILL.md Core Rule 9 — extract to a named const
+  L13:37  no-magic-numbers  No magic number: 32.  → SKILL.md Core Rule 9 — extract to a named const
+  L15:11  no-magic-numbers  No magic number: 100.  → SKILL.md Core Rule 9 — extract to a named const
+  L16:14  no-magic-numbers  No magic number: 200.  → SKILL.md Core Rule 9 — extract to a named const
+  L17:16  no-magic-numbers  No magic number: 300.  → SKILL.md Core Rule 9 — extract to a named const
+  L18:25  no-magic-numbers  No magic number: 400.  → SKILL.md Core Rule 9 — extract to a named const
+  L19:9  no-magic-numbers  No magic number: 3.  → SKILL.md Core Rule 9 — extract to a named const
+  L19:25  no-magic-numbers  No magic number: 500.  → SKILL.md Core Rule 9 — extract to a named const
+  L21:14  no-magic-numbers  No magic number: 5.  → SKILL.md Core Rule 9 — extract to a named const
+  L21:21  no-magic-numbers  No magic number: -3.  → SKILL.md Core Rule 9 — extract to a named const
+  L23:16  no-magic-numbers  No magic number: 4.  → SKILL.md Core Rule 9 — extract to a named const
+  L24:15  no-magic-numbers  No magic number: 4.  → SKILL.md Core Rule 9 — extract to a named const
+  L24:28  no-magic-numbers  No magic number: 6.  → SKILL.md Core Rule 9 — extract to a named const
+  L25:8  no-magic-numbers  No magic number: 5.  → SKILL.md Core Rule 9 — extract to a named const
+  L26:15  no-magic-numbers  No magic number: 8.  → SKILL.md Core Rule 9 — extract to a named const
+  L26:19  no-magic-numbers  No magic number: 9.  → SKILL.md Core Rule 9 — extract to a named const
+  L26:30  no-magic-numbers  No magic number: 9.  → SKILL.md Core Rule 9 — extract to a named const
+  L27:63  no-magic-numbers  No magic number: 9.  → SKILL.md Core Rule 9 — extract to a named const
+  L28:14  no-magic-numbers  No magic number: 0n.  → SKILL.md Core Rule 9 — extract to a named const
+  L28:18  no-magic-numbers  No magic number: 5n.  → SKILL.md Core Rule 9 — extract to a named const
+  L28:22  no-magic-numbers  No magic number: 1_000.  → SKILL.md Core Rule 9 — extract to a named const
+  L28:29  no-magic-numbers  No magic number: 1e3.  → SKILL.md Core Rule 9 — extract to a named const
+  L28:34  no-magic-numbers  No magic number: 0b101.  → SKILL.md Core Rule 9 — extract to a named const
+  L28:41  no-magic-numbers  No magic number: 0o17.  → SKILL.md Core Rule 9 — extract to a named const
+  L28:47  no-magic-numbers  No magic number: 0xff.  → SKILL.md Core Rule 9 — extract to a named const
+  L28:53  no-magic-numbers  No magic number: .5.  → SKILL.md Core Rule 9 — extract to a named const
+  L28:57  no-magic-numbers  No magic number: 5..  → SKILL.md Core Rule 9 — extract to a named const
+  L29:1  no-switch-statement  switch statement — convert to a Record dispatch table (see SKILL.md Data Over Logic).  → SKILL.md Data Over Logic — convert to a Record dispatch table
+  L29:19  no-magic-numbers  No magic number: 3.  → SKILL.md Core Rule 9 — extract to a named const
+  L30:16  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L31:11  no-magic-numbers  No magic number: 8.  → SKILL.md Core Rule 9 — extract to a named const
+  L32:4  no-magic-numbers  No magic number: 7.  → SKILL.md Core Rule 9 — extract to a named const
+  L33:19  no-magic-numbers  No magic number: 12.  → SKILL.md Core Rule 9 — extract to a named const
+  L34:9  no-magic-numbers  No magic number: 18.  → SKILL.md Core Rule 9 — extract to a named const
+  L34:21  no-magic-numbers  No magic number: 19.  → SKILL.md Core Rule 9 — extract to a named const
+  L35:16  no-magic-numbers  No magic number: 77.  → SKILL.md Core Rule 9 — extract to a named const
+Fix these to satisfy the TypeScript patterns before continuing.

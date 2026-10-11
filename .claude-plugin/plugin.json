@@ -1,7 +1,7 @@
 {
   "name": "ts-patterns",
-  "displayName": "ts-patterns",
-  "version": "0.3.3",
+  "displayName": "TypeScript Patterns Enforcer",
+  "version": "0.4.0",
   "description": "Enforce TypeScript best practices and patterns \u2014 inline skill guidance plus a dedicated subagent for reviews and refactors.",
   "author": {
     "name": "gagoar",
@@ -16,8 +16,7 @@
     "code-quality",
     "linting",
     "best-practices",
-    "eslint",
-    "hooks",
+        "hooks",
     "code-review"
   ],
   "skills": [

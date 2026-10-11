@@ -1,0 +1,70 @@
+exit 2
+ts-patterns: 67 mechanical violation(s) in <FILE>:
+  L1:36  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L1:43  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L1:48  no-magic-numbers  No magic number: 2.  → SKILL.md Core Rule 9 — extract to a named const
+  L1:51  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L1:56  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L1:61  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L1:66  no-magic-numbers  No magic number: 3.  → SKILL.md Core Rule 9 — extract to a named const
+  L2:35  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L2:47  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L2:57  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L2:68  no-magic-numbers  No magic number: 3.  → SKILL.md Core Rule 9 — extract to a named const
+  L3:68  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L3:76  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L3:82  no-magic-numbers  No magic number: 2.  → SKILL.md Core Rule 9 — extract to a named const
+  L3:89  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L3:100  no-magic-numbers  No magic number: 3.  → SKILL.md Core Rule 9 — extract to a named const
+  L3:106  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L4:16  no-magic-numbers  No magic number: 5.  → SKILL.md Core Rule 9 — extract to a named const
+  L4:40  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L4:44  no-magic-numbers  No magic number: 6.  → SKILL.md Core Rule 9 — extract to a named const
+  L4:47  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L4:58  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L5:52  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L5:56  no-magic-numbers  No magic number: 2.  → SKILL.md Core Rule 9 — extract to a named const
+  L5:86  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L5:90  no-magic-numbers  No magic number: 4.  → SKILL.md Core Rule 9 — extract to a named const
+  L6:59  no-magic-numbers  No magic number: 2.  → SKILL.md Core Rule 9 — extract to a named const
+  L6:64  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L6:68  no-magic-numbers  No magic number: 5.  → SKILL.md Core Rule 9 — extract to a named const
+  L8:45  no-magic-numbers  No magic number: 2.  → SKILL.md Core Rule 9 — extract to a named const
+  L8:50  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L8:66  no-magic-numbers  No magic number: 3.  → SKILL.md Core Rule 9 — extract to a named const
+  L8:69  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L8:73  no-magic-numbers  No magic number: 4.  → SKILL.md Core Rule 9 — extract to a named const
+  L9:18  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L11:24  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L11:30  no-magic-numbers  No magic number: 2.  → SKILL.md Core Rule 9 — extract to a named const
+  L12:26  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L14:28  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L14:58  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L14:62  no-magic-numbers  No magic number: 2.  → SKILL.md Core Rule 9 — extract to a named const
+  L14:90  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L14:94  no-magic-numbers  No magic number: 3.  → SKILL.md Core Rule 9 — extract to a named const
+  L15:31  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L15:52  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L15:56  no-magic-numbers  No magic number: 2.  → SKILL.md Core Rule 9 — extract to a named const
+  L15:61  no-loop-statements  raw loop — express as .map()/.filter()/.reduce() (see SKILL.md Data Over Logic).  → SKILL.md Data Over Logic — express as .map()/.filter()/.reduce()
+  L15:66  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L15:77  no-magic-numbers  No magic number: 3.  → SKILL.md Core Rule 9 — extract to a named const
+  L15:80  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L16:39  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L16:50  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L16:61  no-magic-numbers  No magic number: 2.  → SKILL.md Core Rule 9 — extract to a named const
+  L17:27  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L17:49  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L17:58  no-magic-numbers  No magic number: 2.  → SKILL.md Core Rule 9 — extract to a named const
+  L17:68  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L17:82  no-magic-numbers  No magic number: 3.  → SKILL.md Core Rule 9 — extract to a named const
+  L18:49  no-explicit-any  Unexpected any. Specify a different type.  → SKILL.md Core Rule 1 — use unknown + narrow, or a precise type
+  L18:58  no-magic-numbers  No magic number: 2.  → SKILL.md Core Rule 9 — extract to a named const
+  L18:61  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L19:32  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L20:39  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L21:43  no-magic-numbers  No magic number: 2.  → SKILL.md Core Rule 9 — extract to a named const
+  L21:61  no-magic-numbers  No magic number: 2.  → SKILL.md Core Rule 9 — extract to a named const
+  L22:43  no-param-reassign  function parameter mutated — return a new value instead (see SKILL.md).  → SKILL.md — return a new value, don't mutate the parameter
+  L22:47  no-magic-numbers  No magic number: 6.  → SKILL.md Core Rule 9 — extract to a named const
+Fix these to satisfy the TypeScript patterns before continuing.

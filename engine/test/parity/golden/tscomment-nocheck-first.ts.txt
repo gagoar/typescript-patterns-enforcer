@@ -1,0 +1,4 @@
+exit 2
+ts-patterns: 1 mechanical violation(s) in <FILE>:
+  L1:1  ban-ts-comment  Do not use "@ts-nocheck" because it alters compilation errors.  → SKILL.md — @ts-ignore needs a follow-up TODO/description
+Fix these to satisfy the TypeScript patterns before continuing.

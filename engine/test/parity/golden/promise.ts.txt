@@ -1,0 +1,34 @@
+exit 2
+ts-patterns: 31 mechanical violation(s) in <FILE>:
+  L5:12  prefer-await-to-then  Prefer await to then()/catch()/finally().  → SKILL.md Core Rule 5 — use async/await, not .then()
+  L6:1  no-loop-statements  raw loop — express as .map()/.filter()/.reduce() (see SKILL.md Data Over Logic).  → SKILL.md Data Over Logic — express as .map()/.filter()/.reduce()
+  L6:21  no-magic-numbers  No magic number: 2.  → SKILL.md Core Rule 9 — extract to a named const
+  L6:29  prefer-await-to-then  Prefer await to then()/catch()/finally().  → SKILL.md Core Rule 5 — use async/await, not .then()
+  L7:9  prefer-await-to-then  Prefer await to then()/catch()/finally().  → SKILL.md Core Rule 5 — use async/await, not .then()
+  L7:36  prefer-await-to-then  Prefer await to then()/catch()/finally().  → SKILL.md Core Rule 5 — use async/await, not .then()
+  L7:48  no-magic-numbers  No magic number: 2.  → SKILL.md Core Rule 9 — extract to a named const
+  L8:1  no-switch-statement  switch statement — convert to a Record dispatch table (see SKILL.md Data Over Logic).  → SKILL.md Data Over Logic — convert to a Record dispatch table
+  L8:25  prefer-await-to-then  Prefer await to then()/catch()/finally().  → SKILL.md Core Rule 5 — use async/await, not .then()
+  L8:36  no-magic-numbers  No magic number: 3.  → SKILL.md Core Rule 9 — extract to a named const
+  L9:5  prefer-await-to-then  Prefer await to then()/catch()/finally().  → SKILL.md Core Rule 5 — use async/await, not .then()
+  L9:16  no-magic-numbers  No magic number: 4.  → SKILL.md Core Rule 9 — extract to a named const
+  L10:91  no-magic-numbers  No magic number: 5.  → SKILL.md Core Rule 9 — extract to a named const
+  L13:32  no-magic-numbers  No magic number: 6.  → SKILL.md Core Rule 9 — extract to a named const
+  L14:18  prefer-await-to-then  Prefer await to then()/catch()/finally().  → SKILL.md Core Rule 5 — use async/await, not .then()
+  L14:29  no-magic-numbers  No magic number: 7.  → SKILL.md Core Rule 9 — extract to a named const
+  L15:14  prefer-await-to-then  Prefer await to then()/catch()/finally().  → SKILL.md Core Rule 5 — use async/await, not .then()
+  L15:25  no-magic-numbers  No magic number: 8.  → SKILL.md Core Rule 9 — extract to a named const
+  L16:13  prefer-await-to-then  Prefer await to then()/catch()/finally().  → SKILL.md Core Rule 5 — use async/await, not .then()
+  L16:24  no-magic-numbers  No magic number: 9.  → SKILL.md Core Rule 9 — extract to a named const
+  L18:23  prefer-await-to-then  Prefer await to then()/catch()/finally().  → SKILL.md Core Rule 5 — use async/await, not .then()
+  L19:18  prefer-await-to-then  Prefer await to then()/catch()/finally().  → SKILL.md Core Rule 5 — use async/await, not .then()
+  L19:29  no-magic-numbers  No magic number: 10.  → SKILL.md Core Rule 9 — extract to a named const
+  L23:28  prefer-await-to-then  Prefer await to then()/catch()/finally().  → SKILL.md Core Rule 5 — use async/await, not .then()
+  L23:39  no-magic-numbers  No magic number: 11.  → SKILL.md Core Rule 9 — extract to a named const
+  L24:43  prefer-await-to-then  Prefer await to then()/catch()/finally().  → SKILL.md Core Rule 5 — use async/await, not .then()
+  L24:59  prefer-await-to-then  Prefer await to then()/catch()/finally().  → SKILL.md Core Rule 5 — use async/await, not .then()
+  L24:71  no-magic-numbers  No magic number: 12.  → SKILL.md Core Rule 9 — extract to a named const
+  L25:21  no-magic-numbers  No magic number: 13.  → SKILL.md Core Rule 9 — extract to a named const
+  L26:1  no-loop-statements  raw loop — express as .map()/.filter()/.reduce() (see SKILL.md Data Over Logic).  → SKILL.md Data Over Logic — express as .map()/.filter()/.reduce()
+  L26:31  no-magic-numbers  No magic number: 14.  → SKILL.md Core Rule 9 — extract to a named const
+Fix these to satisfy the TypeScript patterns before continuing.
