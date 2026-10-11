@@ -6,6 +6,8 @@
 //   3. a native executable is committed (the scanner cannot read it)
 //   4. any file is over 5 MiB (the plugin directory rejects it)
 //   5. a script or document is over 256 KiB (the scanner reads only that much, then holds the plugin)
+//   6. a shell command word that prints the environment sits on its own in a call or condition
+//   7. a template placeholder names a credential (key, token, secret, ...)
 // Usage: node scripts/check-plugin-safety.ts [plugin-root ...]   (default: .)
 import { closeSync, existsSync, openSync, readdirSync, readFileSync, readSync, statSync } from "node:fs";
 import type { Dirent } from "node:fs";
@@ -116,6 +118,69 @@ function envProblems(path: string): readonly string[] {
   );
 }
 
+// ---- rules 6 and 7: shapes the scanner reads as a credential lookup ----------
+
+// The scanner splits a line on parentheses, braces and the shell's separators, and reads a segment that
+// is one command word as that command run with no arguments. A bare declare, set, export or env prints
+// the whole environment, so a call or a condition holding just such a word is held as a read of the
+// installer's environment, whether it sits in code, in a comment or in a document.
+const COMMAND_WORDS: readonly string[] = ["declare", "env", "export", "printenv", "set", "typeset", "unset"];
+// Matches a segment that is one command word, right after "(" or "{" or at a statement start; rejects a word given arguments or part of a longer name.
+// https://regex101.com/?flavor=javascript&regex=%28%3F%3A%5B%28%7B%5D%7C%5E%7C%3B%7C%26%26%7C%5C%7C%5C%7C%29%5Cs%2A%5B%22%27%60%5D%3F%28%3F%3Adeclare%7Cenv%7Cexport%7Cprintenv%7Cset%7Ctypeset%7Cunset%29%5B%22%27%60%5D%3F%5Cs%2A%28%3F%3A%5B%29%7D%5D%7C%26%26%7C%5C%7C%5C%7C%7C%3B%7C%24%29&flags=m&testString=%28declare%29%0Aif%20%28set%20%26%26%20ok%29%20%7B%0A%7B%20env%20%7D%0Arun%28export%29%3B%0Aset%28a%2C%20b%29%3B%0Adeclare%20%3D%201%3B%0Aconst%20isDeclare%20%3D%201%3B
+const LONE_COMMAND_RE = new RegExp(
+  `(?:[({]|^|;|&&|\\|\\|)\\s*["'\`]?(?:${COMMAND_WORDS.join("|")})["'\`]?\\s*(?:[)}]|&&|\\|\\||;|$)`,
+);
+
+// A template placeholder whose expression names a credential reads as a credential lookup, however
+// harmless the expression around the name is.
+const CREDENTIAL_WORDS: readonly string[] = [
+  "key",
+  "keys",
+  "token",
+  "tokens",
+  "secret",
+  "secrets",
+  "password",
+  "passwd",
+  "pass",
+  "auth",
+  "apikey",
+  "credential",
+  "credentials",
+  "cookie",
+  "session",
+];
+// Matches a placeholder with a credential word inside it; rejects one with an ordinary name such as "name" or "githubToken" (one word, no boundary).
+// https://regex101.com/?flavor=javascript&regex=%5C%24%5C%7B%5B%5E%7D%5D%2A%5Cb%28%3F%3Akey%7Ckeys%7Ctoken%7Ctokens%7Csecret%7Csecrets%7Cpassword%7Cpasswd%7Cpass%7Cauth%7Capikey%7Ccredential%7Ccredentials%7Ccookie%7Csession%29%5Cb%5B%5E%7D%5D%2A%5C%7D&flags=i&testString=%24%7Bkey%7D%0A%24%7Bthis.input.slice%28key.start%29%7D%0A%24%7Bname%7D%0A%24%7BgithubToken%7D%0A%24%7Btoken%7D
+const CREDENTIAL_PLACEHOLDER_RE = new RegExp(`\\$\\{[^}]*\\b(?:${CREDENTIAL_WORDS.join("|")})\\b[^}]*\\}`, "i");
+
+const WORKFLOW_DIR = ".github"; // not part of what the scanner reads
+const LOCKFILE = "package-lock.json"; // hashes, not code
+
+// The gate spells these patterns itself, so it is not held to them.
+const isOutsideRules = (root: string, path: string): boolean =>
+  basename(path) === SELF || basename(path) === LOCKFILE || relative(root, path).startsWith(WORKFLOW_DIR);
+
+// Images and fonts are let through unread, so they have no text to match.
+function readableText(path: string): string {
+  if (MEDIA_EXTENSIONS.has(extname(path).toLowerCase())) return "";
+  return statSync(path).size > MAX_SCAN_BYTES ? "" : readFileSync(path, "utf8");
+}
+
+function lineProblems(path: string, re: RegExp, why: string): readonly string[] {
+  return readableText(path)
+    .split("\n")
+    .flatMap((line, i) => (re.test(line) ? [`line ${i + 1} ${why}: ${line.trim().slice(0, SNIPPET_CHARS)}`] : []));
+}
+
+function scannerShapeProblems(root: string, path: string): readonly string[] {
+  if (isOutsideRules(root, path)) return [];
+  return [
+    ...lineProblems(path, LONE_COMMAND_RE, "has a command word on its own, which the scanner reads as a command that prints the environment"),
+    ...lineProblems(path, CREDENTIAL_PLACEHOLDER_RE, "has a template placeholder that names a credential, which the scanner reads as a credential lookup"),
+  ];
+}
+
 // ---- rule 3: native executables ---------------------------------------------
 
 const HEADER_BYTES = 0x40;
@@ -203,7 +268,7 @@ function fileProblems(root: string, path: string): readonly string[] {
   if (kind !== undefined) {
     return [...grants, `${kind} committed; the scanner cannot read it. Ship source and fetch a pinned build instead`];
   }
-  return [...grants, ...envProblems(path)];
+  return [...grants, ...envProblems(path), ...scannerShapeProblems(root, path)];
 }
 
 function checkRoot(root: string): number {

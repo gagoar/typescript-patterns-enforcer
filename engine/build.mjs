@@ -187,9 +187,10 @@ PARSER_FILES.forEach((file, i) =>
   writeFileSync(file, COMMAND_WORDS.reduce((text, word) => text.replace(splitWordCall(word), (_call, fn) => `${fn}(${joinedHalves(word)})`), wordTexts[i])),
 );
 
-// The same applies to a local variable named after a command word: `if (declare && ...)` starts a
-// subshell with a bare `declare` in it. One function in the plugin names a flag that, so the
-// build renames it. The patterns are built from the name so this file never spells the statements.
+// The same applies to a local variable named after a command word: used as the first test of an
+// if condition, it becomes a subshell whose only word is that command. One function in the plugin
+// keeps a flag in such a variable, so the build renames it. The patterns are built from the name so
+// this file never spells the statements.
 // Matches the destructuring "const { NAME = false, kind } = method;" and the test "if (NAME && (": rejects other uses of the name.
 const COMMAND_NAMED_LOCAL = "declare";
 const RENAMED_LOCAL = "isDeclared";
