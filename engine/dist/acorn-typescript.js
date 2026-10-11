@@ -220,7 +220,7 @@ var TypeScriptError = {
   DuplicateModifier: ({ modifier }) => `Duplicate modifier: '${modifier}'.`,
   // `token` matches the terminology used by typescript:
   // (link omitted)
-  EmptyHeritageClauseType: ({ token }) => `'${token}' list cannot be empty.`,
+  EmptyHeritageClauseType: ({ token: listKind }) => `'${listKind}' list cannot be empty.`,
   EmptyTypeArguments: "Type argument list cannot be empty.",
   EmptyTypeParameters: "Type parameter list cannot be empty.",
   ExpectedAmbientAfterExportDeclare: "'export declare' must be followed by an ambient declaration.",
