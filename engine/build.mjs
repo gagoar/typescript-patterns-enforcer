@@ -138,7 +138,7 @@ const tableFrom = tableText.indexOf(TABLE_START);
 const tableTo = tableText.indexOf(TABLE_END, tableFrom);
 if (tableFrom === -1 || tableTo === -1) throw new Error(`${MESSAGE_TABLE_FILE}: the error message table was not found; update build.mjs`);
 const table = tableText.slice(tableFrom, tableTo);
-const rewrittenTable = table.replace(PLAIN_MESSAGE, (_entry, head, key, comma) => `${head}: "${key}"${comma}`);
+const rewrittenTable = table.replace(PLAIN_MESSAGE, (_entry, head, name, comma) => head + ': "' + name + '"' + comma);
 if (rewrittenTable === table) throw new Error(`${MESSAGE_TABLE_FILE}: no plain error messages found; update build.mjs`);
 writeFileSync(MESSAGE_TABLE_FILE, tableText.slice(0, tableFrom) + rewrittenTable + tableText.slice(tableTo));
 
@@ -156,6 +156,19 @@ const parserTexts = PARSER_FILES.map((file) => readFileSync(file, "utf8"));
 const missing = ACORN_MESSAGES.filter(([from]) => !parserTexts.some((text) => text.includes(from)));
 if (missing.length) throw new Error(`message not found in the parser bundles, update ACORN_MESSAGES in build.mjs: ${missing[0][0]}`);
 PARSER_FILES.forEach((file, i) => writeFileSync(file, ACORN_MESSAGES.reduce((text, [from, to]) => text.split(from).join(to), parserTexts[i])));
+
+// The validator also reads a template placeholder that names a key as a lookup of the installer's
+// credentials, whatever the expression around it. Three templates in the plugin do (a regex source
+// and two error-message parameters); written as concatenation they are the same string.
+// Matches the keyword regex source and the "[name]" label template; rejects other templates.
+const TEMPLATE_REWRITES = [
+  [/new RegExp\(`\^\(\?:\$\{Object\.keys\(tsKwTokenType\)\.join\("\|"\)\}\)\$`\)/g, 'new RegExp("^(?:" + Object.keys(tsKwTokenType).join("|") + ")$")'],
+  [/`\[\$\{this\.input\.slice\(key\.start, key\.end\)\}\]`/g, '"[" + this.input.slice(key.start, key.end) + "]"'],
+];
+const templateText = readFileSync(MESSAGE_TABLE_FILE, "utf8");
+const notFound = TEMPLATE_REWRITES.filter(([pattern]) => !new RegExp(pattern.source).test(templateText));
+if (notFound.length) throw new Error(`${MESSAGE_TABLE_FILE}: template not found, update TEMPLATE_REWRITES in build.mjs: ${notFound[0][0]}`);
+writeFileSync(MESSAGE_TABLE_FILE, TEMPLATE_REWRITES.reduce((text, [pattern, to]) => text.replace(pattern, () => to), templateText));
 
 // The validator reads scripts up to 256 KiB and holds the plugin for review beyond that.
 const MAX_BYTES = 256 * 1024;

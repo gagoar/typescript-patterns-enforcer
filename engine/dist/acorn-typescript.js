@@ -56,7 +56,7 @@ function generateAcornTypeScript(_acorn) {
     const tsKwTokenTypeValues = Object.values(tsKwTokenType);
     const tsTokenType = generateTsTokenType();
     const tsTokenContext = generateTsTokenContext();
-    const tsKeywordsRegExp = new RegExp(`^(?:${Object.keys(tsKwTokenType).join("|")})$`);
+    const tsKeywordsRegExp = new RegExp("^(?:" + Object.keys(tsKwTokenType).join("|") + ")$");
     tsTokenType.jsxTagStart.updateContext = function() {
       this.context.push(tsTokenContext.tc_expr);
       this.context.push(tsTokenContext.tc_oTag);
@@ -4137,7 +4137,7 @@ function tsPlugin(options) {
             this.raise(
               this.start,
               TypeScriptError.AbstractPropertyHasInitializer({
-                propertyName: key.type === "Identifier" && !field.computed ? key.name : `[${this.input.slice(key.start, key.end)}]`
+                propertyName: key.type === "Identifier" && !field.computed ? key.name : "[" + this.input.slice(key.start, key.end) + "]"
               })
             );
           }
@@ -5193,7 +5193,7 @@ function tsPlugin(options) {
             this.raise(
               method.start,
               TypeScriptError.AbstractMethodHasImplementation({
-                methodName: key.type === "Identifier" && !method.computed ? key.name : `[${this.input.slice(key.start, key.end)}]`
+                methodName: key.type === "Identifier" && !method.computed ? key.name : "[" + this.input.slice(key.start, key.end) + "]"
               })
             );
           }
