@@ -20,16 +20,11 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// node_modules/@sveltejs/acorn-typescript/index.js
 var index_exports = {};
 __export(index_exports, {
   tsPlugin: () => tsPlugin
@@ -37,7 +32,7 @@ __export(index_exports, {
 module.exports = __toCommonJS(index_exports);
 var acornNamespace = __toESM(require("./acorn.js"), 1);
 var startsExpr = true;
-var acornTypeScriptMap = /* @__PURE__ */ new WeakMap();
+var acornTypeScriptMap = new WeakMap();
 function generateAcornTypeScript(_acorn) {
   const acorn = _acorn.Parser.acorn || _acorn;
   let acornTypeScript = acornTypeScriptMap.get(acorn);
@@ -106,15 +101,10 @@ function generateAcornTypeScript(_acorn) {
   }
   function generateTsTokenType() {
     return {
-      // @ts-expect-error
       at: new acorn.TokenType("@"),
-      // @ts-expect-error
       jsxName: new acorn.TokenType("jsxName"),
-      // @ts-expect-error
       jsxText: new acorn.TokenType("jsxText", { beforeExpr: true }),
-      // @ts-expect-error
       jsxTagStart: new acorn.TokenType("jsxTagStart", { startsExpr: true }),
-      // @ts-expect-error
       jsxTagEnd: new acorn.TokenType("jsxTagEnd")
     };
   }
@@ -168,16 +158,10 @@ var CLASS_ELEMENT_STATIC_GETTER = CLASS_ELEMENT_KIND_GETTER | CLASS_ELEMENT_FLAG
 var CLASS_ELEMENT_STATIC_SETTER = CLASS_ELEMENT_KIND_SETTER | CLASS_ELEMENT_FLAG_STATIC;
 var skipWhiteSpaceInLine = /(?:[^\S\n\r\u2028\u2029]|\/\/.*|\/\*.*?\*\/)*/y;
 var skipWhiteSpaceToLineBreak = new RegExp(
-  // Unfortunately JS doesn't support Perl's atomic /(?>pattern)/ or
-  // possessive quantifiers, so we use a trick to prevent backtracking
-  // when the look-ahead for line terminator fails.
-  "(?=(" + // Capture the whitespace and comments that should be skipped inside
-  // a look-ahead assertion, and then re-match the group as a unit.
-  skipWhiteSpaceInLine.source + "))\\1" + // Look-ahead for either line terminator, start of multi-line comment,
-  // or end of string.
+  "(?=(" +
+  skipWhiteSpaceInLine.source + "))\\1" +
   /(?=[\n\r\u2028\u2029]|\/\*(?!.*?\*\/)|$)/.source,
   "y"
-  // sticky
 );
 var DestructuringErrors = class {
   constructor() {
@@ -213,13 +197,9 @@ var TypeScriptError = {
   DeclareClassFieldHasInitializer: "Initializers are not allowed in ambient contexts.",
   DeclareFunctionHasImplementation: "An implementation cannot be declared in ambient contexts.",
   DuplicateAccessibilityModifier: (
-    // `Accessibility modifier already seen: ${modifier}` would be more helpful.
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     (() => `Accessibility modifier already seen.`)
   ),
   DuplicateModifier: ({ modifier }) => `Duplicate modifier: '${modifier}'.`,
-  // `token` matches the terminology used by typescript:
-  // (link omitted)
   EmptyHeritageClauseType: ({ token: listKind }) => `'${listKind}' list cannot be empty.`,
   EmptyTypeArguments: "Type argument list cannot be empty.",
   EmptyTypeParameters: "Type parameter list cannot be empty.",
@@ -621,7 +601,6 @@ function generateJsxParser(acorn, acornTypeScript, Parser, jsxOptions) {
     jsxOptions || {}
   );
   return class JsxParser extends Parser {
-    // Reads inline JSX contents token.
     jsx_readToken() {
       let out = "", chunkStart = this.pos;
       for (; ; ) {
@@ -629,7 +608,6 @@ function generateJsxParser(acorn, acornTypeScript, Parser, jsxOptions) {
         let ch = this.input.charCodeAt(this.pos);
         switch (ch) {
           case 60:
-          // '<'
           case 123:
             if (this.pos === this.start) {
               if (ch === 60 && this.exprAllowed) {
@@ -646,7 +624,6 @@ function generateJsxParser(acorn, acornTypeScript, Parser, jsxOptions) {
             chunkStart = this.pos;
             break;
           case 62:
-          // '>'
           case 125:
             this.raise(
               this.pos,
@@ -733,12 +710,6 @@ function generateJsxParser(acorn, acornTypeScript, Parser, jsxOptions) {
       }
       return entity;
     }
-    // Read a JSX identifier (valid tag or attribute name).
-    //
-    // Optimized version since JSX identifiers can't contain
-    // escape characters and so can be read as single slice.
-    // Also assumes that first character was already checked
-    // by isIdentifierStart in readToken.
     jsx_readWord() {
       let ch, start = this.pos;
       do {
@@ -746,7 +717,6 @@ function generateJsxParser(acorn, acornTypeScript, Parser, jsxOptions) {
       } while (isIdentifierChar(ch) || ch === 45);
       return this.finishToken(tok.jsxName, this.input.slice(start, this.pos));
     }
-    // Parse next token as JSX identifier
     jsx_parseIdentifier() {
       let node = this.startNode();
       if (this.type === tok.jsxName) node.name = this.value;
@@ -755,7 +725,6 @@ function generateJsxParser(acorn, acornTypeScript, Parser, jsxOptions) {
       this.next();
       return this.finishNode(node, "JSXIdentifier");
     }
-    // Parse namespaced identifier.
     jsx_parseNamespacedName() {
       let startPos = this.start, startLoc = this.startLoc;
       let name = this.jsx_parseIdentifier();
@@ -765,8 +734,6 @@ function generateJsxParser(acorn, acornTypeScript, Parser, jsxOptions) {
       node.name = this.jsx_parseIdentifier();
       return this.finishNode(node, "JSXNamespacedName");
     }
-    // Parses element name in any form - namespaced, member
-    // or single identifier.
     jsx_parseElementName() {
       if (this.type === tok.jsxTagEnd) return "";
       let startPos = this.start, startLoc = this.startLoc;
@@ -782,7 +749,6 @@ function generateJsxParser(acorn, acornTypeScript, Parser, jsxOptions) {
       }
       return node;
     }
-    // Parses any type of JSX attribute value.
     jsx_parseAttributeValue() {
       switch (this.type) {
         case tt.braceL:
@@ -797,14 +763,10 @@ function generateJsxParser(acorn, acornTypeScript, Parser, jsxOptions) {
           this.raise(this.start, "JSX value should be either an expression or a quoted JSX text");
       }
     }
-    // JSXEmptyExpression is unique type since it doesn't actually parse anything,
-    // and so it should start at the end of last read token (left brace) and finish
-    // at the beginning of the next one (right brace).
     jsx_parseEmptyExpression() {
       let node = this.startNodeAt(this.lastTokEnd, this.lastTokEndLoc);
       return this.finishNodeAt(node, "JSXEmptyExpression", this.start, this.startLoc);
     }
-    // Parses JSX expression enclosed into curly brackets.
     jsx_parseExpressionContainer() {
       let node = this.startNode();
       this.next();
@@ -817,7 +779,6 @@ function generateJsxParser(acorn, acornTypeScript, Parser, jsxOptions) {
       this.expect(tt.braceR);
       return this.finishNode(node, "JSXExpressionContainer");
     }
-    // Parses following JSX attribute name-value pair.
     jsx_parseAttribute() {
       let node = this.startNode();
       if (this.eat(tt.braceL)) {
@@ -830,7 +791,6 @@ function generateJsxParser(acorn, acornTypeScript, Parser, jsxOptions) {
       node.value = this.eat(tt.eq) ? this.jsx_parseAttributeValue() : null;
       return this.finishNode(node, "JSXAttribute");
     }
-    // Parses JSX opening tag starting after '<'.
     jsx_parseOpeningElementAt(startPos, startLoc) {
       let node = this.startNodeAt(startPos, startLoc);
       node.attributes = [];
@@ -842,7 +802,6 @@ function generateJsxParser(acorn, acornTypeScript, Parser, jsxOptions) {
       this.expect(tok.jsxTagEnd);
       return this.finishNode(node, nodeName ? "JSXOpeningElement" : "JSXOpeningFragment");
     }
-    // Parses JSX closing tag starting after '</'.
     jsx_parseClosingElementAt(startPos, startLoc) {
       let node = this.startNodeAt(startPos, startLoc);
       let nodeName = this.jsx_parseElementName();
@@ -850,8 +809,6 @@ function generateJsxParser(acorn, acornTypeScript, Parser, jsxOptions) {
       this.expect(tok.jsxTagEnd);
       return this.finishNode(node, nodeName ? "JSXClosingElement" : "JSXClosingFragment");
     }
-    // Parses entire JSX element, including it's opening tag
-    // (starting after '<'), attributes, contents and closing tag.
     jsx_parseElementAt(startPos, startLoc) {
       let node = this.startNodeAt(startPos, startLoc);
       let children = [];
@@ -896,13 +853,11 @@ function generateJsxParser(acorn, acornTypeScript, Parser, jsxOptions) {
       }
       return this.finishNode(node, "JSX" + fragmentOrElement);
     }
-    // Parse JSX text
     jsx_parseText() {
       let node = this.parseLiteral(this.value);
       node.type = "JSXText";
       return node;
     }
-    // Parses entire JSX element from current position.
     jsx_parseElement() {
       let startPos = this.start, startLoc = this.startLoc;
       this.next();
@@ -931,7 +886,7 @@ function generateParseImportAssertions(Parse, acornTypeScript, acorn) {
     }
     parseWithEntries() {
       const attrs = [];
-      const attrNames = /* @__PURE__ */ new Set();
+      const attrNames = new Set();
       do {
         if (this.type === tt.braceR) {
           break;
@@ -1035,7 +990,7 @@ var ParseEffects = class {
     }
     this.flush(events);
   }
-  "set"(target, key, value) {
+  set(target, key, value) {
     this.willSet(target, key);
     target[key] = value;
   }
@@ -1064,11 +1019,6 @@ var ParseEffects = class {
     this.set(target, key, next);
     return result;
   }
-  /**
-   * Compatibility write barriers for mutations performed by inherited Acorn
-   * methods. New plugin-owned mutations should prefer the active operations
-   * above.
-   */
   willAppend(target) {
     if (!this.active) return;
     this.undoLog.push({
@@ -1455,21 +1405,14 @@ var acornScope = {
   SCOPE_CLASS_STATIC_BLOCK: 256,
   SCOPE_VAR: 256,
   BIND_NONE: 0,
-  // Not a binding
   BIND_VAR: 1,
-  // Var-style binding
   BIND_LEXICAL: 2,
-  // Let- or const-style binding
   BIND_FUNCTION: 3,
-  // Function declaration
   BIND_SIMPLE_CATCH: 4,
-  // Simple (identifier pattern) catch binding
   BIND_OUTSIDE: 5,
-  // Special case for function names as bound inside the
   BIND_TS_TYPE: 6,
   BIND_TS_INTERFACE: 7,
   BIND_TS_NAMESPACE: 8 | 1024,
-  // includes BIND_FLAGS_TS_EXPORT_ONLY for declaration merging
   BIND_FLAGS_TS_EXPORT_ONLY: 1024,
   BIND_FLAGS_TS_IMPORT: 4096,
   BIND_FLAGS_TS_ENUM: 256,
@@ -1477,7 +1420,6 @@ var acornScope = {
   BIND_TS_ENUM: 2 | 256,
   BIND_TS_CONST_ENUM: 2 | 256 | 512,
   BIND_FLAGS_CLASS: 128
-  // function
 };
 function functionFlags(async, generator) {
   return acornScope.SCOPE_FUNCTION | (async ? acornScope.SCOPE_ASYNC : 0) | (generator ? acornScope.SCOPE_GENERATOR : 0);
@@ -1604,18 +1546,15 @@ function tsPlugin(options) {
           this.tsParseModifiers({
             modified: node,
             allowedModifiers: ["const"],
-            // for better error recovery
             disallowedModifiers: ["in", "out"],
             errorTemplate: TypeScriptError.InvalidModifierOnTypeParameterPositions
           });
         };
         this.ecmaVersion = this.options.ecmaVersion;
       }
-      // support in Class static
       static get acornTypeScript() {
         return acornTypeScript;
       }
-      // support in runtime, get acornTypeScript be this
       get acornTypeScript() {
         return acornTypeScript;
       }
@@ -1717,7 +1656,6 @@ function tsPlugin(options) {
       setOptionalParametersError(refExpressionErrors, resultError) {
         refExpressionErrors.optionalParametersLoc = resultError?.loc ?? this.startLoc;
       }
-      // used after we have finished parsing types
       reScan_lt_gt() {
         if (this.type === tt.relational) {
           this.pos -= 1;
@@ -1792,14 +1730,10 @@ function tsPlugin(options) {
         return this.parseArrowExpression(
           res,
           res.params,
-          /* async */
           true,
-          /* forInit */
           forInit
         );
       }
-      // Used when parsing type arguments from ES productions, where the first token
-      // has been created without state.inType. Thus we need to rescan the lt token.
       tsParseTypeArgumentsInExpression() {
         if (this.reScan_lt() !== tt.relational) {
           return void 0;
@@ -1822,9 +1756,7 @@ function tsPlugin(options) {
         const nameEnd = nameStart + name.length;
         if (this.input.slice(nameStart, nameEnd) === name) {
           const nextCh = this.input.charCodeAt(nameEnd);
-          return !(isIdentifierChar(nextCh) || // check if `nextCh is between 0xd800 - 0xdbff,
-          // if `nextCh` is NaN, `NaN & 0xfc00` is 0, the function
-          // returns true
+          return !(isIdentifierChar(nextCh) ||
           (nextCh & 64512) === 55296);
         }
         return false;
@@ -1863,8 +1795,6 @@ function tsPlugin(options) {
           containsEsc: this.containsEsc
         };
       }
-      // Token-only restore. Callers handle `context` separately according to
-      // whether they need checkpoint identity restoration or a detached copy.
       setLookaheadTokenState(state) {
         this.pos = state.pos;
         this.value = state.value;
@@ -1898,7 +1828,6 @@ function tsPlugin(options) {
         failedBranch.selected = true;
         this.parseEffects.replay(failedBranch.events);
       }
-      // Utilities
       tsLookAhead(f) {
         const frame = this.beginParseEffectScope();
         try {
@@ -2019,15 +1948,6 @@ function tsPlugin(options) {
           Object.defineProperty(extra, key, { enumerable, value });
         }
       }
-      /**
-       * Test if current token is a literal property name
-       * (link omitted)
-       * LiteralPropertyName:
-       *   IdentifierName
-       *   StringLiteral
-       *   NumericLiteral
-       *   BigIntLiteral
-       */
       isLiteralPropertyName() {
         return tokenIsLiteralPropertyName(this.type);
       }
@@ -2038,14 +1958,9 @@ function tsPlugin(options) {
         node.name = name;
         return this.finishNode(node, "Identifier");
       }
-      /**
-       * Reset the start location of node to the start location of locationNode
-       */
       resetStartLocationFromNode(node, locationNode) {
         this.resetStartLocation(node, locationNode.start, locationNode.loc.start);
       }
-      // This is used in flow and typescript plugin
-      // Determine whether a parameter is a this param
       isThisParam(param) {
         return param.type === "Identifier" && param.name === "this";
       }
@@ -2053,20 +1968,9 @@ function tsPlugin(options) {
         const next = this.nextTokenStart();
         return this.isUnparsedContextual(next, name);
       }
-      /**
-       * ts type isContextual
-       * @param {TokenType} type
-       * @param {TokenType} token
-       * @returns {boolean}
-       * */
       ts_type_isContextual(type, token) {
         return type === token && !this.containsEsc;
       }
-      /**
-       * ts isContextual
-       * @param {TokenType} token
-       * @returns {boolean}
-       * */
       ts_isContextual(token) {
         return this.type === token && !this.containsEsc;
       }
@@ -2106,13 +2010,6 @@ function tsPlugin(options) {
       tsTryParseType() {
         return this.tsEatThenParseType(tt.colon);
       }
-      /**
-       * Whether current token matches given type
-       *
-       * @param {TokenType} type
-       * @returns {boolean}
-       * @memberof Tokenizer
-       */
       match(type) {
         return this.type === type;
       }
@@ -2188,7 +2085,6 @@ function tsPlugin(options) {
       tsParseEnumMember() {
         const node = this.startNode();
         node.id = this.match(tt.string) ? this.parseLiteral(this.value) : this.parseIdent(
-          /* liberal */
           true
         );
         if (this.eat(tt.eq)) {
@@ -2254,9 +2150,7 @@ function tsPlugin(options) {
             nany.declare = true;
             return this.parseFunctionStatement(
               nany,
-              /* async */
               false,
-              /* declarationPosition */
               true
             );
           }
@@ -2291,7 +2185,6 @@ function tsPlugin(options) {
             return this.tsParseDeclaration(
               nany,
               this.value,
-              /* next */
               true
             );
           }
@@ -2310,10 +2203,6 @@ function tsPlugin(options) {
             return this.tsMatchRightRelational();
         }
       }
-      /**
-       * If !expectSuccess, returns undefined instead of failing to parse.
-       * If expectSuccess, parseElement should always return a defined value.
-       */
       tsParseDelimitedListWorker(kind, parseElement, expectSuccess, refTrailingCommaPos) {
         const result = [];
         let trailingCommaPos = -1;
@@ -2349,7 +2238,6 @@ function tsPlugin(options) {
           this.tsParseDelimitedListWorker(
             kind,
             parseElement,
-            /* expectSuccess */
             true,
             refTrailingCommaPos
           )
@@ -2489,7 +2377,6 @@ function tsPlugin(options) {
         const node = this.startNodeAtNode(lhs);
         node.parameterName = lhs;
         node.typeAnnotation = this.tsParseTypeAnnotation(
-          /* eatColon */
           false
         );
         node.asserts = false;
@@ -2518,7 +2405,6 @@ function tsPlugin(options) {
           const typePredicateVariable = this.tsIsIdentifier() && this.tsTryParse(this.tsParseTypePredicatePrefix.bind(this));
           if (typePredicateVariable) {
             const type2 = this.tsParseTypeAnnotation(
-              /* eatColon */
               false
             );
             node.parameterName = typePredicateVariable;
@@ -2546,7 +2432,6 @@ function tsPlugin(options) {
           if (!assertedTypePredicateVariable) {
             if (!asserts) {
               return this.tsParseTypeAnnotation(
-                /* eatColon */
                 false,
                 t
               );
@@ -2558,7 +2443,6 @@ function tsPlugin(options) {
             return this.finishNode(t, "TSTypeAnnotation");
           }
           const type = this.tsParseTypeAnnotation(
-            /* eatColon */
             false
           );
           node.parameterName = assertedTypePredicateVariable;
@@ -2568,8 +2452,6 @@ function tsPlugin(options) {
           return this.finishNode(t, "TSTypeAnnotation");
         });
       }
-      // Note: In TypeScript implementation we must provide `yieldContext` and `awaitContext`,
-      // but here it's always false, because this is only used for types.
       tsFillSignature(returnToken, signature) {
         const returnTokenRequired = returnToken === tt.arrow;
         const paramsKey = "parameters";
@@ -2662,8 +2544,6 @@ function tsPlugin(options) {
         node.literal = (() => {
           switch (this.type) {
             case tt.num:
-            // we don't need bigint type here
-            // case tt.bigint:
             case tt.string:
             case tt._true:
             case tt._false:
@@ -2784,9 +2664,7 @@ function tsPlugin(options) {
         node.elementTypes = this.tsParseBracketedList(
           "TupleElementTypes",
           this.tsParseTupleElementType.bind(this),
-          /* bracket */
           true,
-          /* skipFirstToken */
           false
         );
         let seenOptionalElement = false;
@@ -2832,8 +2710,6 @@ function tsPlugin(options) {
         switch (this.type) {
           case tt.string:
           case tt.num:
-          // we don't need bigint type here
-          // case tt.bigint:
           case tt._true:
           case tt._false:
             return this.tsParseLiteralTypeNode();
@@ -2860,7 +2736,6 @@ function tsPlugin(options) {
             return this.tsParseTupleType();
           case tt.parenL:
             return this.tsParseParenthesizedType();
-          // parse template string here
           case tt.backQuote:
           case tt.dollarBraceL:
             return this.tsParseTemplateLiteralType();
@@ -2924,13 +2799,11 @@ function tsPlugin(options) {
         } else if (this.isAbstractConstructorSignature()) {
           return this.tsParseFunctionOrConstructorType(
             "TSConstructorType",
-            /* abstract */
             true
           );
         }
         return this.tsParseUnionTypeOrHigher();
       }
-      /** Be sure to be in a type context before calling this, using `tsInType`. */
       tsParseType() {
         assert(this.inType);
         const type = this.tsParseNonConditionalType();
@@ -2956,11 +2829,6 @@ function tsPlugin(options) {
         }
         return false;
       }
-      /**
-       * Runs `cb` in a type context.
-       * This should be called one token *before* the first type token,
-       * so that the call to `next()` is run in type context.
-       */
       tsInType(cb) {
         const oldInType = this.inType;
         this.inType = true;
@@ -2985,7 +2853,6 @@ function tsPlugin(options) {
         this.tsParseTypeMemberSemicolon();
         return this.finishNode(node, "TSIndexSignature");
       }
-      // for better error recover
       tsParseNoneModifiers(node) {
         this.tsParseModifiers({
           modified: node,
@@ -3013,9 +2880,7 @@ function tsPlugin(options) {
         node.params = this.tsParseBracketedList(
           "TypeParametersOrArguments",
           this.tsParseTypeParameter.bind(this, parseModifiers),
-          /* bracket */
           false,
-          /* skipFirstToken */
           true,
           refTrailingCommaPos
         );
@@ -3055,7 +2920,6 @@ function tsPlugin(options) {
         this.next(true);
         return this.tsTokenCanFollowModifier();
       }
-      /** Parses a modifier matching one the given modifier names. */
       tsParseModifier(allowedModifiers, stopOnStartOfClassStaticBlock) {
         const modifier = this.value;
         if (allowedModifiers.indexOf(modifier) !== -1 && !this.containsEsc) {
@@ -3076,11 +2940,6 @@ function tsPlugin(options) {
           modified[key] = map[key];
         }
       }
-      /** Parses a list of modifiers, in any order.
-       *  If you need a specific order, you must call this function multiple times:
-       *    this.tsParseModifiers({ modified: node, allowedModifiers: ['public'] });
-       *    this.tsParseModifiers({ modified: node, allowedModifiers: ["abstract", "readonly"] });
-       */
       tsParseModifiers({
         modified,
         allowedModifiers,
@@ -3199,7 +3058,6 @@ function tsPlugin(options) {
           errorTemplate: TypeScriptError.InvalidModifierOnTypeParameter
         });
       }
-      // Handle type assertions
       parseMaybeUnary(refExpressionErrors, sawUnary, incDec, forInit) {
         if (!options?.jsx && this.tsMatchLeftRelational()) {
           return this.tsParseTypeAssertion();
@@ -3229,7 +3087,6 @@ function tsPlugin(options) {
         const node = this.startNode();
         node.params = this.tsInType(
           () => (
-            // Temporarily remove a JSX parsing context, which makes us scan different tokens.
             this.tsInNoContext(() => {
               this.expect(tt.relational);
               return this.tsParseDelimitedList(
@@ -3275,7 +3132,6 @@ function tsPlugin(options) {
       tsTryParseAndCatch(f) {
         const result = this.tryParse(
           (abort) => (
-            // @ts-expect-error todo(flow->ts)
             f() || abort()
           )
         );
@@ -3417,10 +3273,6 @@ function tsPlugin(options) {
         node.body = this.finishNode(body, "TSInterfaceBody");
         return this.finishNode(node, "TSInterfaceDeclaration");
       }
-      /**
-       * Parse interface body, ensuring the closing brace is read outside of type context
-       * so that decorators following the interface are properly tokenized.
-       */
       tsParseInterfaceBody() {
         this.expect(tt.braceL);
         const oldInType = this.inType;
@@ -3471,14 +3323,12 @@ function tsPlugin(options) {
             return this.tsParseDeclaration(
               node,
               expr.name,
-              /* next */
               false
             );
         }
       }
       tsParseModuleReference() {
         return this.tsIsExternalModuleReference() ? this.tsParseExternalModuleReference() : this.tsParseEntityName(
-          /* allowReservedWords */
           false
         );
       }
@@ -3575,7 +3425,6 @@ function tsPlugin(options) {
         this.semicolon();
         return this.finishNode(node, "TSTypeAliasDeclaration");
       }
-      // Common to tsTryParseDeclare, tsTryParseExportDeclaration, and tsParseExpressionStatement.
       tsParseDeclaration(node, value, next) {
         switch (value) {
           case "abstract":
@@ -3604,13 +3453,10 @@ function tsPlugin(options) {
             break;
         }
       }
-      // Note: this won't b·e called unless the keyword is allowed in
-      // `shouldParseExportDeclaration`.
       tsTryParseExportDeclaration() {
         return this.tsParseDeclaration(
           this.startNode(),
           this.value,
-          /* next */
           true
         );
       }
@@ -3822,11 +3668,6 @@ function tsPlugin(options) {
         }
         return nodes;
       }
-      /**
-       * @param {Node} node this may be ImportDeclaration |
-       * TsImportEqualsDeclaration
-       * @returns AnyImport
-       * */
       parseImport(node) {
         let enterHead = this.lookahead();
         node.importKind = "value";
@@ -3834,9 +3675,8 @@ function tsPlugin(options) {
         if (tokenIsIdentifier(enterHead.type) || this.match(tt.star) || this.match(tt.braceL)) {
           let ahead = this.lookahead(2);
           if (
-            // import type, { a } from "b";
-            ahead.type !== tt.comma && // import type from "a";
-            !this.isContextualWithState("from", ahead) && // import type = require("a");
+            ahead.type !== tt.comma &&
+            !this.isContextualWithState("from", ahead) &&
             ahead.type !== tt.eq && this.ts_eatContextualWithState("type", 1, enterHead)
           ) {
             this.importOrExportOuterKind = "type";
@@ -3928,7 +3768,6 @@ function tsPlugin(options) {
           }
           const exportEqualsNode = this.tsParseImportEqualsDeclaration(
             node,
-            /* isExport */
             true
           );
           this.importOrExportOuterKind = void 0;
@@ -3948,7 +3787,7 @@ function tsPlugin(options) {
           return this.finishNode(decl, "TSNamespaceExportDeclaration");
         } else {
           const lookahead2 = this.lookahead(2).type;
-          if (this.ts_isContextualWithState(enterHead, tokTypes.type) && (lookahead2 === tt.braceL || // export type { ... }
+          if (this.ts_isContextualWithState(enterHead, tokTypes.type) && (lookahead2 === tt.braceL ||
           lookahead2 === tt.star)) {
             this.next();
             this.importOrExportOuterKind = "type";
@@ -4115,7 +3954,7 @@ function tsPlugin(options) {
       }
       parseIdentNode() {
         let node = this.startNode();
-        if (tokenIsKeywordOrIdentifier(this.type) && // Taken from super-class method
+        if (tokenIsKeywordOrIdentifier(this.type) &&
         !((this.type.keyword === "class" || this.type.keyword === "function") && (this.lastTokEnd !== this.lastTokStart + 1 || this.input.charCodeAt(this.lastTokStart) !== 46))) {
           node.name = this.value;
         } else {
@@ -4161,7 +4000,6 @@ function tsPlugin(options) {
         }
         return super.parseStatement(context, topLevel, exports2);
       }
-      // NOTE: unused function
       parseAccessModifier() {
         return this.tsParseModifier(["public", "protected", "private"]);
       }
@@ -4175,10 +4013,6 @@ function tsPlugin(options) {
           this.raise(methodOrProp.start, TypeScriptError.ClassMethodHasDeclare);
         }
       }
-      // Note: The reason we do this in `parseExpressionStatement` and not `parseStatement`
-      // is that e.g. `type()` is valid JS, so we must try parsing that first.
-      // If it's really a type, we will parse `type` as the statement, and can correct it here
-      // by parsing the rest.
       parseExpressionStatement(node, expr) {
         const decl = expr.type === "Identifier" ? this.tsParseExpressionStatement(node, expr) : void 0;
         return decl || super.parseExpressionStatement(node, expr);
@@ -4502,7 +4336,6 @@ function tsPlugin(options) {
         if (typeParameters) node.typeParameters = typeParameters;
         super.parseFunctionParams(node);
       }
-      // `let x: number;`
       parseVarId(decl, kind) {
         super.parseVarId(decl, kind);
         if (decl.id.type === "Identifier" && !this.hasPrecedingLineBreak() && this.value === "!" && this.eat(tt.prefix)) {
@@ -4514,7 +4347,6 @@ function tsPlugin(options) {
           this.resetEndLocation(decl.id);
         }
       }
-      // parse the return type of an async arrow function - let foo = (async (): number => {});
       parseArrowExpression(node, params, isAsync, forInit) {
         if (this.match(tt.colon)) {
           node.returnType = this.tsParseTypeAnnotation();
@@ -4701,7 +4533,6 @@ function tsPlugin(options) {
         }
         return elt;
       }
-      // AssignmentPattern
       checkLValInnerPattern(expr, bindingType = acornScope.BIND_NONE, checkClashes) {
         switch (expr.type) {
           case "TSParameterProperty":
@@ -4713,7 +4544,6 @@ function tsPlugin(options) {
           }
         }
       }
-      // Allow type annotations inside of a parameter list.
       parseBindingListItem(param) {
         if (this.eat(tt.question)) {
           if (param.type !== "Identifier" && !this.isAmbientContext && !this.inType) {
@@ -4833,7 +4663,6 @@ function tsPlugin(options) {
         switch (this.type) {
           case tt._this:
             return this.parseIdent(
-              /* liberal */
               true
             );
           default:
@@ -5018,7 +4847,7 @@ function tsPlugin(options) {
       }
       parseSubscript(base, startPos, startLoc, noCalls, maybeAsyncArrow, optionalChained, forInit) {
         let _optionalChained = optionalChained;
-        if (!this.hasPrecedingLineBreak() && // NODE: replace bang
+        if (!this.hasPrecedingLineBreak() &&
         this.value === "!" && this.match(tt.prefix)) {
           this.exprAllowed = false;
           this.next();
@@ -5087,9 +4916,8 @@ function tsPlugin(options) {
             }
             const tokenType = this.type;
             if (
-              // a<b>>c is not (a<b>)>c, but a<(b>>c)
-              this.tsMatchRightRelational() || // a<b>>>c is not (a<b>)>>c, but a<(b>>>c)
-              tokenType === tt.bitShift || // a<b>c is (a<b)>c
+              this.tsMatchRightRelational() ||
+              tokenType === tt.bitShift ||
               tokenType !== tt.parenL && tokenCanStartExpression(tokenType) && !this.hasPrecedingLineBreak()
             ) {
               return;
@@ -5404,7 +5232,6 @@ function tsPlugin(options) {
           node.imported = this.parseModuleExportName();
           this.parseTypeOnlyImportExportSpecifier(
             node,
-            /* isImport */
             true,
             this.importOrExportOuterKind === "type"
           );
@@ -5423,7 +5250,6 @@ function tsPlugin(options) {
           node.local = this.parseModuleExportName();
           this.parseTypeOnlyImportExportSpecifier(
             node,
-            /* isImport */
             false,
             this.importOrExportOuterKind === "type"
           );
@@ -5534,7 +5360,6 @@ function tsPlugin(options) {
           return super.updateContext(prevType);
         }
       }
-      // Parses JSX opening tag starting after '<'.
       jsx_parseOpeningElementAt(startPos, startLoc) {
         let node = this.startNodeAt(startPos, startLoc);
         let nodeName = this.jsx_parseElementName();
@@ -5639,7 +5464,6 @@ function tsPlugin(options) {
     return TypeScriptParser;
   };
 }
-// Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   tsPlugin
 });

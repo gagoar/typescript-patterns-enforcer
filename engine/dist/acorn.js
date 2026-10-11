@@ -2,7 +2,6 @@
 // Generated from this repository's sources by its build; CI rebuilds it and fails if this file
 // differs. Readable on purpose, not minified. The licenses are in the notices file at the repository root.
 
-// node_modules/acorn/dist/acorn.js
 (function(global, factory) {
   typeof exports === "object" && typeof module !== "undefined" ? factory(exports) : typeof define === "function" && define.amd ? define(["exports"], factory) : (global = typeof globalThis !== "undefined" ? globalThis : global || self, factory(global.acorn = {}));
 })(exports, (function(exports2) {
@@ -123,7 +122,6 @@
     name: new TokenType("name", startsExpr),
     privateId: new TokenType("privateId", startsExpr),
     eof: new TokenType("eof"),
-    // Punctuation token types.
     bracketL: new TokenType("[", { beforeExpr: true, startsExpr: true }),
     bracketR: new TokenType("]"),
     braceL: new TokenType("{", { beforeExpr: true, startsExpr: true }),
@@ -142,19 +140,6 @@
     ellipsis: new TokenType("...", beforeExpr),
     backQuote: new TokenType("`", startsExpr),
     dollarBraceL: new TokenType("${", { beforeExpr: true, startsExpr: true }),
-    // Operators. These carry several kinds of properties to help the
-    // parser use them properly (the presence of these properties is
-    // what categorizes them as operators).
-    //
-    // `binop`, when present, specifies that this operator is a binary
-    // operator, and will refer to its precedence.
-    //
-    // `prefix` and `postfix` mark the operator as a prefix or postfix
-    // unary operator.
-    //
-    // `isAssign` marks all of `=`, `+=`, `-=` etcetera, which act as
-    // binary operators with a very low precedence, that should result
-    // in AssignmentExpression nodes.
     eq: new TokenType("=", { beforeExpr: true, isAssign: true }),
     assign: new TokenType("_=", { beforeExpr: true, isAssign: true }),
     incDec: new TokenType("++/--", { prefix: true, postfix: true, startsExpr: true }),
@@ -173,7 +158,6 @@
     slash: binop("/", 10),
     starstar: new TokenType("**", { beforeExpr: true }),
     coalesce: binop("??", 1),
-    // Keyword token types.
     _break: kw("break"),
     _case: kw("case", beforeExpr),
     _catch: kw("catch"),
@@ -236,7 +220,7 @@
   var isArray = Array.isArray || (function(obj) {
     return toString.call(obj) === "[object Array]";
   });
-  var regexpCache = /* @__PURE__ */ Object.create(null);
+  var regexpCache = Object.create(null);
   function wordsRegexp(words) {
     return regexpCache[words] || (regexpCache[words] = new RegExp("^(?:" + words.replace(/ /g, "|") + ")$"));
   }
@@ -273,108 +257,26 @@
     }
   }
   var defaultOptions = {
-    // `ecmaVersion` indicates the ECMAScript version to parse. Must be
-    // either 3, 5, 6 (or 2015), 7 (2016), 8 (2017), 9 (2018), 10
-    // (2019), 11 (2020), 12 (2021), 13 (2022), 14 (2023), or `"latest"`
-    // (the latest version the library supports). This influences
-    // support for strict mode, the set of reserved words, and support
-    // for new syntax features.
     ecmaVersion: null,
-    // `sourceType` indicates the mode the code should be parsed in.
-    // Can be either `"script"`, `"module"` or `"commonjs"`. This influences global
-    // strict mode and parsing of `import` and `export` declarations.
     sourceType: "script",
-    // When set to true, enable strict parsing mode even if `sourceType`
-    // is `"script"`.
     strict: false,
-    // `onInsertedSemicolon` can be a callback that will be called when
-    // a semicolon is automatically inserted. It will be passed the
-    // position of the inserted semicolon as an offset, and if
-    // `locations` is enabled, it is given the location as a `{line,
-    // column}` object as second argument.
     onInsertedSemicolon: null,
-    // `onTrailingComma` is similar to `onInsertedSemicolon`, but for
-    // trailing commas.
     onTrailingComma: null,
-    // By default, reserved words are only enforced if ecmaVersion >= 5.
-    // Set `allowReserved` to a boolean value to explicitly turn this on
-    // an off. When this option has the value "never", reserved words
-    // and keywords can also not be used as property names.
     allowReserved: null,
-    // When enabled, a return at the top level is not considered an
-    // error.
     allowReturnOutsideFunction: false,
-    // When enabled, import/export statements are not constrained to
-    // appearing at the top of the program, and an import.meta expression
-    // in a script isn't considered an error.
     allowImportExportEverywhere: false,
-    // By default, await identifiers are allowed to appear at the top-level scope only if ecmaVersion >= 2022.
-    // When enabled, await identifiers are allowed to appear at the top-level scope,
-    // but they are still not allowed in non-async functions.
     allowAwaitOutsideFunction: null,
-    // When enabled, super identifiers are not constrained to
-    // appearing in methods and do not raise an error when they appear elsewhere.
     allowSuperOutsideMethod: null,
-    // When enabled, hashbang directive in the beginning of file is
-    // allowed and treated as a line comment. Enabled by default when
-    // `ecmaVersion` >= 2023.
     allowHashBang: false,
-    // By default, the parser will verify that private properties are
-    // only used in places where they are valid and have been declared.
-    // Set this to false to turn such checks off.
     checkPrivateFields: true,
-    // When `locations` is on, `loc` properties holding objects with
-    // `start` and `end` properties in `{line, column}` form (with
-    // line being 1-based and column 0-based) will be attached to the
-    // nodes.
     locations: false,
-    // Pass an optional `{line, column}` object to use for the start of
-    // the parse. This is mostly useful when using `parseExpressionAt`
-    // with `locations: true`, to prevent the parser from having to
-    // determine the line position at the start position.
     startLocation: null,
-    // A function can be passed as `onToken` option, which will
-    // cause Acorn to call that function with object in the same
-    // format as tokens returned from `tokenizer().getToken()`. Note
-    // that you are not allowed to call the parser from the
-    // callback—that will corrupt its internal state.
     onToken: null,
-    // A function can be passed as `onComment` option, which will
-    // cause Acorn to call that function with `(block, text, start,
-    // end)` parameters whenever a comment is skipped. `block` is a
-    // boolean indicating whether this is a block (`/* */`) comment,
-    // `text` is the content of the comment, and `start` and `end` are
-    // character offsets that denote the start and end of the comment.
-    // When the `locations` option is on, two more parameters are
-    // passed, the full `{line, column}` locations of the start and
-    // end of the comments. Note that you are not allowed to call the
-    // parser from the callback—that will corrupt its internal state.
-    // When this option has an array as value, objects representing the
-    // comments are pushed to it.
     onComment: null,
-    // Nodes have their start and end characters offsets recorded in
-    // `start` and `end` properties (directly on the node, rather than
-    // the `loc` object, which holds line/column data. To also add a
-    // [semi-standardized][range] `range` property holding a `[start,
-    // end]` array with the same numbers, set the `ranges` option to
-    // `true`.
-    //
-    // [range]: (link omitted)
     ranges: false,
-    // It is possible to parse multiple files into a single AST by
-    // passing the tree produced by parsing the first file as
-    // `program` option in subsequent parses. This will add the
-    // toplevel forms of the parsed file to the `Program` (top) node
-    // of an existing parse tree.
     program: null,
-    // When `locations` is on, you can pass this to record the source
-    // file in every node's `loc` object.
     sourceFile: null,
-    // This value, if given, is stored in every node, whether
-    // `locations` is on or off.
     directSourceFile: null,
-    // When enabled, parenthesized expressions are represented by
-    // (non-standard) ParenthesizedExpression nodes
     preserveParens: false
   };
   var warnedAboutEcmaVersion = false;
@@ -480,7 +382,7 @@
     this.potentialArrowInForAwait = false;
     this.yieldPos = this.awaitPos = this.awaitIdentPos = 0;
     this.labels = [];
-    this.undefinedExports = /* @__PURE__ */ Object.create(null);
+    this.undefinedExports = Object.create(null);
     if (this.pos === 0 && options.allowHashBang && this.input.slice(0, 2) === "#!") {
       this.skipLineComment(2);
     }
@@ -739,7 +641,7 @@
   };
   var pp$8 = Parser.prototype;
   pp$8.parseTopLevel = function(node) {
-    var exports$1 = /* @__PURE__ */ Object.create(null);
+    var exports$1 = Object.create(null);
     if (!node.body) {
       node.body = [];
     }
@@ -840,7 +742,7 @@
       skipWhiteSpace.lastIndex = next;
       var skipAfterOf = skipWhiteSpace.exec(this.input);
       next = next + skipAfterOf[0].length;
-      if (this.input.charCodeAt(next) !== 61 || // Check for ==, === and => operators
+      if (this.input.charCodeAt(next) !== 61 ||
       (ch = this.input.charCodeAt(next + 1)) === 61 || ch === 62) {
         return false;
       }
@@ -923,11 +825,6 @@
           }
         }
         return starttype === types$1._import ? this.parseImport(node) : this.parseExport(node, exports$1);
-      // If the statement does not start with a statement keyword or a
-      // brace, it's an ExpressionStatement or LabeledStatement. We
-      // simply start parsing an expression, and afterwards, if the
-      // next token is a colon and the expression was a simple
-      // Identifier node, we switch to interpreting it as a label.
       default:
         if (this.isAsyncFunction()) {
           if (context) {
@@ -1556,7 +1453,7 @@
     node.superClass = this.eat(types$1._extends) ? this.parseExprSubscripts(null, false) : null;
   };
   pp$8.enterClassBody = function() {
-    var element = { declared: /* @__PURE__ */ Object.create(null), used: [] };
+    var element = { declared: Object.create(null), used: [] };
     this.privateNameStack.push(element);
     return element.declared;
   };
@@ -1890,7 +1787,7 @@
     }
   };
   pp$8.isDirectiveCandidate = function(statement) {
-    return this.options.ecmaVersion >= 5 && statement.type === "ExpressionStatement" && statement.expression.type === "Literal" && typeof statement.expression.value === "string" && // Reject parenthesized strings.
+    return this.options.ecmaVersion >= 5 && statement.type === "ExpressionStatement" && statement.expression.type === "Literal" && typeof statement.expression.value === "string" &&
     (this.input[statement.start] === '"' || this.input[statement.start] === "'");
   };
   var pp$7 = Parser.prototype;
@@ -3215,7 +3112,7 @@
     return true;
   };
   pp$5.checkParams = function(node, allowDuplicates) {
-    var nameHash = /* @__PURE__ */ Object.create(null);
+    var nameHash = Object.create(null);
     for (var i2 = 0, list2 = node.params; i2 < list2.length; i2 += 1) {
       var param = list2[i2];
       this.checkLValInnerPattern(param, BIND_VAR, allowDuplicates ? null : nameHash);
@@ -3588,7 +3485,7 @@
     this.lastAssertionIsQuantifiable = false;
     this.numCapturingParens = 0;
     this.maxBackReference = 0;
-    this.groupNames = /* @__PURE__ */ Object.create(null);
+    this.groupNames = Object.create(null);
     this.backReferenceNames = [];
     this.branchID = null;
   };
@@ -3716,23 +3613,20 @@
     state.lastAssertionIsQuantifiable = false;
     state.numCapturingParens = 0;
     state.maxBackReference = 0;
-    state.groupNames = /* @__PURE__ */ Object.create(null);
+    state.groupNames = Object.create(null);
     state.backReferenceNames.length = 0;
     state.branchID = null;
     this.regexp_disjunction(state);
     if (state.pos !== state.source.length) {
       if (state.eat(
         41
-        /* ) */
       )) {
         state.raise("Unmatched ')'");
       }
       if (state.eat(
         93
-        /* ] */
       ) || state.eat(
         125
-        /* } */
       )) {
         state.raise("Lone quantifier brackets");
       }
@@ -3755,7 +3649,6 @@
     this.regexp_alternative(state);
     while (state.eat(
       124
-      /* | */
     )) {
       if (trackDisjunction) {
         state.branchID = state.branchID.sibling();
@@ -3770,7 +3663,6 @@
     }
     if (state.eat(
       123
-      /* { */
     )) {
       state.raise("Lone quantifier brackets");
     }
@@ -3799,23 +3691,18 @@
     state.lastAssertionIsQuantifiable = false;
     if (state.eat(
       94
-      /* ^ */
     ) || state.eat(
       36
-      /* $ */
     )) {
       return true;
     }
     if (state.eat(
       92
-      /* \ */
     )) {
       if (state.eat(
         66
-        /* B */
       ) || state.eat(
         98
-        /* b */
       )) {
         return true;
       }
@@ -3823,29 +3710,23 @@
     }
     if (state.eat(
       40
-      /* ( */
     ) && state.eat(
       63
-      /* ? */
     )) {
       var lookbehind = false;
       if (this.options.ecmaVersion >= 9) {
         lookbehind = state.eat(
           60
-          /* < */
         );
       }
       if (state.eat(
         61
-        /* = */
       ) || state.eat(
         33
-        /* ! */
       )) {
         this.regexp_disjunction(state);
         if (!state.eat(
           41
-          /* ) */
         )) {
           state.raise("Unterminated group");
         }
@@ -3861,7 +3742,6 @@
     if (this.regexp_eatQuantifierPrefix(state, noError)) {
       state.eat(
         63
-        /* ? */
       );
       return true;
     }
@@ -3870,33 +3750,27 @@
   pp$1.regexp_eatQuantifierPrefix = function(state, noError) {
     return state.eat(
       42
-      /* * */
     ) || state.eat(
       43
-      /* + */
     ) || state.eat(
       63
-      /* ? */
     ) || this.regexp_eatBracedQuantifier(state, noError);
   };
   pp$1.regexp_eatBracedQuantifier = function(state, noError) {
     var start = state.pos;
     if (state.eat(
       123
-      /* { */
     )) {
       var min = 0, max = -1;
       if (this.regexp_eatDecimalDigits(state)) {
         min = state.lastIntValue;
         if (state.eat(
           44
-          /* , */
         ) && this.regexp_eatDecimalDigits(state)) {
           max = state.lastIntValue;
         }
         if (state.eat(
           125
-          /* } */
         )) {
           if (max !== -1 && max < min && !noError) {
             state.raise("numbers out of order in {} quantifier");
@@ -3914,14 +3788,12 @@
   pp$1.regexp_eatAtom = function(state) {
     return this.regexp_eatPatternCharacters(state) || state.eat(
       46
-      /* . */
     ) || this.regexp_eatReverseSolidusAtomEscape(state) || this.regexp_eatCharacterClass(state) || this.regexp_eatUncapturingGroup(state) || this.regexp_eatCapturingGroup(state);
   };
   pp$1.regexp_eatReverseSolidusAtomEscape = function(state) {
     var start = state.pos;
     if (state.eat(
       92
-      /* \ */
     )) {
       if (this.regexp_eatAtomEscape(state)) {
         return true;
@@ -3934,17 +3806,14 @@
     var start = state.pos;
     if (state.eat(
       40
-      /* ( */
     )) {
       if (state.eat(
         63
-        /* ? */
       )) {
         if (this.options.ecmaVersion >= 16) {
           var addModifiers = this.regexp_eatModifiers(state);
           var hasHyphen = state.eat(
             45
-            /* - */
           );
           if (addModifiers || hasHyphen) {
             for (var i2 = 0; i2 < addModifiers.length; i2++) {
@@ -3969,12 +3838,10 @@
         }
         if (state.eat(
           58
-          /* : */
         )) {
           this.regexp_disjunction(state);
           if (state.eat(
             41
-            /* ) */
           )) {
             return true;
           }
@@ -3988,7 +3855,6 @@
   pp$1.regexp_eatCapturingGroup = function(state) {
     if (state.eat(
       40
-      /* ( */
     )) {
       if (this.options.ecmaVersion >= 9) {
         this.regexp_groupSpecifier(state);
@@ -3998,7 +3864,6 @@
       this.regexp_disjunction(state);
       if (state.eat(
         41
-        /* ) */
       )) {
         state.numCapturingParens += 1;
         return true;
@@ -4022,7 +3887,6 @@
   pp$1.regexp_eatExtendedAtom = function(state) {
     return state.eat(
       46
-      /* . */
     ) || this.regexp_eatReverseSolidusAtomEscape(state) || this.regexp_eatCharacterClass(state) || this.regexp_eatUncapturingGroup(state) || this.regexp_eatCapturingGroup(state) || this.regexp_eatInvalidBracedQuantifier(state) || this.regexp_eatExtendedPatternCharacter(state);
   };
   pp$1.regexp_eatInvalidBracedQuantifier = function(state) {
@@ -4062,7 +3926,6 @@
   pp$1.regexp_groupSpecifier = function(state) {
     if (state.eat(
       63
-      /* ? */
     )) {
       if (!this.regexp_eatGroupName(state)) {
         state.raise("Invalid group");
@@ -4092,11 +3955,9 @@
     state.lastStringValue = "";
     if (state.eat(
       60
-      /* < */
     )) {
       if (this.regexp_eatRegExpIdentifierName(state) && state.eat(
         62
-        /* > */
       )) {
         return true;
       }
@@ -4183,7 +4044,6 @@
   pp$1.regexp_eatKGroupName = function(state) {
     if (state.eat(
       107
-      /* k */
     )) {
       if (this.regexp_eatGroupName(state)) {
         state.backReferenceNames.push(state.lastStringValue);
@@ -4200,7 +4060,6 @@
     var start = state.pos;
     if (state.eat(
       99
-      /* c */
     )) {
       if (this.regexp_eatControlLetter(state)) {
         return true;
@@ -4264,7 +4123,6 @@
     var switchU = forceU || state.switchU;
     if (state.eat(
       117
-      /* u */
     )) {
       if (this.regexp_eatFixedHexDigits(state, 4)) {
         var lead = state.lastIntValue;
@@ -4272,10 +4130,8 @@
           var leadSurrogateEnd = state.pos;
           if (state.eat(
             92
-            /* \ */
           ) && state.eat(
             117
-            /* u */
           ) && this.regexp_eatFixedHexDigits(state, 4)) {
             var trail = state.lastIntValue;
             if (trail >= 56320 && trail <= 57343) {
@@ -4290,10 +4146,8 @@
       }
       if (switchU && state.eat(
         123
-        /* { */
       ) && this.regexp_eatHexDigits(state) && state.eat(
         125
-        /* } */
       ) && isValidUnicode(state.lastIntValue)) {
         return true;
       }
@@ -4314,7 +4168,6 @@
       }
       if (state.eat(
         47
-        /* / */
       )) {
         state.lastIntValue = 47;
         return true;
@@ -4358,10 +4211,8 @@
       var result;
       if (state.eat(
         123
-        /* { */
       ) && (result = this.regexp_eatUnicodePropertyValueExpression(state)) && state.eat(
         125
-        /* } */
       )) {
         if (negate && result === CharSetString) {
           state.raise("Invalid property name");
@@ -4379,7 +4230,6 @@
     var start = state.pos;
     if (this.regexp_eatUnicodePropertyName(state) && state.eat(
       61
-      /* = */
     )) {
       var name = state.lastStringValue;
       if (this.regexp_eatUnicodePropertyValue(state)) {
@@ -4442,16 +4292,13 @@
   pp$1.regexp_eatCharacterClass = function(state) {
     if (state.eat(
       91
-      /* [ */
     )) {
       var negate = state.eat(
         94
-        /* ^ */
       );
       var result = this.regexp_classContents(state);
       if (!state.eat(
         93
-        /* ] */
       )) {
         state.raise("Unterminated character class");
       }
@@ -4477,7 +4324,6 @@
       var left = state.lastIntValue;
       if (state.eat(
         45
-        /* - */
       ) && this.regexp_eatClassAtom(state)) {
         var right = state.lastIntValue;
         if (state.switchU && (left === -1 || right === -1)) {
@@ -4493,7 +4339,6 @@
     var start = state.pos;
     if (state.eat(
       92
-      /* \ */
     )) {
       if (this.regexp_eatClassEscape(state)) {
         return true;
@@ -4519,21 +4364,18 @@
     var start = state.pos;
     if (state.eat(
       98
-      /* b */
     )) {
       state.lastIntValue = 8;
       return true;
     }
     if (state.switchU && state.eat(
       45
-      /* - */
     )) {
       state.lastIntValue = 45;
       return true;
     }
     if (!state.switchU && state.eat(
       99
-      /* c */
     )) {
       if (this.regexp_eatClassControlLetter(state)) {
         return true;
@@ -4552,7 +4394,6 @@
       var start = state.pos;
       while (state.eatChars(
         [38, 38]
-        /* && */
       )) {
         if (state.current() !== 38 && (subResult = this.regexp_eatClassSetOperand(state))) {
           if (subResult !== CharSetString) {
@@ -4567,7 +4408,6 @@
       }
       while (state.eatChars(
         [45, 45]
-        /* -- */
       )) {
         if (this.regexp_eatClassSetOperand(state)) {
           continue;
@@ -4599,7 +4439,6 @@
       var left = state.lastIntValue;
       if (state.eat(
         45
-        /* - */
       ) && this.regexp_eatClassSetCharacter(state)) {
         var right = state.lastIntValue;
         if (left !== -1 && right !== -1 && left > right) {
@@ -4621,16 +4460,13 @@
     var start = state.pos;
     if (state.eat(
       91
-      /* [ */
     )) {
       var negate = state.eat(
         94
-        /* ^ */
       );
       var result = this.regexp_classContents(state);
       if (state.eat(
         93
-        /* ] */
       )) {
         if (negate && result === CharSetString) {
           state.raise("Negated character class may contain strings");
@@ -4641,7 +4477,6 @@
     }
     if (state.eat(
       92
-      /* \ */
     )) {
       var result$1 = this.regexp_eatCharacterClassEscape(state);
       if (result$1) {
@@ -4655,16 +4490,13 @@
     var start = state.pos;
     if (state.eatChars(
       [92, 113]
-      /* \q */
     )) {
       if (state.eat(
         123
-        /* { */
       )) {
         var result = this.regexp_classStringDisjunctionContents(state);
         if (state.eat(
           125
-          /* } */
         )) {
           return result;
         }
@@ -4679,7 +4511,6 @@
     var result = this.regexp_classString(state);
     while (state.eat(
       124
-      /* | */
     )) {
       if (this.regexp_classString(state) === CharSetString) {
         result = CharSetString;
@@ -4698,14 +4529,12 @@
     var start = state.pos;
     if (state.eat(
       92
-      /* \ */
     )) {
       if (this.regexp_eatCharacterEscape(state) || this.regexp_eatClassSetReservedPunctuator(state)) {
         return true;
       }
       if (state.eat(
         98
-        /* b */
       )) {
         state.lastIntValue = 8;
         return true;
@@ -4755,7 +4584,6 @@
     var start = state.pos;
     if (state.eat(
       120
-      /* x */
     )) {
       if (this.regexp_eatFixedHexDigits(state, 2)) {
         return true;
@@ -5163,11 +4991,8 @@
   };
   pp.getTokenFromCode = function(code) {
     switch (code) {
-      // The interpretation of a dot depends on whether it is followed
-      // by a digit or another two dots.
       case 46:
         return this.readToken_dot();
-      // Punctuation tokens.
       case 40:
         ++this.pos;
         return this.finishToken(types$1.parenL);
@@ -5214,8 +5039,6 @@
             return this.readRadixNumber(2);
           }
         }
-      // Anything else beginning with a digit is an integer, octal
-      // number, or float.
       case 49:
       case 50:
       case 51:
@@ -5226,14 +5049,9 @@
       case 56:
       case 57:
         return this.readNumber(false);
-      // Quotes produce strings.
       case 34:
       case 39:
         return this.readString(code);
-      // Operators are parsed inline in tiny state machines. '=' (61) is
-      // often referred to. `finishOp` simply skips the amount of
-      // characters it is given as second argument, and returns a token
-      // of the type given by its first argument.
       case 47:
         return this.readToken_slash();
       case 37:
@@ -5549,14 +5367,12 @@
           if (this.input[this.pos + 1] !== "{") {
             break;
           }
-        // fall through
         case "`":
           return this.finishToken(types$1.invalidTemplate, this.input.slice(this.start, this.pos));
         case "\r":
           if (this.input[this.pos + 1] === "\n") {
             ++this.pos;
           }
-        // fall through
         case "\n":
         case "\u2028":
         case "\u2029":
@@ -5573,33 +5389,24 @@
     switch (ch) {
       case 110:
         return "\n";
-      // 'n' -> '\n'
       case 114:
         return "\r";
-      // 'r' -> '\r'
       case 120:
         return String.fromCharCode(this.readHexChar(2));
-      // 'x'
       case 117:
         return codePointToString(this.readCodePoint());
-      // 'u'
       case 116:
         return "	";
-      // 't' -> '\t'
       case 98:
         return "\b";
-      // 'b' -> '\b'
       case 118:
         return "\v";
-      // 'v' -> '\u000b'
       case 102:
         return "\f";
-      // 'f' -> '\f'
       case 13:
         if (this.input.charCodeAt(this.pos) === 10) {
           ++this.pos;
         }
-      // '\r\n'
       case 10:
         if (this.options.locations) {
           this.lineStart = this.pos;
