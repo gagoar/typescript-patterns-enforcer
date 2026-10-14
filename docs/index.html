@@ -4,267 +4,304 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TypeScript Patterns Enforcer: TypeScript pattern checks for Claude Code</title>
-<meta name="description" content="A Claude Code plugin that holds Claude's TypeScript to a written standard: an inline skill, a review subagent, and a hook that checks ten rules after every edit.">
+<meta name="description" content="A Claude Code plugin that holds Claude's TypeScript to a written standard: an inline skill, a review subagent, and a hook that runs ten checks after every edit.">
 <link rel="canonical" href="https://gagoar.github.io/typescript-patterns-enforcer/">
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <meta property="og:type" content="website">
 <meta property="og:title" content="TypeScript Patterns Enforcer: Claude writes TypeScript. It checks every edit.">
-<meta property="og:description" content="A Claude Code plugin with a skill, a review subagent, and a hook that checks ten rules after every .ts edit.">
+<meta property="og:description" content="A Claude Code plugin with a skill, a review subagent, and a hook that runs ten checks after every .ts edit.">
 <meta property="og:url" content="https://gagoar.github.io/typescript-patterns-enforcer/">
 <meta property="og:image" content="https://gagoar.github.io/typescript-patterns-enforcer/assets/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="TypeScript Patterns Enforcer: TypeScript pattern checks for Claude Code">
-<meta name="twitter:description" content="A hook checks ten rules after every .ts edit and feeds violations back to Claude.">
+<meta name="twitter:description" content="A hook runs ten checks after every .ts edit and feeds violations back to Claude.">
 <meta name="twitter:image" content="https://gagoar.github.io/typescript-patterns-enforcer/assets/og.png">
-<style>
-:root {
-  --ivory:#FAF9F5; --slate:#141413; --clay:#D97757; --clay-d:#B85C3E; --oat:#E3DACC;
-  --olive:#788C5D; --rust:#B04A3F; --gray-150:#F0EEE6; --gray-300:#D1CFC5; --gray-500:#87867F;
-  --gray-700:#3D3D3A; --white:#FFFFFF;
-  --serif: ui-serif, Georgia, "Times New Roman", serif;
-  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --border: 1.5px solid var(--gray-300);
-}
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body { font-family: var(--sans); background: var(--ivory); color: var(--gray-700); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
-.wrap { max-width: 960px; margin: 0 auto; padding: 0 24px; }
-a { color: var(--clay-d); }
-code { font-family: var(--mono); font-size: 0.9em; background: var(--gray-150); padding: 1px 6px; border-radius: 4px; color: var(--slate); }
-h1, h2, h3 { font-family: var(--serif); font-weight: 500; color: var(--slate); letter-spacing: -0.01em; }
-h2 { font-size: 30px; line-height: 1.2; margin-bottom: 12px; }
-.eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--clay); margin-bottom: 12px; }
-section { padding: 64px 0; }
-.lead { font-size: 18px; max-width: 640px; margin-bottom: 28px; }
-
-nav.top { display: flex; justify-content: space-between; align-items: center; padding: 24px 0; }
-nav.top .brand { font-family: var(--serif); font-size: 22px; color: var(--slate); text-decoration: none; display: flex; align-items: center; gap: 10px; }
-nav.top .brand img { width: 28px; height: 28px; }
-nav.top .links { display: flex; gap: 22px; font-size: 14px; }
-nav.top .links a { color: var(--gray-700); text-decoration: none; }
-nav.top .links a:hover { color: var(--clay-d); }
-
-.hero { padding: 56px 0 72px; }
-.hero h1 { font-size: clamp(38px, 6vw, 64px); line-height: 1.05; margin-bottom: 20px; max-width: 760px; }
-.hero h1 em { color: var(--clay); font-style: italic; }
-.hero .lead { color: var(--gray-700); }
-
-.install { background: var(--slate); border-radius: 12px; padding: 18px 22px; position: relative; max-width: 680px; margin-bottom: 20px; }
-.install pre { font-family: var(--mono); font-size: 13px; line-height: 1.8; color: #E8E6DE; overflow-x: auto; padding-right: 76px; }
-.install .c { color: var(--clay); } .install .a { color: #9BB07C; }
-.copy { position: absolute; top: 12px; right: 12px; font-family: var(--mono); font-size: 12px; background: #2a2a28; color: #E8E6DE; border: 1px solid #4a4a46; border-radius: 6px; padding: 5px 10px; cursor: pointer; }
-.copy:hover { background: #3a3a37; }
-.btns { display: flex; gap: 12px; flex-wrap: wrap; }
-.btn { display: inline-block; padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 600; text-decoration: none; border: var(--border); color: var(--slate); background: var(--white); }
-.btn.primary { background: var(--clay); border-color: var(--clay); color: var(--white); }
-.btn:hover { border-color: var(--clay); }
-
-.demo { background: var(--white); border: var(--border); border-radius: 14px; padding: 26px; }
-.toggle { display: inline-flex; border: var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
-.toggle button { font-family: var(--mono); font-size: 13px; padding: 9px 18px; border: 0; background: var(--white); color: var(--gray-700); cursor: pointer; }
-.toggle button[aria-pressed="true"] { background: var(--slate); color: var(--white); }
-.demo-meta { display: flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 13px; color: var(--gray-500); margin-bottom: 14px; }
-.badge { min-width: 34px; height: 34px; padding: 0 10px; font-size: 15px !important; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-family: var(--serif); font-size: 21px; }
-.badge.d { background: rgba(176,74,63,0.14); color: var(--rust); }
-.badge.a { background: rgba(120,140,93,0.18); color: var(--olive); }
-.sample { font-family: var(--mono); font-size: 14.5px; line-height: 1.7; color: var(--slate); background: var(--gray-150); border-radius: 10px; padding: 16px 18px; min-height: 150px; white-space: pre-wrap; overflow-x: auto; }
-.sample mark { background: rgba(176,74,63,0.16); color: #8a3228; border-radius: 4px; padding: 0 3px; }
-.demo-note { margin-top: 14px; font-size: 14px; color: var(--gray-500); }
-
-.report { background: var(--slate); border-radius: 12px; padding: 20px 24px; overflow-x: auto; }
-.report pre { font-family: var(--mono); font-size: 12.5px; line-height: 1.7; color: #E8E6DE; }
-.report .k { color: var(--clay); } .report .g { color: #9BB07C; } .report .d { color: #8a8880; }
-.two > * { min-width: 0; }
-.two { display: grid; grid-template-columns: 1fr 1.2fr; gap: 36px; align-items: center; }
-@media (max-width: 760px) { .two { grid-template-columns: 1fr; gap: 24px; } section { padding: 44px 0; } nav.top .links a:not(:last-child) { display: none; } }
-
-.rules { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 12px; margin-top: 24px; }
-.rule { background: var(--white); border: var(--border); border-radius: 10px; padding: 14px 16px; }
-.rule .n { font-family: var(--mono); font-size: 11px; color: var(--gray-500); }
-.rule .t { font-family: var(--serif); font-size: 17px; color: var(--slate); margin: 2px 0 4px; }
-.rule .e { font-size: 13px; color: var(--gray-700); line-height: 1.45; }
-
-.proof { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-@media (max-width: 760px) { .proof { grid-template-columns: 1fr; } }
-.stat { background: var(--white); border: var(--border); border-radius: 12px; padding: 20px 22px; }
-.stat .big { font-family: var(--serif); font-size: 34px; color: var(--slate); line-height: 1.1; }
-.stat p { font-size: 14px; margin-top: 6px; }
-
-.cta { text-align: center; background: var(--oat); border-radius: 16px; padding: 48px 24px; }
-.cta .install { margin: 20px auto; text-align: left; }
-footer { border-top: var(--border); padding: 28px 0 48px; margin-top: 56px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--gray-500); }
-footer a { color: var(--gray-500); margin-right: 18px; text-decoration: none; }
-footer a:hover { color: var(--slate); }
-.chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:22px; } .chip { font-family: var(--mono); font-size: 12.5px; background: var(--white); border: var(--border); border-radius: 999px; padding: 4px 12px; color: var(--gray-700); }
-.cards { display:grid; grid-template-columns: repeat(3,1fr); gap:14px; margin-top:22px; } @media (max-width:760px){ .cards{grid-template-columns:1fr;} }
-.card { background: var(--white); border: var(--border); border-radius: 12px; padding: 20px 22px; } .card h3 { font-size: 19px; margin-bottom: 6px; } .card p { font-size: 14px; }
-</style>
+<link rel="stylesheet" href="assets/tp.css">
+<style>@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation-duration: 0.001ms !important; animation-delay: 0s !important; transition: none !important; } }</style>
+<script>document.documentElement.className += ' tp-has-js';</script>
 </head>
 <body>
-<div class="wrap">
+<a class="tp-skip" href="#tp-main">Skip to content</a>
+<div class="tp-frame">
 
-  <nav class="top">
-    <a class="brand" href="./"><img src="assets/favicon.svg" alt="">TypeScript Patterns Enforcer</a>
-    <div class="links">
-      <a href="#demo">Demo</a>
-      <a href="#rules">Rules</a>
-      <a href="guide.html">Guide</a>
-      <a href="https://github.com/gagoar/typescript-patterns-enforcer">GitHub</a>
-    </div>
-  </nav>
-
-  <header class="hero">
-    <div class="eyebrow">Claude Code plugin</div>
-    <h1>Claude writes TypeScript. TypeScript Patterns Enforcer <em>checks every edit.</em></h1>
-    <p class="lead">An inline skill, a review subagent, and a hook that checks ten rules after every <code>.ts</code> edit and sends violations back to Claude.</p>
-    <div class="install">
-      <button class="copy" type="button" data-copy="install">Copy</button>
-<pre><span class="c">/plugin marketplace add</span> <span class="a">gagoar/typescript-patterns-enforcer</span>
-<span class="c">/plugin install</span> <span class="a">typescript-patterns-enforcer@typescript-patterns-enforcer</span>
-<span class="c">/reload-plugins</span></pre>
-    </div>
-    <div class="btns">
-      <a class="btn primary" href="https://github.com/gagoar/typescript-patterns-enforcer">View on GitHub</a>
-      <a class="btn" href="guide.html">Read the guide</a>
+  <header class="tp-top">
+    <div class="tp-gut" aria-hidden="true"></div>
+    <div class="tp-top-in">
+      <a class="tp-brand" href="./"><img src="assets/favicon.svg" alt="">TypeScript Patterns Enforcer</a>
+      <nav class="tp-links" aria-label="Site">
+        <a href="#demo">Demo</a>
+        <a href="#rules">Rules</a>
+        <a href="guide.html">Guide</a>
+        <a href="https://github.com/gagoar/typescript-patterns-enforcer">GitHub</a>
+      </nav>
     </div>
   </header>
 
-  <section id="demo" style="padding-top:0">
-    <div class="eyebrow">See it work</div>
-    <h2>Claude writes it. The hook flags it. Claude fixes it.</h2>
-    <p class="lead">Toggle the same function before and after the hook runs. The highlight is what the hook flags.</p>
-    <div class="demo">
-      <div class="toggle" role="group" aria-label="Before or after">
-        <button type="button" id="btn-before" aria-pressed="true">Claude's edit</button>
-        <button type="button" id="btn-after" aria-pressed="false">After the hook</button>
-      </div>
-      <div class="demo-meta"><span class="badge d" id="badge">1 violation</span><span id="meta">describeStatus.ts</span></div>
-      <pre class="sample" id="sample"></pre>
-      <p class="demo-note" id="note"></p>
-    </div>
-  </section>
+  <main id="tp-main">
 
-  <section>
-    <div class="two">
-      <div>
-        <div class="eyebrow">Automatic</div>
-        <h2>Runs after every edit.</h2>
-        <p class="lead" style="margin-bottom:0">The hook reads the file Claude just edited. If a check fails, the message goes to Claude and Claude fixes the file before moving on. Clean files produce no output.</p>
+  <section class="tp-sec tp-hero">
+    <div class="tp-gut" aria-hidden="true"><span>01</span></div>
+    <div class="tp-in">
+      <p class="tp-eyebrow">Claude Code plugin</p>
+      <h1>Claude writes TypeScript. TypeScript Patterns Enforcer <span class="tp-sq-resolve">checks every edit.</span></h1>
+      <p class="tp-lead">An inline skill, a review subagent, and a hook that runs ten checks after every <code>.ts</code> edit and sends violations back to Claude.</p>
+      <div class="tp-cmd">
+        <button class="tp-copy" type="button">Copy</button>
+<pre tabindex="0"><span class="tp-c">/plugin marketplace add</span> <span class="tp-a">gagoar/typescript-patterns-enforcer</span>
+<span class="tp-c">/plugin install</span> <span class="tp-a">typescript-patterns-enforcer@typescript-patterns-enforcer</span>
+<span class="tp-c">/reload-plugins</span></pre>
       </div>
-      <div class="report">
-<pre><span class="k">ts-patterns:</span> 1 mechanical violation(s) in
-describeStatus.ts:
-  L2:10  <span class="k">no-nested-ternary</span>
-  nested ternary: flatten, or convert
-  to a Record/.find() lookup
-  <span class="d">&rarr; SKILL.md Data Over Logic</span>
-Fix these to satisfy the TypeScript
-patterns before continuing.
-
-<span class="d">exit code</span> <span class="k">2</span>  <span class="d">(stderr goes back to Claude)</span></pre>
+      <div class="tp-btns">
+        <a class="tp-btn tp-primary" href="https://github.com/gagoar/typescript-patterns-enforcer">View on GitHub</a>
+        <a class="tp-btn" href="guide.html">Read the guide</a>
       </div>
     </div>
-    <div class="chips" aria-label="The ten mechanical checks">
-      <span class="chip">no-explicit-any</span><span class="chip">ban-ts-comment</span><span class="chip">no-magic-numbers</span><span class="chip">prefer-await-to-then</span><span class="chip">no-switch-statement</span><span class="chip">no-param-reassign</span><span class="chip">no-loop-statements</span><span class="chip">no-nested-ternary</span><span class="chip">require-regex-example</span><span class="chip">no-narrative-comment</span>
+  </section>
+
+  <section class="tp-sec" id="demo">
+    <div class="tp-gut" aria-hidden="true"><span>02</span></div>
+    <div class="tp-in">
+      <p class="tp-eyebrow">See it work</p>
+      <h2>Claude writes it. The hook flags it. Claude fixes it.</h2>
+      <p class="tp-lead">Toggle the same function before and after the hook runs. Each file below is one of the failing and passing fixtures from <code>engine/test/fixtures/</code>.</p>
+    <div class="tp-ide" id="tp-ide" data-state="before">
+      <div class="tp-ide-bar">
+        <span>PostToolUse &middot; node engine/dist/check.js</span>
+        <div class="tp-seg" role="group" aria-label="Before or after the hook">
+          <button type="button" id="tp-btn-before" aria-pressed="true">Claude's edit</button>
+          <button type="button" id="tp-btn-after" aria-pressed="false">After the hook</button>
+        </div>
+        <span class="tp-pill tp-pill-bad">1 violation</span><span class="tp-pill tp-pill-good"><span aria-hidden="true">✓</span> clean</span>
+      </div>
+      <div class="tp-ide-body">
+        <nav class="tp-explorer" aria-label="Files Claude edited">
+          <div class="tp-pane-title">Edited files</div>
+          <ul>
+            <li><button type="button" class="tp-fbtn" data-f="0" aria-current="true" aria-controls="tp-fp-0"><span>describeStatus.ts</span><span class="tp-fn"><span class="tp-x-before">1</span><span class="tp-x-after" aria-hidden="true">✓</span></span></button></li>
+            <li><button type="button" class="tp-fbtn" data-f="1" aria-current="false" aria-controls="tp-fp-1"><span>describeRole.ts</span><span class="tp-fn"><span class="tp-x-before">1</span><span class="tp-x-after" aria-hidden="true">✓</span></span></button></li>
+            <li><button type="button" class="tp-fbtn" data-f="2" aria-current="false" aria-controls="tp-fp-2"><span>identify.ts</span><span class="tp-fn"><span class="tp-x-before">1</span><span class="tp-x-after" aria-hidden="true">✓</span></span></button></li>
+            <li><button type="button" class="tp-fbtn" data-f="3" aria-current="false" aria-controls="tp-fp-3"><span>loadUser.ts</span><span class="tp-fn"><span class="tp-x-before">1</span><span class="tp-x-after" aria-hidden="true">✓</span></span></button></li>
+          </ul>
+        </nav>
+        <div class="tp-fp" id="tp-fp-0">
+          <div class="tp-editor">
+            <div class="tp-tab">describeStatus.ts</div>
+            <pre class="tp-code tp-before" tabindex="0" role="group" aria-label="describeStatus.ts, Claude's edit"><code><span class="tp-l"><span class="tp-k">export function</span> describeStatus(status: string): string {</span><span class="tp-l tp-flag">  <span class="tp-k">return</span> status === <span class="tp-s">"active"</span> ? <span class="tp-s">"Active"</span> : <span class="tp-sq">status === <span class="tp-s">"paused"</span> ? <span class="tp-s">"Paused"</span> : <span class="tp-s">"Unknown"</span></span>;</span><span class="tp-l">}</span></code></pre>
+            <pre class="tp-code tp-after" tabindex="0" role="group" aria-label="describeStatus.ts, after the hook"><code><span class="tp-l tp-chg"><span class="tp-k">const</span> STATUS_LABELS: Record&lt;string, string&gt; = { active: <span class="tp-s">"Active"</span>, paused: <span class="tp-s">"Paused"</span> };</span><span class="tp-l"><span class="tp-k">export function</span> describeStatus(status: string): string {</span><span class="tp-l tp-chg">  <span class="tp-k">return</span> STATUS_LABELS[status] ?? <span class="tp-s">"Unknown"</span>;</span><span class="tp-l">}</span></code></pre>
+          </div>
+          <div class="tp-problems">
+            <div class="tp-pane-title">Hook output</div>
+            <pre class="tp-out tp-before"><code><span class="tp-r">ts-patterns:</span> 1 mechanical violation(s) in describeStatus.ts:
+  L2:10  <span class="tp-r">no-nested-ternary</span>  nested ternary — flatten, or convert to a Record/.find() lookup (see SKILL.md Data Over Logic).  <span class="tp-d">→ SKILL.md Data Over Logic — flatten or convert nested ternaries to a Record/.find() lookup</span>
+Fix these to satisfy the TypeScript patterns before continuing.
+
+<span class="tp-d">exit code</span> <span class="tp-r">2</span>  <span class="tp-d">(stderr goes back to Claude)</span></code></pre>
+            <pre class="tp-out tp-after"><code><span class="tp-g">clean</span>  <span class="tp-d">no output</span>
+
+<span class="tp-d">exit code</span> <span class="tp-g">0</span></code></pre>
+          </div>
+        </div>
+        <div class="tp-fp" id="tp-fp-1" hidden>
+          <div class="tp-editor">
+            <div class="tp-tab">describeRole.ts</div>
+            <pre class="tp-code tp-before" tabindex="0" role="group" aria-label="describeRole.ts, Claude's edit"><code><span class="tp-l"><span class="tp-k">export function</span> describeRole(role: string): string {</span><span class="tp-l tp-flag">  <span class="tp-sq"><span class="tp-k">switch</span></span> (role) {</span><span class="tp-l">    <span class="tp-k">case</span> <span class="tp-s">"admin"</span>:</span><span class="tp-l">      <span class="tp-k">return</span> <span class="tp-s">"Admin"</span>;</span><span class="tp-l">    <span class="tp-k">default</span>:</span><span class="tp-l">      <span class="tp-k">return</span> <span class="tp-s">"Guest"</span>;</span><span class="tp-l">  }</span><span class="tp-l">}</span></code></pre>
+            <pre class="tp-code tp-after" tabindex="0" role="group" aria-label="describeRole.ts, after the hook"><code><span class="tp-l tp-chg"><span class="tp-k">const</span> ROLE_LABELS: Record&lt;string, string&gt; = { admin: <span class="tp-s">"Admin"</span> };</span><span class="tp-l"><span class="tp-k">export function</span> describeRole(role: string): string {</span><span class="tp-l tp-chg">  <span class="tp-k">return</span> ROLE_LABELS[role] ?? <span class="tp-s">"Guest"</span>;</span><span class="tp-l">}</span></code></pre>
+          </div>
+          <div class="tp-problems">
+            <div class="tp-pane-title">Hook output</div>
+            <pre class="tp-out tp-before"><code><span class="tp-r">ts-patterns:</span> 1 mechanical violation(s) in describeRole.ts:
+  L2:3  <span class="tp-r">no-switch-statement</span>  switch statement — convert to a Record dispatch table (see SKILL.md Data Over Logic).  <span class="tp-d">→ SKILL.md Data Over Logic — convert to a Record dispatch table</span>
+Fix these to satisfy the TypeScript patterns before continuing.
+
+<span class="tp-d">exit code</span> <span class="tp-r">2</span>  <span class="tp-d">(stderr goes back to Claude)</span></code></pre>
+            <pre class="tp-out tp-after"><code><span class="tp-g">clean</span>  <span class="tp-d">no output</span>
+
+<span class="tp-d">exit code</span> <span class="tp-g">0</span></code></pre>
+          </div>
+        </div>
+        <div class="tp-fp" id="tp-fp-2" hidden>
+          <div class="tp-editor">
+            <div class="tp-tab">identify.ts</div>
+            <pre class="tp-code tp-before" tabindex="0" role="group" aria-label="identify.ts, Claude's edit"><code><span class="tp-l tp-flag"><span class="tp-k">export function</span> identify(value: <span class="tp-sq"><span class="tp-k">any</span></span>): <span class="tp-k">void</span> {</span><span class="tp-l">  console.log(value);</span><span class="tp-l">}</span></code></pre>
+            <pre class="tp-code tp-after" tabindex="0" role="group" aria-label="identify.ts, after the hook"><code><span class="tp-l tp-chg"><span class="tp-k">export function</span> identify(value: <span class="tp-k">unknown</span>): <span class="tp-k">void</span> {</span><span class="tp-l">  console.log(value);</span><span class="tp-l">}</span></code></pre>
+          </div>
+          <div class="tp-problems">
+            <div class="tp-pane-title">Hook output</div>
+            <pre class="tp-out tp-before"><code><span class="tp-r">ts-patterns:</span> 1 mechanical violation(s) in identify.ts:
+  L1:33  <span class="tp-r">no-explicit-any</span>  Unexpected any. Specify a different type.  <span class="tp-d">→ SKILL.md Core Rule 1 — use unknown + narrow, or a precise type</span>
+Fix these to satisfy the TypeScript patterns before continuing.
+
+<span class="tp-d">exit code</span> <span class="tp-r">2</span>  <span class="tp-d">(stderr goes back to Claude)</span></code></pre>
+            <pre class="tp-out tp-after"><code><span class="tp-g">clean</span>  <span class="tp-d">no output</span>
+
+<span class="tp-d">exit code</span> <span class="tp-g">0</span></code></pre>
+          </div>
+        </div>
+        <div class="tp-fp" id="tp-fp-3" hidden>
+          <div class="tp-editor">
+            <div class="tp-tab">loadUser.ts</div>
+            <pre class="tp-code tp-before" tabindex="0" role="group" aria-label="loadUser.ts, Claude's edit"><code><span class="tp-l"><span class="tp-k">export function</span> loadUser(id: string): Promise&lt;string&gt; {</span><span class="tp-l tp-flag">  <span class="tp-k">return</span> fetch(id).<span class="tp-sq">then</span>((response) =&gt; response.text());</span><span class="tp-l">}</span></code></pre>
+            <pre class="tp-code tp-after" tabindex="0" role="group" aria-label="loadUser.ts, after the hook"><code><span class="tp-l tp-chg"><span class="tp-k">export async function</span> loadUser(id: string): Promise&lt;string&gt; {</span><span class="tp-l tp-chg">  <span class="tp-k">const</span> response = <span class="tp-k">await</span> fetch(id);</span><span class="tp-l">  <span class="tp-k">return</span> response.text();</span><span class="tp-l">}</span></code></pre>
+          </div>
+          <div class="tp-problems">
+            <div class="tp-pane-title">Hook output</div>
+            <pre class="tp-out tp-before"><code><span class="tp-r">ts-patterns:</span> 1 mechanical violation(s) in loadUser.ts:
+  L2:20  <span class="tp-r">prefer-await-to-then</span>  Prefer await to then()/catch()/finally().  <span class="tp-d">→ SKILL.md Core Rule 5 — use async/await, not .then()</span>
+Fix these to satisfy the TypeScript patterns before continuing.
+
+<span class="tp-d">exit code</span> <span class="tp-r">2</span>  <span class="tp-d">(stderr goes back to Claude)</span></code></pre>
+            <pre class="tp-out tp-after"><code><span class="tp-g">clean</span>  <span class="tp-d">no output</span>
+
+<span class="tp-d">exit code</span> <span class="tp-g">0</span></code></pre>
+          </div>
+        </div>
+      </div>
+      <p class="tp-ide-note" id="tp-note" aria-live="polite"></p>
+    </div>
     </div>
   </section>
 
-  <section id="components" style="padding-top:0">
-    <div class="eyebrow">What you get</div>
-    <h2>Three parts, one standard.</h2>
-    <div class="cards">
-      <div class="card"><h3>Skill</h3><p><code>/typescript-patterns-enforcer:check</code> is active while Claude writes or edits TypeScript. It gives inline guidance on type safety, patterns, and anti-patterns.</p></div>
-      <div class="card"><h3>Agent</h3><p><code>typescript-patterns-enforcer:review</code> handles full PR reviews, large refactors, and JavaScript to TypeScript conversions.</p></div>
-      <div class="card"><h3>Hook</h3><p>A bundled checker runs after every <code>.ts</code> or <code>.tsx</code> edit. It brings its own parser, and it ignores your repo's config.</p></div>
+  <section class="tp-sec" id="automatic">
+    <div class="tp-gut" aria-hidden="true"><span>03</span></div>
+    <div class="tp-in">
+      <p class="tp-eyebrow">Automatic</p>
+      <h2>Runs after every edit.</h2>
+      <p class="tp-lead">The hook reads the file Claude just edited. If a check fails, the message goes to Claude and Claude fixes the file before moving on. Clean files produce no output.</p>
+      <ul class="tp-facts">
+        <li><b>Trigger</b><span>One <code>PostToolUse</code> hook, in <code>hooks/hooks.json</code>. It runs <code>node engine/dist/check.js</code>.</span></li>
+        <li><b>Scope</b><span>Only <code>.ts</code> and <code>.tsx</code> files.</span></li>
+        <li><b>Output</b><span>Violations go to stderr with exit code 2, which sends them back to Claude.</span></li>
+        <li><b>Side effects</b><span>None: the engine's own code writes nothing to disk, makes no network calls, and starts no other process.</span></li>
+        <li><b>No Node</b><span>If Node is missing or the check cannot run, the hook exits with no output. The skill's written rules then remain the only enforcement.</span></li>
+      </ul>
     </div>
   </section>
 
-  <section id="rules" style="padding-top:0">
-    <div class="eyebrow">The core rules</div>
-    <h2>Ten rules for the skill to enforce.</h2>
-    <p class="lead" style="margin-bottom:0">The skill also covers data over logic, validation at the boundary, and comment discipline.</p>
-    <div class="rules" id="rule-grid"></div>
-  </section>
-
-  <section style="padding-top:0">
-    <div class="eyebrow">Evidence</div>
-    <h2>Tested before it ships.</h2>
-    <div class="proof" style="margin-top:20px">
-      <div class="stat"><div class="big">10 checks</div><p>Each has a failing fixture and a passing fixture. The test suite runs against the built hook.</p></div>
-      <div class="stat"><div class="big">0 config</div><p>The engine bundles its own parser and rules. It never reads or writes your repo's setup.</p></div>
-      <div class="stat"><div class="big">MIT</div><p>Open source. Fixtures live in <code>engine/test/fixtures/</code>.</p></div>
+  <section class="tp-sec" id="components">
+    <div class="tp-gut" aria-hidden="true"><span>04</span></div>
+    <div class="tp-in">
+      <p class="tp-eyebrow">What you get</p>
+      <h2>Three parts, one standard.</h2>
+      <div class="tp-panes">
+        <div class="tp-pane"><div class="tp-pane-title">Skill</div><p><code>/typescript-patterns-enforcer:check</code> is active while Claude writes or edits TypeScript. It gives inline guidance on type safety, patterns, and anti-patterns.</p></div>
+        <div class="tp-pane"><div class="tp-pane-title">Agent</div><p><code>typescript-patterns-enforcer:review</code> handles full PR reviews, large refactors, and JavaScript to TypeScript conversions.</p></div>
+        <div class="tp-pane"><div class="tp-pane-title">Hook</div><p>A bundled checker runs after every <code>.ts</code> or <code>.tsx</code> edit. It brings its own parser, and it ignores your repo's config.</p></div>
+      </div>
     </div>
   </section>
 
-  <section style="padding-top:0">
-    <div class="cta">
+  <section class="tp-sec" id="rules">
+    <div class="tp-gut" aria-hidden="true"><span>05</span></div>
+    <div class="tp-in">
+      <p class="tp-eyebrow">The core rules</p>
+      <h2>Eleven rules for the skill to enforce.</h2>
+      <p class="tp-lead" style="margin-bottom:0">The skill also covers data over logic, validation at the boundary, and comment discipline. A <span class="tp-hook">hook</span> tag marks a rule the hook also checks mechanically.</p>
+      <ol class="tp-rules">
+        <li><span><b>No any<span class="tp-hook">hook</span></b>Use unknown and narrow, or write a precise type.</span></li>
+        <li><span><b>Explicit return types</b>Annotate public functions.</span></li>
+        <li><span><b>interface vs type</b>interface for extendable shapes. type for unions, intersections, and mapped types.</span></li>
+        <li><span><b>readonly by default</b>Mutable only when mutation is required.</span></li>
+        <li><span><b>async/await only<span class="tp-hook">hook</span></b>No <code>.then()</code> chains. Return <code>Promise&lt;T&gt;</code> explicitly.</span></li>
+        <li><span><b>Typed errors</b>Custom error classes or discriminated-union results.</span></li>
+        <li><span><b>Constrained generics</b><code>&lt;TEntity extends BaseEntity&gt;</code>, not <code>&lt;T&gt;</code>.</span></li>
+        <li><span><b>Composition over inheritance</b>Plain functions and utility types first.</span></li>
+        <li><span><b>No magic values<span class="tp-hook">hook: numbers</span></b>Name repeated or meaningful literals in comparisons or branching.</span></li>
+        <li><span><b>Coerce over compare</b><code>if (!items.length)</code>, not <code>items.length === 0</code>.</span></li>
+        <li><span><b>Every regex carries an example<span class="tp-hook">hook</span></b>A comment directly above it: plain words, a quoted match and reject, and a pre-filled regex101 link.</span></li>
+      </ol>
+
+      <h3 class="tp-sub">The ten mechanical checks</h3>
+      <p>The checks find the pattern. Rewriting it well stays with Claude and the skill, because a linter can ban a <code>switch</code> but cannot rewrite one.</p>
+      <div class="tp-tablewrap" tabindex="0" role="group" aria-label="The ten mechanical checks">
+        <table class="tp-t">
+          <thead><tr><th scope="col">Check</th><th scope="col">Catches</th></tr></thead>
+          <tbody>
+            <tr><td><code>no-explicit-any</code></td><td>A bare <code>any</code></td></tr>
+            <tr><td><code>ban-ts-comment</code></td><td><code>@ts-ignore</code> with no description</td></tr>
+            <tr><td><code>no-magic-numbers</code></td><td>Unnamed numeric literals</td></tr>
+            <tr><td><code>prefer-await-to-then</code></td><td><code>.then()</code> chains</td></tr>
+            <tr><td><code>no-switch-statement</code></td><td><code>switch</code> statements</td></tr>
+            <tr><td><code>no-param-reassign</code></td><td>Parameter mutation</td></tr>
+            <tr><td><code>no-loop-statements</code></td><td>Raw <code>for</code> and <code>while</code> loops</td></tr>
+            <tr><td><code>no-nested-ternary</code></td><td>Nested ternaries</td></tr>
+            <tr><td><code>require-regex-example</code></td><td>A regex literal with no plain-words comment, example, or tester link above it. Advisory: it checks for a quoted string and an <code>https://</code> link.</td></tr>
+            <tr><td><code>no-narrative-comment</code></td><td>Comments that narrate history. Advisory: it matches a list of phrases, so it misses some and flags some.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="tp-sec" id="evidence">
+    <div class="tp-gut" aria-hidden="true"><span>06</span></div>
+    <div class="tp-in">
+      <p class="tp-eyebrow">Evidence</p>
+      <h2>Tested before it ships.</h2>
+      <div class="tp-stats">
+        <div class="tp-stat"><div class="tp-big"><span class="tp-tick" aria-hidden="true">&#10003;</span> 10 checks</div><p>Each has a failing fixture and a passing fixture. The test suite runs against the built hook.</p></div>
+        <div class="tp-stat"><div class="tp-big"><span class="tp-tick" aria-hidden="true">&#10003;</span> 0 config</div><p>The engine bundles its own parser and rules. It never reads or writes your repo's setup.</p></div>
+        <div class="tp-stat"><div class="tp-big"><span class="tp-tick" aria-hidden="true">&#10003;</span> MIT</div><p>Open source. Fixtures live in <code>engine/test/fixtures/</code>.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tp-sec tp-cta" id="install">
+    <div class="tp-gut" aria-hidden="true"><span>07</span></div>
+    <div class="tp-in">
       <h2>Install it in 10 seconds.</h2>
-      <div class="install">
-        <button class="copy" type="button" data-copy="install">Copy</button>
-<pre><span class="c">/plugin marketplace add</span> <span class="a">gagoar/typescript-patterns-enforcer</span>
-<span class="c">/plugin install</span> <span class="a">typescript-patterns-enforcer@typescript-patterns-enforcer</span>
-<span class="c">/reload-plugins</span></pre>
+      <div class="tp-cmd">
+        <button class="tp-copy" type="button">Copy</button>
+<pre tabindex="0"><span class="tp-c">/plugin marketplace add</span> <span class="tp-a">gagoar/typescript-patterns-enforcer</span>
+<span class="tp-c">/plugin install</span> <span class="tp-a">typescript-patterns-enforcer@typescript-patterns-enforcer</span>
+<span class="tp-c">/reload-plugins</span></pre>
       </div>
-      <div class="btns" style="justify-content:center">
-        <a class="btn primary" href="https://github.com/gagoar/typescript-patterns-enforcer">Star on GitHub</a>
-        <a class="btn" href="guide.html">Read the guide</a>
+      <div class="tp-btns">
+        <a class="tp-btn tp-primary" href="https://github.com/gagoar/typescript-patterns-enforcer">Star on GitHub</a>
+        <a class="tp-btn" href="guide.html">Read the guide</a>
       </div>
-      <p style="font-size:14px;margin-top:22px;opacity:.8">Formerly <code>ts-patterns</code>. Installed that one? Run <code>/plugin uninstall ts-patterns@gago-plugins</code>, then install the new name. <a href="guide.html#install">Details</a></p>
+      <p class="tp-small">Formerly <code>ts-patterns</code>. Installed that one? Run <code>/plugin uninstall ts-patterns@gago-plugins</code>, then install the new name. <a href="guide.html#install">Details</a></p>
     </div>
   </section>
 
-  <footer>
-    <div><a href="https://github.com/gagoar/typescript-patterns-enforcer">GitHub</a><a href="https://github.com/gagoar/typescript-patterns-enforcer/releases">Releases</a><a href="guide.html">Guide</a><a href="https://gagoar.github.io/gago-plugins">gago-plugins</a></div>
-    <div>MIT · v0.5.11 · by <a href="https://github.com/gagoar" style="margin:0">gagoar</a> · Icon: <a href="https://thenounproject.com/icon/pattern-8298196/" style="margin:0">Pattern</a> by Side Project, Noun Project (CC BY 3.0)</div>
+  </main>
+
+  <footer class="tp-foot">
+    <div class="tp-gut" aria-hidden="true"></div>
+    <div class="tp-in">
+      <div><a href="https://github.com/gagoar/typescript-patterns-enforcer">GitHub</a><a href="https://github.com/gagoar/typescript-patterns-enforcer/releases">Releases</a><a href="guide.html">Guide</a><a href="https://gagoar.github.io/gago-plugins">gago-plugins</a></div>
+      <div class="tp-meta">MIT &middot; v0.5.12 &middot; by <a href="https://github.com/gagoar">gagoar</a> &middot; Icon: <a href="https://thenounproject.com/icon/pattern-8298196/">Pattern</a> by Side Project, Noun Project (CC BY 3.0)</div>
+    </div>
   </footer>
 </div>
 
 <script>
 (function () {
-  var before = 'export function describeStatus(status: string): string {\n  return status === "active" ? "Active" : <mark>status === "paused" ? "Paused" : "Unknown"</mark>;\n}';
-  var after = 'const STATUS_LABELS: Record<string, string> = { active: "Active", paused: "Paused" };\n\nexport function describeStatus(status: string): string {\n  return STATUS_LABELS[status] ?? "Unknown";\n}';
-  var sample = document.getElementById('sample'), badge = document.getElementById('badge'),
-      note = document.getElementById('note'),
-      bB = document.getElementById('btn-before'), bA = document.getElementById('btn-after');
-  function show(isAfter) {
-    sample.innerHTML = isAfter ? after.replace(/</g, '&lt;') : before.replace(/<(?!\/?mark)/g, '&lt;');
-    badge.textContent = isAfter ? 'clean' : '1 violation';
-    badge.className = 'badge ' + (isAfter ? 'a' : 'd');
-    note.textContent = isAfter
-      ? 'The nested ternary became a lookup table. The hook finds nothing and prints nothing.'
-      : 'L2:10 no-nested-ternary. The hook exits with code 2 and sends the message to Claude.';
+  var ide = document.getElementById('tp-ide');
+  var note = document.getElementById('tp-note');
+  var bB = document.getElementById('tp-btn-before');
+  var bA = document.getElementById('tp-btn-after');
+  var notesBefore = ["The highlight is what the hook flags. L2:10 no-nested-ternary. The hook exits with code 2 and sends the message to Claude.", "The highlight is what the hook flags. L2:3 no-switch-statement. The hook exits with code 2 and sends the message to Claude.", "The highlight is what the hook flags. L1:33 no-explicit-any. The hook exits with code 2 and sends the message to Claude.", "The highlight is what the hook flags. L2:20 prefer-await-to-then. The hook exits with code 2 and sends the message to Claude."];
+  var notesAfter = ["The nested ternary became a lookup table. The hook finds nothing and prints nothing.", "The switch became a Record dispatch table. The hook prints nothing.", "any became unknown. The hook prints nothing.", "The .then() chain became async/await. The hook prints nothing."];
+  var fileBtns = Array.prototype.slice.call(ide.querySelectorAll('.tp-fbtn'));
+  var current = 0;
+  var isAfter = false;
+  function render() {
+    ide.setAttribute('data-state', isAfter ? 'after' : 'before');
     bB.setAttribute('aria-pressed', String(!isAfter));
     bA.setAttribute('aria-pressed', String(isAfter));
+    fileBtns.forEach(function (b, i) {
+      b.setAttribute('aria-current', String(i === current));
+      document.getElementById('tp-fp-' + i).hidden = i !== current;
+    });
+    note.textContent = isAfter ? notesAfter[current] : notesBefore[current];
   }
-  bB.onclick = function () { show(false); };
-  bA.onclick = function () { show(true); };
-  show(false);
-
-  var rules = [
-    ['No any', 'Use unknown and narrow, or write a precise type.'],
-    ['Explicit return types', 'Annotate public functions.'],
-    ['interface vs type', 'interface for extendable shapes. type for unions and mapped types.'],
-    ['readonly by default', 'Mutable only when mutation is required.'],
-    ['async/await only', 'No .then() chains. Return Promise<T> explicitly.'],
-    ['Typed errors', 'Custom error classes or discriminated-union results.'],
-    ['Constrained generics', '<TEntity extends BaseEntity>, not <T>.'],
-    ['Composition over inheritance', 'Plain functions and utility types first.'],
-    ['No magic values', 'Name repeated or meaningful literals.'],
-    ['Coerce over compare', 'if (!items.length), not items.length === 0.']
-  ];
-  var grid = document.getElementById('rule-grid');
-  rules.forEach(function (r, i) {
-    var d = document.createElement('div');
-    d.className = 'rule';
-    d.innerHTML = '<div class="n">Rule ' + (i + 1) + '</div><div class="t"></div><div class="e"></div>';
-    d.querySelector('.t').textContent = r[0];
-    d.querySelector('.e').textContent = r[1];
-    grid.appendChild(d);
-  });
+  bB.onclick = function () { isAfter = false; render(); };
+  bA.onclick = function () { isAfter = true; render(); };
+  fileBtns.forEach(function (b, i) { b.onclick = function () { current = i; render(); }; });
+  render();
 
   var cmd = '/plugin marketplace add gagoar/typescript-patterns-enforcer\n/plugin install typescript-patterns-enforcer@typescript-patterns-enforcer\n/reload-plugins';
-  document.querySelectorAll('.copy').forEach(function (b) {
+  Array.prototype.forEach.call(document.querySelectorAll('.tp-copy'), function (b) {
     b.onclick = function () {
       navigator.clipboard.writeText(cmd).then(function () {
         b.textContent = 'Copied';
