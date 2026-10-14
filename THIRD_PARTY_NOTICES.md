@@ -4,6 +4,10 @@
 
 The plugin icon, the favicon, and the site's images use the "Pattern" icon by Side Project from [Noun Project](https://thenounproject.com/icon/pattern-8298196/) (icon 8298196), licensed CC BY 3.0 unless the maintainer holds a paid Noun Project licence. The creator's profile is at https://thenounproject.com/creator/Side_Project/.
 
+## Fonts
+
+The site uses **JetBrains Mono** (weights 500 and 700, latin subset, self-hosted in `docs/assets/fonts/` from the `@fontsource/jetbrains-mono` package). Copyright 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono), licensed under the SIL Open Font License 1.1 (https://openfontlicense.org).
+
 ## Engine
 
 `engine/dist/` holds `engine/src` (`check.js`) and two third-party packages, each bundled unminified into its own file:
