@@ -7,14 +7,14 @@
   },
   "metadata": {
     "description": "Enforce TypeScript best practices and patterns \u2014 inline skill guidance plus a dedicated subagent for reviews and refactors.",
-    "version": "0.5.12"
+    "version": "0.5.13"
   },
   "plugins": [
     {
       "name": "typescript-patterns-enforcer",
       "source": "./",
       "description": "Enforce TypeScript best practices and patterns \u2014 inline skill guidance plus a dedicated subagent for reviews and refactors.",
-      "version": "0.5.12",
+      "version": "0.5.13",
       "author": {
         "name": "gagoar",
         "url": "https://github.com/gagoar"
