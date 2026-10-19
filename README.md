@@ -7,6 +7,7 @@
 [![Release](https://img.shields.io/github/v/release/gagoar/typescript-patterns-enforcer?color=D97757)](https://github.com/gagoar/typescript-patterns-enforcer/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-788C5D)](LICENSE)
 [![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-D97757)](https://gagoar.github.io/typescript-patterns-enforcer/)
+[![Claude plugin directory: listed](https://img.shields.io/badge/Claude%20plugin%20directory-listed-D97757)](https://claude.com/marketplace/plugins)
 [![Stars](https://img.shields.io/github/stars/gagoar/typescript-patterns-enforcer?style=flat&color=D1CFC5)](https://github.com/gagoar/typescript-patterns-enforcer/stargazers)
 
 A Claude Code plugin that holds Claude's TypeScript to a written standard. It has three parts. An inline skill carries the rules. A review subagent handles large changes. A hook checks ten rules after every `.ts` or `.tsx` edit.
