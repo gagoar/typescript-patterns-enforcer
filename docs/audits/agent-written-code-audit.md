@@ -1,6 +1,6 @@
 # Audit: what the skill missed in a real agent-written TypeScript module
 
-Status: working notes, meant to be picked up later and turned into skill changes.
+Status: working notes, meant to be picked up later and turned into skill changes. Section 7 records what three further audit rounds on the fixed code showed.
 Source: a TypeScript GitHub Action of roughly a thousand lines written by an agent session with this skill installed, then audited by an independent `typescript-patterns-enforcer:review` run. `tsc --strict` and ESLint (`typescript-eslint` recommended + `no-explicit-any` + `explicit-function-return-type`) were green before the audit and after the first patch round. Examples below are generalised from that code.
 
 ## 1. Summary
@@ -244,3 +244,105 @@ And negative fixtures that must stay clean: `const MAX = 16 * 1024 * 1024;`, `if
 - Should the completion gate be advisory (print the checklist) or blocking (exit 2 until the checklist is shown)? Blocking risks loops on trivial edits; scope it to diffs above N changed TypeScript lines.
 - The skill is installed under two names in the wild (`ts-patterns` and `typescript-patterns-enforcer`). Confirm both resolve to the same hook, so a repo that enables one is covered.
 - Is `repeated-literal` useful on its own, or does it need a project-level allowlist (`"main"`, `"utf8"`, status strings)?
+
+## 7. Follow-up: three audit rounds on the same code
+
+After the first audit, the agent fixed the findings, this time writing every file through the Write/Edit tools so the hook ran, and then asked for a second and a third independent audit of the result. What happened is as useful for the skill as the first audit.
+
+### 7.1 The audits did not converge to zero
+
+| Round | Run on | Findings | Mostly |
+|---|---|---|---|
+| 1 | the original code | about 28 items in 10 families | rules the skill states but nothing enforces |
+| 2 | the code after round 1's fixes | 28 items | repeated constants, illegal states, typed errors, test hygiene |
+| 3 | the code after round 2's fixes | 20 items | fail-open sentinels, mutable shapes, regex-comment flags, test literals |
+
+Each round was a fresh reviewer with no knowledge of the previous report, and each round still found real violations, with a falling share of serious ones. A reviewer asked to "assume violations remain" will always find something, so "audited clean" cannot mean zero findings.
+
+**Suggested stopping rule for the skill and the review agent:** a change is done when a review returns no finding in the correctness group (fail-open sentinels, illegal states, unvalidated boundary input, swallowed errors, unreadable-means-pass) and every remaining finding is style. Have the agent label each finding `correctness` or `style` so the rule is checkable.
+
+### 7.2 Families that only appeared in rounds 2 and 3
+
+These were absent from section 2 and are worth their own checks or prose, because they changed behaviour rather than style.
+
+**F11. Fail-open sentinels** (Make Illegal States Unrepresentable, applied to *absence*).
+
+```ts
+const source = git.show(ref, path) ?? "";           // a file that cannot be read becomes "no pins"
+return git(["show", `${ref}:${path}`]);             // ...and every exit status 128 was treated as "path absent"
+if (oldText === null || newText === null) return MOVABLE;   // an unreadable manifest passed
+const range = node.range; return range ? source.slice(...) : "";  // a missing range hid every output a caller reads
+const key = text(pair.key); return key === null ? [] : [key];     // a non-string key silently dropped
+```
+
+Fix: absence and failure are different. Return a tagged result or throw, and make the reader fail closed (an unreadable thing is a break, not a pass). The `?? ""` form is the tell: a default that is also a valid value.
+
+**F12. A fake status for a non-HTTP failure.**
+
+```ts
+new GitHubError(message, numericStatus(error) ?? 0, body)  // a DNS failure becomes "status 0"
+```
+
+A later `status < 500` check then reads it as a client error and does not retry. Fix: rethrow errors that carry no status; do not invent one.
+
+**F13. `String(x)` printing the word "undefined".**
+
+```ts
+throw new Error(`not valid YAML: ${String(doc.errors[0]?.message)}`);
+```
+
+Fix: `const [first] = doc.errors; if (first) throw new Error(\`...${first.message}\`)`. Already listed under F6 as a cast family; the sharper tell is `String(a?.[0]?.b)`.
+
+**F14. A collection that may be empty typed as always non-empty.**
+
+```ts
+readonly moveShas: ReadonlySet<string>   // an empty set was "a bump with nothing to move"
+```
+
+Fix: `readonly [string, ...string[]]`, built through one `nonEmpty()` helper that returns null for empty, so the empty case chooses a different variant.
+
+**F15. Pick-derived shapes are mutable.** `Pick<LibraryType, "a" | "b">` keeps the library's writable fields even when the surrounding code wraps the rest in `readonly`. Fix: `Readonly<Pick<...>>`.
+
+**F16. A returned value only tests read.** `rewrite()` returned `{ text, count }` where `count` always equalled a number the function had already checked. The caller read only `text`. Fix: return the text.
+
+**F17. Boundary: a number that must be positive.** `pr-number` accepted `0` and `-5` because the check was "is an integer". Fix: name the range.
+
+### 7.3 A contradiction inside the skill
+
+Rule 11 says to link a regex tester pre-filled with the examples, one per line, and notes that an anchored pattern needs the `m` flag in the link so each line is tried. The code has no `m`. A reviewer then flags the mismatch between the link's flags and the code's flags in every such regex. The two instructions cannot both be satisfied silently.
+
+Proposed resolution, either of which removes the noise:
+- Say in the skill that the link's `g`/`m` flags exist only so the tester tries each example line, and require one extra comment line saying so; or
+- Link one example per URL and use the code's own flags.
+
+The same rule asks for a "quoted input". Placeholders such as `<40 hex>` do not count; the reviewer flagged them. The skill should say a literal input, shortened with a repeated character if long.
+
+### 7.4 What the hook did when it ran
+
+Once files were written through Write/Edit, the hook fired on every save. Over the rewrite it reported:
+
+- magic numbers in **test files**, for example a count of pins, a line number in an assertion, an HTTP status in a fixture (about a dozen, every one fixed by naming the value, none changed behaviour);
+- a missing tester link on three regexes (correct and useful);
+- magic numbers inside an object literal that *is* the named constant table of HTTP statuses (a false positive; the agent moved to one `const` per status, which the hook accepts).
+
+Two points for the skill. First, the hook is cheap and fast when it fires, so the P0 item in section 4 (make sure it fires for files written any way) matters more than any new check. Second, whether numbers in test files should be flagged deserves a decision: the agent complied, but a project may prefer to exempt `test/**`.
+
+### 7.5 Fixture additions
+
+Add to section 5, each expected to produce a finding:
+
+```ts
+// fail-open-default.ts
+export const read = (m: Map<string, string>, k: string): string => m.get(k) ?? "";
+
+// fake-status.ts
+export const status = (e: { status?: number }): number => e.status ?? 0;
+
+// string-of-optional-chain.ts
+export const msg = (errors: readonly { message: string }[]): string => String(errors[0]?.message);
+
+// possibly-empty-set-as-state.ts
+export interface Bump { readonly moveShas: ReadonlySet<string>; }
+```
+
+Negative fixture that must stay clean: `const names = new Set(keys); const [first] = names; if (first) { ... }` (narrowing instead of defaulting).
