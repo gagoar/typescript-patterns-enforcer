@@ -126,6 +126,13 @@ When reviewing code, check for:
 15. **Table-Driven Tests**: Are repeated `it(...)`/`test(...)` blocks that only vary input/expected value left copy-pasted instead of expressed as `test.each`/`it.each`?
 16. **Coerce Over Compare**: Is a truthy/falsy check written as an explicit comparison against the falsy sentinel (`.length === 0`, `=== ""`, `!== undefined`, `count > 0`) where a direct boolean coercion would read more plainly — `.length` isn't the only case, any zero/non-zero number check counts — and no falsy-but-meaningful value needs to be told apart from absence?
 17. **Regex Examples**: Does every regex literal / `new RegExp(...)` carry a comment directly above it with plain words, a quoted matching and rejected input (captures / input → output where relevant), and a tester link pre-filled with the pattern and those examples? Do the examples actually exercise the pattern?
+18. **Hand-written library shapes**: Is an interface later filled by a field-by-field mapper over a library response? Narrow the library type (`Readonly<Pick<...>>`) instead; an injected seam stays, its data types derive.
+19. **Illegal states**: Is a nullable field tied to a tag, a stored value derivable from others, an `""`/`0` sentinel, or a possibly-empty collection typed non-empty?
+20. **Fail-open defaults**: Is `?? ""` / `?? 0` standing in for absence or failure, or a fake status invented for a non-HTTP error? Does an unreadable input pass instead of fail?
+21. **Cast laundering**: Is `String(x)` / a template used on a possibly `null`/`undefined` value, or a guard returning `void` instead of `asserts condition`?
+22. **Repeated literals**: Is a path, branch name, template or regex fragment written in two or more places (tests included)?
+23. **String boundaries**: Does a `string` reach a subprocess, path, URL or query unvalidated, or a number that must be positive go unchecked?
+24. **Small items**: bare `Error` among typed errors, swallowed HTTP error without a comment, boolean flag argument selecting two operations, `endsWith` chains, exported-but-file-local helpers.
 
 ## Anti-Patterns to Avoid
 
@@ -162,6 +169,9 @@ When writing code:
 
 When reviewing code:
 
+- Label every finding `correctness` or `style`. Correctness: fail-open defaults, illegal states, unvalidated boundary input, swallowed errors, an unreadable input that passes. Everything else is style.
+- Report "violations a linter would not catch" explicitly: `tsc` and ESLint being green says nothing about items 11 and 18-23.
+- State the stopping rule: the change is done when no `correctness` finding remains. Do not invent findings to avoid reporting a clean review.
 - Provide specific, actionable feedback
 - Explain the "why" behind suggestions
 - Reference relevant patterns or principles
