@@ -1,7 +1,7 @@
 name: release-engine
 
 # Builds the engine from source in CI, checks it against the committed
-# engine/dist/*.js (three readable files), and attaches them (plus SHA256SUMS) to
+# engine/dist/*.js (four readable files), and attaches them (plus SHA256SUMS) to
 # the GitHub Release.
 #   - pull request: build and verify only; nothing is published
 #   - push of a v* tag: build, verify, publish to that tag's release
@@ -66,6 +66,6 @@ jobs:
         run: |
           set -euo pipefail
           cd engine/dist
-          sha256sum check.js acorn.js acorn-typescript.js > SHA256SUMS
+          sha256sum check.js stop.js acorn.js acorn-typescript.js > SHA256SUMS
           gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "$TAG" --generate-notes
-          gh release upload "$TAG" check.js acorn.js acorn-typescript.js SHA256SUMS --clobber
+          gh release upload "$TAG" check.js stop.js acorn.js acorn-typescript.js SHA256SUMS --clobber
