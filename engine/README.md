@@ -1,11 +1,11 @@
 # Mechanical engine
 
-A self-contained checker for ten of the plugin's rules, invoked by
+A self-contained checker for sixteen of the plugin's rules, invoked by
 `hooks/hooks.json` after every `.ts`/`.tsx` edit. It never reads or writes
 whatever ESLint/tsconfig setup exists in the repo Claude is editing: it parses
 the file itself with acorn (plus its TypeScript plugin) and runs its own rules, in total isolation.
 
-## What's checked, and why these 10
+## What's checked, and why these 16
 
 | Check | Where the behavior comes from | Mechanizes |
 |---|---|---|
@@ -19,6 +19,12 @@ the file itself with acorn (plus its TypeScript plugin) and runs its own rules, 
 | `no-narrative-comment` | written here, advisory | Comment Discipline |
 | `no-nested-ternary` | written here | Data Over Logic (presence only) |
 | `require-regex-example` | written here, advisory | Core Rule 11 (comment above every regex) |
+| `no-zero-comparison` | written here | Core Rule 10 (the `.length` case) |
+| `repeated-literal` | written here, advisory | Core Rule 9 (repeated literals, per file) |
+| `colon-annotated-lookup` | written here | `as const satisfies` / Data Over Logic |
+| `fail-open-default` | written here, advisory | Make Illegal States Unrepresentable (fail-open defaults) |
+| `string-of-optional-chain` | written here | Core Rule 1 (`String()` on a possibly missing value) |
+| `void-guard` | written here | Core Rule 1 (`asserts condition` guards) |
 
 The first four reimplement rules that used to run on ESLint, with the same
 options, positions and message text; `test/parity` pins that (see Tests below).
@@ -28,7 +34,7 @@ loop→pipeline, nested ternary→`Record`/`.find()`) is a judgment call that
 stays in `SKILL.md`'s prose. A checker can ban a `switch`, but it can't
 rewrite one well.
 
-`no-narrative-comment` is a different kind of check from the other 8: it's
+`no-narrative-comment` is a different kind of check from most of the others: it's
 a lexical proxy for a semantic rule (does a comment state an invariant, or
 narrate how the code came to be), not a precise AST match. It flags a
 specific list of backward-looking phrases (`src/rules/comments.ts`)
@@ -53,7 +59,7 @@ the prose, so it's advisory too.
 | `src/ast.ts` | a small view of the AST: node types, child links, a tree walk |
 | `src/registry.ts` | the list of checks, and the run: parse, walk, apply suppressions, sort |
 | `src/directives.ts` | `eslint-disable` comments (see below) |
-| `src/rules/*.ts` | the ten rules |
+| `src/rules/*.ts` | the sixteen rules |
 
 Syntax the parser cannot read (or a file that is not TypeScript) produces no
 violations, the same as any file the hook cannot read. Mistakes the compiler

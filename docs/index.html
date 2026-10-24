@@ -4,17 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TypeScript Patterns Enforcer: TypeScript pattern checks for Claude Code</title>
-<meta name="description" content="A Claude Code plugin that holds Claude's TypeScript to a written standard: an inline skill, a review subagent, and a hook that runs ten checks after every edit.">
+<meta name="description" content="A Claude Code plugin that holds Claude's TypeScript to a written standard: an inline skill, a review subagent, and a hook that runs sixteen checks after every edit.">
 <link rel="canonical" href="https://gagoar.github.io/typescript-patterns-enforcer/">
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <meta property="og:type" content="website">
 <meta property="og:title" content="TypeScript Patterns Enforcer: Claude writes TypeScript. It checks every edit.">
-<meta property="og:description" content="A Claude Code plugin with a skill, a review subagent, and a hook that runs ten checks after every .ts edit.">
+<meta property="og:description" content="A Claude Code plugin with a skill, a review subagent, and a hook that runs sixteen checks after every .ts edit.">
 <meta property="og:url" content="https://gagoar.github.io/typescript-patterns-enforcer/">
 <meta property="og:image" content="https://gagoar.github.io/typescript-patterns-enforcer/assets/og.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="TypeScript Patterns Enforcer: TypeScript pattern checks for Claude Code">
-<meta name="twitter:description" content="A hook runs ten checks after every .ts edit and feeds violations back to Claude.">
+<meta name="twitter:description" content="A hook runs sixteen checks after every .ts edit and feeds violations back to Claude.">
 <meta name="twitter:image" content="https://gagoar.github.io/typescript-patterns-enforcer/assets/og.png">
 <link rel="stylesheet" href="assets/tp.css">
 <style>@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation-duration: 0.001ms !important; animation-delay: 0s !important; transition: none !important; } }</style>
@@ -44,7 +44,7 @@
     <div class="tp-in">
       <p class="tp-eyebrow">Claude Code plugin</p>
       <h1>Claude writes TypeScript. TypeScript Patterns Enforcer <span class="tp-sq-resolve">checks every edit.</span></h1>
-      <p class="tp-lead">An inline skill, a review subagent, and a hook that runs ten checks after every <code>.ts</code> edit and sends violations back to Claude.</p>
+      <p class="tp-lead">An inline skill, a review subagent, and a hook that runs sixteen checks after every <code>.ts</code> edit and sends violations back to Claude.</p>
       <div class="tp-cmd">
         <button class="tp-copy" type="button">Copy</button>
 <pre tabindex="0"><span class="tp-c">/plugin marketplace add</span> <span class="tp-a">gagoar/typescript-patterns-enforcer</span>
@@ -210,9 +210,9 @@ Fix these to satisfy the TypeScript patterns before continuing.
         <li><span><b>Every regex carries an example<span class="tp-hook">hook</span></b>A comment directly above it: plain words, a quoted match and reject, and a pre-filled regex101 link.</span></li>
       </ol>
 
-      <h3 class="tp-sub">The ten mechanical checks</h3>
+      <h3 class="tp-sub">The sixteen mechanical checks</h3>
       <p>The checks find the pattern. Rewriting it well stays with Claude and the skill, because a linter can ban a <code>switch</code> but cannot rewrite one.</p>
-      <div class="tp-tablewrap" tabindex="0" role="group" aria-label="The ten mechanical checks">
+      <div class="tp-tablewrap" tabindex="0" role="group" aria-label="The sixteen mechanical checks">
         <table class="tp-t">
           <thead><tr><th scope="col">Check</th><th scope="col">Catches</th></tr></thead>
           <tbody>
@@ -226,6 +226,12 @@ Fix these to satisfy the TypeScript patterns before continuing.
             <tr><td><code>no-nested-ternary</code></td><td>Nested ternaries</td></tr>
             <tr><td><code>require-regex-example</code></td><td>A regex literal with no plain-words comment, example, or tester link above it. Advisory: it checks for a quoted string and an <code>https://</code> link.</td></tr>
             <tr><td><code>no-narrative-comment</code></td><td>Comments that narrate history. Advisory: it matches a list of phrases, so it misses some and flags some.</td></tr>
+            <tr><td><code>no-zero-comparison</code></td><td>.length compared with zero (&gt; 0, === 0, &gt;= 1). Coerce it instead.</td></tr>
+            <tr><td><code>repeated-literal</code></td><td>The same string or template, 8 characters or more, in three or more places in one file.</td></tr>
+            <tr><td><code>colon-annotated-lookup</code></td><td>A Record lookup object typed with a colon annotation instead of as const satisfies.</td></tr>
+            <tr><td><code>fail-open-default</code></td><td>call() ?? &quot;&quot; or call() ?? 0: a default that is also a valid value. Advisory: it sees syntax, not types.</td></tr>
+            <tr><td><code>string-of-optional-chain</code></td><td>String(a?.b), which prints &quot;undefined&quot; when the chain breaks.</td></tr>
+            <tr><td><code>void-guard</code></td><td>A guard or assert* function declared : void instead of asserts condition.</td></tr>
           </tbody>
         </table>
       </div>
@@ -238,7 +244,7 @@ Fix these to satisfy the TypeScript patterns before continuing.
       <p class="tp-eyebrow">Evidence</p>
       <h2>Tested before it ships.</h2>
       <div class="tp-stats">
-        <div class="tp-stat"><div class="tp-big"><span class="tp-tick" aria-hidden="true">&#10003;</span> 10 checks</div><p>Each has a failing fixture and a passing fixture. The test suite runs against the built hook.</p></div>
+        <div class="tp-stat"><div class="tp-big"><span class="tp-tick" aria-hidden="true">&#10003;</span> 16 checks</div><p>Each has a failing fixture and a passing fixture. The test suite runs against the built hook.</p></div>
         <div class="tp-stat"><div class="tp-big"><span class="tp-tick" aria-hidden="true">&#10003;</span> 0 config</div><p>The engine bundles its own parser and rules. It never reads or writes your repo's setup.</p></div>
         <div class="tp-stat"><div class="tp-big"><span class="tp-tick" aria-hidden="true">&#10003;</span> MIT</div><p>Open source. Fixtures live in <code>engine/test/fixtures/</code>.</p></div>
       </div>

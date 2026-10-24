@@ -20,6 +20,12 @@ const CASES = [
   { id: "no-narrative-comment", bad: "no-narrative-comment.bad.ts", good: "no-narrative-comment.good.ts" },
   { id: "no-nested-ternary", bad: "no-nested-ternary.bad.ts", good: "no-nested-ternary.good.ts" },
   { id: "require-regex-example", bad: "require-regex-example.bad.ts", good: "require-regex-example.good.ts" },
+  { id: "no-zero-comparison", bad: "no-zero-comparison.bad.ts", good: "no-zero-comparison.good.ts" },
+  { id: "repeated-literal", bad: "repeated-literal.bad.ts", good: "repeated-literal.good.ts" },
+  { id: "colon-annotated-lookup", bad: "colon-annotated-lookup.bad.ts", good: "colon-annotated-lookup.good.ts" },
+  { id: "fail-open-default", bad: "fail-open-default.bad.ts", good: "fail-open-default.good.ts" },
+  { id: "string-of-optional-chain", bad: "string-of-optional-chain.bad.ts", good: "string-of-optional-chain.good.ts" },
+  { id: "void-guard", bad: "void-guard.bad.ts", good: "void-guard.good.ts" },
 ];
 
 function runHook(filePath) {
@@ -59,6 +65,9 @@ test("missing file_path is ignored", () => {
 // difference is `disable.ts`: that engine also reported "Definition for rule
 // '@typescript-eslint/...' was not found" for eslint-disable comments naming another
 // plugin's rules; this one ignores such comments.
+// The second deliberate difference is `modern.ts` and `regex.ts`: a number inside the arithmetic
+// that initialises a `const` (`const big = 10n ** 3n`) is part of the named constant, so it is not
+// reported. The goldens for those two files had the findings removed by hand.
 const PARITY = join(HERE, "parity");
 const parityFiles = readdirSync(PARITY).filter((name) => name !== "golden");
 

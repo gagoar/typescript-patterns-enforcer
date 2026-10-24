@@ -10,7 +10,7 @@
 [![Claude plugin directory: listed](https://img.shields.io/badge/Claude%20plugin%20directory-listed-D97757)](https://claude.com/marketplace/plugins)
 [![Stars](https://img.shields.io/github/stars/gagoar/typescript-patterns-enforcer?style=flat&color=D1CFC5)](https://github.com/gagoar/typescript-patterns-enforcer/stargazers)
 
-A Claude Code plugin that holds Claude's TypeScript to a written standard. It has three parts. An inline skill carries the rules. A review subagent handles large changes. A hook checks ten rules after every `.ts` or `.tsx` edit.
+A Claude Code plugin that holds Claude's TypeScript to a written standard. It has three parts. An inline skill carries the rules. A review subagent handles large changes. A hook checks sixteen rules after every `.ts` or `.tsx` edit.
 
 ## Install
 
@@ -43,7 +43,7 @@ The skill is now `/typescript-patterns-enforcer:check` and the agent is `typescr
 ## Why
 
 - **It checks the code, not only the prompt.** A hook reads each file Claude edits. A violation returns to Claude as feedback, and Claude fixes it before moving on.
-- **Every check has a test.** Each of the ten checks has a failing fixture and a passing fixture. The suite runs against the built hook.
+- **Every check has a test.** Each of the sixteen checks has a failing fixture and a passing fixture. The suite runs against the built hook.
 - **It stays out of the project's config.** The engine ships its own parser and rules. It never reads or writes the repo's ESLint or `tsconfig` setup.
 
 ## 30-second tour
@@ -82,7 +82,7 @@ The next check passes with no output.
 |-----------|--------------|
 | Skill `/typescript-patterns-enforcer:check` | Active while Claude writes or edits `.ts` and `.tsx` files. It gives inline guidance on type safety, patterns, and anti-patterns. |
 | Agent `typescript-patterns-enforcer:review` | Runs through the Agent tool for full PR reviews, large refactors, and JavaScript to TypeScript conversions. |
-| Hook | Runs a bundled checker after every `.ts` or `.tsx` edit and backs the skill with ten deterministic checks. |
+| Hook | Runs a bundled checker after every `.ts` or `.tsx` edit and backs the skill with sixteen deterministic checks. |
 
 ## The core rules
 
@@ -100,7 +100,7 @@ The next check passes with no output.
 
 The skill covers more: data over logic, validation at the boundary, comment discipline, and a review checklist. Read `skills/check/SKILL.md` for the full text.
 
-## The ten mechanical checks
+## The sixteen mechanical checks
 
 | Check | Catches |
 |-------|---------|
@@ -114,8 +114,14 @@ The skill covers more: data over logic, validation at the boundary, comment disc
 | `no-nested-ternary` | Nested ternaries |
 | `require-regex-example` | A regex literal with no plain-words comment, example, or tester link above it. Advisory: it checks for a quoted string and an `https://` link. |
 | `no-narrative-comment` | Comments that narrate history. Advisory: it matches a list of phrases, so it misses some and flags some. |
+| `no-zero-comparison` | `.length` compared with zero (`> 0`, `=== 0`, `>= 1`). Coerce it instead. |
+| `repeated-literal` | The same string or template, 8 characters or more, in three or more places in one file. |
+| `colon-annotated-lookup` | A `Record` lookup object typed with a colon annotation instead of `as const satisfies`. |
+| `fail-open-default` | `call() ?? ""` or `call() ?? 0`: a default that is also a valid value. Advisory: it sees syntax, not types. |
+| `string-of-optional-chain` | `String(a?.b)`, which prints "undefined" when the chain breaks. |
+| `void-guard` | A `guard` or `assert*` function declared `: void` instead of `asserts condition`. |
 
-The checks find the pattern. Rewriting it well stays with Claude and the skill, because a linter can ban a `switch` but cannot rewrite one.
+The engine has no type information, so every check reads syntax only. The checks find the pattern. Rewriting it well stays with Claude and the skill, because a linter can ban a `switch` but cannot rewrite one.
 
 ## What runs automatically
 
