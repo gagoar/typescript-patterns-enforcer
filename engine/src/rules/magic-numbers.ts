@@ -20,6 +20,8 @@ const MEMBER = "MemberExpression";
 const CALL = "CallExpression";
 const CLASS_FIELD = "PropertyDefinition";
 const SIGNS: readonly string[] = ["-", "+"];
+const ARITHMETIC: ReadonlySet<string> = new Set(["+", "-", "*", "/", "%", "**", "<<", ">>"]);
+const AS_CONST_PATH: ReadonlySet<string> = new Set(["Property", "ObjectExpression", "ArrayExpression", "UnaryExpression"]);
 
 // How far above the number a node sits, counted from the number's full form
 // (the sign included): `above.at(-PARENT)` is what the whole number belongs to.
@@ -116,6 +118,30 @@ function isArrayIndex({ above, full, magnitude, sign }: Number_): boolean {
   return isInteger && value >= 0 && value < MAX_ARRAY_LENGTH;
 }
 
+// The levels left after dropping every arithmetic or sign node directly above the number.
+function aboveArithmetic(levels: readonly AstNode[]): readonly AstNode[] {
+  const top = levels.at(-PARENT);
+  const isMath = (top?.type === "BinaryExpression" && ARITHMETIC.has(String(top["operator"]))) || top?.type === "UnaryExpression";
+  return isMath ? aboveArithmetic(levels.slice(0, -PARENT)) : levels;
+}
+
+// `const MAX = 16 * 1024 * 1024`: the number is part of the expression that names the constant.
+// Deliberate difference from typescript-eslint, which only exempts a bare initialiser.
+function isNamedConstArithmetic({ above }: Number_): boolean {
+  const rest = aboveArithmetic(above);
+  return rest.at(-PARENT)?.type === "VariableDeclarator" && rest.at(-GRANDPARENT)?.["kind"] === "const";
+}
+
+// A value inside an `as const` literal (`{ ok: 200 } as const`) is the named table itself.
+function isInsideAsConst({ above }: Number_): boolean {
+  const climb = (levels: readonly AstNode[]): boolean => {
+    const top = levels.at(-PARENT);
+    if (top && AS_CONST_PATH.has(top.type)) return climb(levels.slice(0, -PARENT));
+    return top?.type === "TSAsExpression" && nameOf(child(child(top, "typeAnnotation") ?? top, "typeName")) === "const";
+  };
+  return climb(above);
+}
+
 const isExempt = (found: Number_): boolean => isParseIntRadix(found) || isJsxNumber(found) || isArrayIndex(found);
 
 export const noMagicNumbers: Rule = {
@@ -136,6 +162,7 @@ export const noMagicNumbers: Rule = {
 
     // ESLint's base rule: `+` is a sign too, and a variable's initial value is fine.
     if (IGNORED.has(signed(magnitude, sign)) || isExempt(found)) return;
+    if (isNamedConstArithmetic(found) || isInsideAsConst(found)) return;
     if (above.at(-PARENT)?.type !== "VariableDeclarator") report(full, `${sign ?? ""}${rawOf(node)}`);
   },
 };
