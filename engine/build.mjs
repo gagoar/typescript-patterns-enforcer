@@ -1,13 +1,14 @@
-// Bundles the hook into three readable CommonJS files in dist/:
+// Bundles the hooks into four readable CommonJS files in dist/:
 //
-//   check.js             the engine's own rules (engine/src)
+//   check.js             the edit hook: the engine's own rules (engine/src)
+//   stop.js              the Stop hook: the same rules over files changed this session
 //   acorn.js             the acorn parser
 //   acorn-typescript.js  the TypeScript plugin for acorn
 //
 // None is minified, so anyone, and the plugin directory's validator, can read what
 // runs on every edit. They are separate files because the validator reads a script
 // only up to 256 KiB: each file stays under that, which one bundle of the parser and
-// its plugin cannot. check.js loads the other two with a relative require.
+// its plugin cannot. check.js and stop.js load the other two with a relative require.
 import { readFileSync, statSync, writeFileSync } from "node:fs";
 import { Parser } from "acorn";
 import { build } from "esbuild";
@@ -27,6 +28,7 @@ const siblingModules = {
 
 const OUTPUTS = [
   { entry: "src/check.ts", out: "dist/check.js", what: "the rules in engine/src." },
+  { entry: "src/stop.ts", out: "dist/stop.js", what: "the Stop hook in engine/src." },
   { entry: "node_modules/acorn/dist/acorn.js", out: "dist/acorn.js", what: "acorn, the JavaScript parser (MIT).", vendor: true },
   {
     entry: "node_modules/@sveltejs/acorn-typescript/index.js",

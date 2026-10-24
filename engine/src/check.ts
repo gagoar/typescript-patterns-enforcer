@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { runChecks, type Violation } from "./registry";
+import { violationLines } from "./report";
 
 const EXIT_OK = 0; // informational only, or "not our file" / "couldn't run"
 const EXIT_BLOCK = 2; // per the PostToolUse hook contract: stderr fed back to Claude
@@ -12,12 +13,9 @@ interface HookPayload {
 }
 
 function format(filePath: string, violations: readonly Violation[]): string {
-  const lines = violations.map(
-    (v) => `  L${v.line}:${v.column}  ${v.ruleId}  ${v.text}  → ${v.pointer}`,
-  );
   return [
     `ts-patterns: ${violations.length} mechanical violation(s) in ${filePath}:`,
-    ...lines,
+    ...violationLines(violations),
     "Fix these to satisfy the TypeScript patterns before continuing.",
     "",
   ].join("\n");
