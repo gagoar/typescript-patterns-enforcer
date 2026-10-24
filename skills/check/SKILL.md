@@ -10,6 +10,7 @@ description: >
   - Converting JavaScript to TypeScript
   - Asked to refactor or improve TypeScript code quality
   - Implementing features in a TypeScript project
+  - Before the first line of a new module, and before porting a script (.mjs/.js/shell) to TypeScript
 
   Natural language triggers: "write this in TypeScript", "review my TypeScript", "refactor
   this TS file", "enforce patterns", "check type safety", "improve types".
@@ -24,7 +25,7 @@ Apply these principles to every TypeScript file you write or edit.
 
 ## Core Rules
 
-1. **No `any`** — use `unknown` and narrow, or define a precise type. Justify every `as` cast with a comment. (Bare `any` is also caught mechanically by the bundled hook; unguarded `as` casts remain your judgment call.)
+1. **No `any`** — use `unknown` and narrow, or define a precise type. Justify every `as` cast with a comment. `String(x)` or a template literal on a value typed `T | null | undefined` launders a type the same way (`String(undefined)` is `"undefined"`): narrow first, and declare guards as `asserts condition` so the narrowing sticks. (Bare `any` is also caught mechanically by the bundled hook; unguarded `as` casts remain your judgment call.)
 2. **Explicit return types** — annotate public functions; let inference handle private/internal one-liners only.
 3. **Prefer `interface` for extendable shapes; `type` for unions, intersections, and mapped/conditional types.**
 4. **`readonly` by default** — mark properties and arrays immutable unless mutation is required.
@@ -32,9 +33,9 @@ Apply these principles to every TypeScript file you write or edit.
 6. **Typed errors** — custom classes extending `Error`, or discriminated-union result types. Never silently swallow.
 7. **Generics with constraints** — `<TEntity extends BaseEntity>` not just `<T>`. Use descriptive names.
 8. **Composition over inheritance** — classes only when necessary; prefer plain functions and utility types.
-9. **No magic strings/numbers in comparisons or branching** — extract a repeated or semantically-meaningful literal (a URL scheme like `"https:"`, a sentinel path segment, a fixed error code) into a named `const`. For a small closed set of mutually-exclusive tags, prefer a string-literal union type (`type Kind = "a" | "b"`) or a `const` object/enum over scattered inline comparisons, so the compiler can narrow exhaustively. (Magic **numbers** are also flagged mechanically by the bundled hook; magic strings and the literal-union preference remain your judgment call.)
+9. **No magic strings/numbers in comparisons or branching** — extract a repeated or semantically-meaningful literal (a URL scheme like `"https:"`, a sentinel path segment, a fixed error code) into a named `const`. The same applies to any literal or template (a path, a branch name, a regex source fragment) written in two or more places, and test files are in scope: export the value once and compose from it. A regex used only as a substring match in a test is a plain string. For a small closed set of mutually-exclusive tags, prefer a string-literal union type (`type Kind = "a" | "b"`) or a `const` object/enum over scattered inline comparisons, so the compiler can narrow exhaustively. (Magic **numbers** are also flagged mechanically by the bundled hook; magic strings and the literal-union preference remain your judgment call.)
 10. **Coerce over compare for truthy/falsy intent** — check truthiness directly (`if (!value)` / `if (items.length)` / `if (!errorCount)`) instead of comparing against the falsy sentinel (`.length === 0`, `.length > 0`, `=== ""`, `!== undefined`, `count === 0`, `count > 0`) when the intent is "does this exist," "is this empty," or "is this non-zero" — any number used only for its zero/non-zero-ness gets the same treatment as `.length`. Exception: when a falsy-but-meaningful value (`0`, `""`, `false`) must be distinguished from genuine absence, name the explicit check for what it tests (`value === undefined`) rather than coercing the distinction away.
-11. **Every regex carries an example and a tester link** — directly above each regex literal (and each `new RegExp(...)`), a comment that (1) says in plain words what the pattern accepts, (2) quotes at least one input it matches and one it rejects — what one match captures when there are groups, input → output when it drives a `.replace` — and (3) links a free tester (regex101.com or equivalent) pre-filled with the pattern, its flags, and those same examples as the test string, so a reviewer verifies it in one click with no account or saved snippet. Regexes accumulate across a codebase and can't be verified by reading; the comment makes each one checkable where it sits. (A regex with no comment directly above it, a comment with no quoted example, or one with no `https://` link is also flagged mechanically by the bundled hook; whether the examples actually exercise the pattern and the link carries them remains your judgment call.)
+11. **Every regex carries an example and a tester link** — directly above each regex literal (and each `new RegExp(...)`), a comment that (1) says in plain words what the pattern accepts, (2) quotes at least one literal input it matches and one it rejects (a long input is shortened with a repeated character, never a placeholder like `<40 hex>`) — what one match captures when there are groups, input → output when it drives a `.replace` — and (3) links a free tester (regex101.com or equivalent) pre-filled with the pattern, its flags, and those same examples as the test string. When the link carries `g`/`m` flags the code does not (so the tester tries each example line), say so in one extra comment line; that is the only accepted difference between link flags and code flags. A reviewer verifies it in one click with no account or saved snippet. Regexes accumulate across a codebase and can't be verified by reading; the comment makes each one checkable where it sits. (A regex with no comment directly above it, a comment with no quoted example, or one with no `https://` link is also flagged mechanically by the bundled hook; whether the examples actually exercise the pattern and the link carries them remains your judgment call.)
 
 ## Core Rule Examples
 
@@ -269,6 +270,22 @@ type OctokitFile = NonNullable<
 type RepoFile = Pick<OctokitFile, "filename" | "blob_url" | "status">;
 ```
 
+The tell is a hand-written interface that is later filled by a mapper
+renaming a library response field by field. Narrow the library type instead;
+a real response is then assignable and the mapper disappears. An injected
+interface (the I/O seam for a pure core) is fine; its *data* types still
+derive. `Pick` keeps the library's writable fields, so wrap it in
+`Readonly<Pick<...>>` when the surrounding code is `readonly`:
+
+```ts
+type Rest = ReturnType<typeof getOctokit>["rest"];
+type RawPull = Awaited<ReturnType<Rest["pulls"]["get"]>>["data"];
+export type Pull = Readonly<Pick<RawPull, "number" | "html_url" | "commits">> & {
+  readonly base: Readonly<Pick<RawPull["base"], "ref">>;
+  readonly user: Readonly<Pick<NonNullable<RawPull["user"]>, "login">> | null;
+};
+```
+
 **Consume the same declaration everywhere it's needed** — validation,
 whitelists, and user-facing text should all read off the one canonical set
 instead of repeating its members:
@@ -361,15 +378,19 @@ function performAction(role: Role): void {
 }
 
 // Good
-const actionByRole: Readonly<Record<Role, () => void>> = {
+const actionByRole = {
   admin: grantAdminAccess,
   user: grantUserAccess,
   guest: grantGuestAccess,
-};
+} as const satisfies Record<Role, () => void>;
 function performAction(role: Role): void {
   actionByRole[role]();
 }
 ```
+
+Key a lookup by the set it is indexed with, not by `number`/`string`:
+`Record<(typeof Failure)[keyof typeof Failure], string>`, so a new member
+is a compile error here too.
 
 **Config array + `.reduce()`** — replace a sequence of independent `if`
 blocks that each fold into the same accumulator with an array of
@@ -566,6 +587,12 @@ const pkg = JSON.parse(raw) as Package; // unverified; `any[]` defeats the point
 This is "parse, don't validate": a boundary function should hand back a typed
 value that's provably correct, not a boolean the caller might ignore.
 
+**A `string` typed as `string` is still a boundary** when it reaches a
+subprocess argument, a file path, a URL or a query. A value starting with `-`
+is read by `git` as an option; `../` escapes a directory. Validate at the
+point it enters (`/^[0-9a-f]{40}$/` for a SHA) and return a branded type. Name
+numeric ranges too: "is an integer" accepts `0` and `-5` for a PR number.
+
 ## Make Illegal States Unrepresentable
 
 Model state so an invalid combination cannot be constructed, rather than
@@ -601,6 +628,15 @@ const asUserId = (raw: string): UserId => raw as UserId; // the one gate that mi
 function loadUser(id: UserId): User { /* ... */ }
 loadUser(orderId); // compile error — an OrderId can't pass as a UserId
 ```
+
+**More smells of the same kind:**
+
+- A nullable field that is non-null for some variants only (`prNumber: number | null` beside an `outcome` tag): move it into the variants that have it.
+- A stored value derivable from other stored values (`status` alongside the `violations` it is computed from): derive it, or make each variant carry only its own fields.
+- An empty-string or zero sentinel meaning "all" or "none" (`only: ""`): use `string | null` or a tag.
+- A collection that may be empty typed as always non-empty (`ReadonlySet<string>` for "the SHAs to move"): use `readonly [string, ...string[]]` built by one `nonEmpty()` helper, so the empty case picks a different variant.
+- A default that is also a valid value, standing in for absence or failure (`read(path) ?? ""`, `status ?? 0`): absence and failure are different. Return a tagged result or throw, and make the reader fail closed (an unreadable manifest is a break, not a pass). Do not invent a status for a non-HTTP failure; rethrow.
+- A returned field no caller reads, or one always equal to a value already checked: return the value alone.
 
 ## Comment Discipline
 
@@ -712,9 +748,22 @@ test.each([
 - A `for`/`while` loop accumulating into an array/object where `.map()`/`.filter()`/`.reduce()` fits
 - Copy-pasted `it(...)`/`test(...)` blocks that differ only by input/expected value instead of `test.each`
 - Missing strict compiler flags (`strict`, `noImplicitReturns`, `noFallthroughCasesInSwitch`, `noUnusedLocals`, `noUnusedParameters`)
+- A literal or template (a path, branch name, regex fragment) repeated in two or more places, tests included
+- `String(x)` / a template on a possibly `null`/`undefined` value; a guard that returns `void` instead of `asserts condition`
+- A fail-open default (`?? ""`, `?? 0`) where absence or failure should be a distinct, fail-closed result
+- A `string` input passed to a subprocess, path, URL or query without validation at the boundary
+- A bare `Error` thrown in a module whose other failures are typed; a swallowed HTTP error with no comment; a boolean flag argument selecting between two operations; an `endsWith(a) || endsWith(b)` chain
 
 ## Review Checklist
 
-Before finalising: re-scan the diff against every item in Anti-Patterns to
-Flag above, plus three checks that list doesn't cover — explicit types on
-every public API, JSDoc on complex types, and a clean `tsc --noEmit`.
+Before saying a TypeScript change is done, print this list and mark each
+line `checked` or `n/a`, so "the skill was applied" is something a reviewer
+can read. Walk every item in Anti-Patterns to Flag above, one line each, plus
+three checks that list doesn't cover: explicit types on every public API,
+JSDoc on complex types, and a clean `tsc --noEmit`. Files written through a
+shell (heredoc, script) are covered too: the edit hook never sees them, so
+re-run the checks by hand.
+
+A change is done when no correctness finding remains (fail-open defaults,
+illegal states, unvalidated boundary input, swallowed errors). Remaining
+style findings do not block it.
