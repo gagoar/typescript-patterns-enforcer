@@ -1,8 +1,7 @@
 # Mechanical engine
 
 A self-contained checker for ten of the plugin's rules, invoked by
-`hooks/hooks.json` after every `.ts`/`.tsx` edit, and again at Stop over the
-files changed this session (`src/stop.ts`). It never reads or writes
+`hooks/hooks.json` after every `.ts`/`.tsx` edit. It never reads or writes
 whatever ESLint/tsconfig setup exists in the repo Claude is editing: it parses
 the file itself with acorn (plus its TypeScript plugin) and runs its own rules, in total isolation.
 
