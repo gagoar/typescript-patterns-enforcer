@@ -2,11 +2,13 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { readdirSync, readFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, utimesSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CHECK = join(HERE, "..", "dist", "check.js");
+const STOP = join(HERE, "..", "dist", "stop.js");
 const fixture = (name) => join(HERE, "fixtures", name);
 
 const CASES = [
@@ -80,3 +82,63 @@ for (const name of parityFiles) {
     assert.equal(actual, expected);
   });
 }
+
+// Stop hook: files written through a shell never reach the edit hook, so it walks the
+// working directory for .ts/.tsx files modified since the session transcript was created.
+const SECONDS_BEFORE_SESSION = 3600;
+const BAD_SOURCE = "export const x: any = 1;\n";
+
+function stopScenario(setup, extra = {}) {
+  const dir = mkdtempSync(join(tmpdir(), "ts-patterns-stop-"));
+  const transcript = join(dir, "session.jsonl");
+  writeFileSync(transcript, "");
+  setup(dir);
+  const input = JSON.stringify({ cwd: dir, transcript_path: transcript, ...extra });
+  const result = spawnSync(process.execPath, [STOP], { input, encoding: "utf8" });
+  rmSync(dir, { recursive: true, force: true });
+  return result;
+}
+
+test("stop: reports a shell-written .ts file, advisory (exit 0, systemMessage)", () => {
+  const r = stopScenario((dir) => writeFileSync(join(dir, "made-by-heredoc.ts"), BAD_SOURCE));
+  assert.equal(r.status, 0);
+  const { systemMessage } = JSON.parse(r.stdout);
+  assert.match(systemMessage, /made-by-heredoc\.ts/);
+  assert.match(systemMessage, /no-explicit-any/);
+});
+
+test("stop: a .ts file older than the session is not reported", () => {
+  const r = stopScenario((dir) => {
+    const old = join(dir, "old.ts");
+    writeFileSync(old, BAD_SOURCE);
+    const past = new Date(Date.now() - SECONDS_BEFORE_SESSION * 1000);
+    utimesSync(old, past, past);
+  });
+  assert.equal(r.status, 0);
+  assert.equal(r.stdout, "");
+});
+
+test("stop: node_modules and .d.ts files are skipped", () => {
+  const r = stopScenario((dir) => {
+    mkdirSync(join(dir, "node_modules", "pkg"), { recursive: true });
+    writeFileSync(join(dir, "node_modules", "pkg", "index.ts"), BAD_SOURCE);
+    writeFileSync(join(dir, "types.d.ts"), BAD_SOURCE);
+  });
+  assert.equal(r.status, 0);
+  assert.equal(r.stdout, "");
+});
+
+test("stop: a clean .ts file produces no output", () => {
+  const r = stopScenario((dir) => writeFileSync(join(dir, "clean.ts"), "export const x = (): number => 1;\n"));
+  assert.equal(r.status, 0);
+  assert.equal(r.stdout, "");
+});
+
+test("stop: stop_hook_active and a missing transcript stay silent", () => {
+  const active = stopScenario((dir) => writeFileSync(join(dir, "a.ts"), BAD_SOURCE), { stop_hook_active: true });
+  assert.equal(active.status, 0);
+  assert.equal(active.stdout, "");
+  const none = spawnSync(process.execPath, [STOP], { input: JSON.stringify({ cwd: HERE }), encoding: "utf8" });
+  assert.equal(none.status, 0);
+  assert.equal(none.stdout, "");
+});

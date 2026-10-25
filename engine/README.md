@@ -54,7 +54,9 @@ the prose, so it's advisory too.
 
 | File | Role |
 |---|---|
-| `src/check.ts` | the hook entry point: reads the payload, runs the checks, prints violations |
+| `src/check.ts` | the edit hook entry point: reads the payload, runs the checks, prints violations |
+| `src/stop.ts` | the Stop hook entry point: walks the working directory for `.ts`/`.tsx` files modified since the session began (files written through a shell), runs the checks, reports through `systemMessage`, exits 0 |
+| `src/report.ts` | the violation line format both entry points print |
 | `src/parse.ts` | acorn with the TypeScript plugin; the only place the parser is called |
 | `src/ast.ts` | a small view of the AST: node types, child links, a tree walk |
 | `src/registry.ts` | the list of checks, and the run: parse, walk, apply suppressions, sort |
@@ -85,11 +87,12 @@ A directive with no rule list covers every check. Comments naming other rules
 
 `dist/` is the **only checked-in build artifact**: plugins install via git clone
 with no guaranteed build step, so end users get zero install/build of their own.
-It is three files with zero runtime dependencies, about 0.45 MiB together:
+It is four files with zero runtime dependencies, about 0.47 MiB together:
 
 | File | Contents | Size |
 |---|---|---|
 | `check.js` | `src/`, the hook entry point; loads the other two with a relative `require` | ~26 KiB |
+| `stop.js` | `src/`, the Stop hook entry point; loads the other two the same way | ~29 KiB |
 | `acorn.js` | the acorn parser | ~211 KiB |
 | `acorn-typescript.js` | acorn's TypeScript plugin | ~211 KiB |
 

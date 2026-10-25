@@ -880,17 +880,17 @@ function safely(run) {
   }
 }
 
+// src/report.ts
+var violationLines = (violations) => violations.map((v) => `  L${v.line}:${v.column}  ${v.ruleId}  ${v.text}  \u2192 ${v.pointer}`);
+
 // src/check.ts
 var EXIT_OK = 0;
 var EXIT_BLOCK = 2;
 var TS_FILE = /\.tsx?$/;
 function format(filePath, violations) {
-  const lines = violations.map(
-    (v) => `  L${v.line}:${v.column}  ${v.ruleId}  ${v.text}  \u2192 ${v.pointer}`
-  );
   return [
     `ts-patterns: ${violations.length} mechanical violation(s) in ${filePath}:`,
-    ...lines,
+    ...violationLines(violations),
     "Fix these to satisfy the TypeScript patterns before continuing.",
     ""
   ].join("\n");
