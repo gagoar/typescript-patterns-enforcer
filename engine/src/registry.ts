@@ -2,12 +2,17 @@ import { walk } from "./ast";
 import { readSuppressions } from "./directives";
 import { parseTypeScript } from "./parse";
 import { banTsComment, noNarrativeComment } from "./rules/comments";
+import { noColonAnnotatedLookup } from "./rules/lookup-annotation";
+import { noFailOpenDefault, noStringOfOptionalChain } from "./rules/fail-open";
 import { noMagicNumbers } from "./rules/magic-numbers";
 import { createNoParamReassign } from "./rules/param-reassign";
 import { preferAwaitToThen } from "./rules/promise";
 import { requireRegexExample } from "./rules/regex-comment";
+import { createRepeatedLiteral } from "./rules/repeated-literal";
 import { noExplicitAny, noLoopStatements, noNestedTernary, noSwitchStatement } from "./rules/simple";
 import type { Rule, RuleContext } from "./rules/types";
+import { noVoidGuard } from "./rules/void-guard";
+import { noZeroComparison } from "./rules/zero-comparison";
 
 interface MechanicalCheck {
   readonly id: string;
@@ -87,6 +92,48 @@ export const CHECKS: readonly MechanicalCheck[] = [
     skillRule: "Core Rule 11 (every regex carries an example)",
     pointer: "SKILL.md Core Rule 11 — comment above: what it accepts, a quoted match/reject, and a pre-filled tester link",
     create: () => requireRegexExample,
+  },
+  {
+    // Matches `.length` only: on a bare number the comparison can be the point, and the
+    // engine has no types to tell the two apart.
+    id: "no-zero-comparison",
+    skillRule: "Core Rule 10 (coerce over compare), the `.length` case",
+    pointer: "SKILL.md Core Rule 10 — coerce: `!!x.length` / `!x.length`",
+    create: () => noZeroComparison,
+  },
+  {
+    // A lexical proxy for "the same value restated": counts identical strings and template
+    // skeletons per file, so it cannot see a repeat across files.
+    id: "repeated-literal",
+    skillRule: "Core Rule 9 (repeated literals)",
+    pointer: "SKILL.md Core Rule 9 — export one named const and compose from it",
+    create: createRepeatedLiteral,
+  },
+  {
+    id: "colon-annotated-lookup",
+    skillRule: "Derive, Don't Restate (`as const satisfies`) and Data Over Logic",
+    pointer: "SKILL.md Data Over Logic — `{ ... } as const satisfies Record<K, V>`",
+    create: () => noColonAnnotatedLookup,
+  },
+  {
+    // Lexical: sees the literal after `??`, not the type, so arithmetic and template
+    // operands are skipped as the intended uses.
+    id: "fail-open-default",
+    skillRule: "Make Illegal States Unrepresentable (fail-open defaults)",
+    pointer: "SKILL.md Make Illegal States Unrepresentable — return a tagged result or throw",
+    create: () => noFailOpenDefault,
+  },
+  {
+    id: "string-of-optional-chain",
+    skillRule: "Core Rule 1 (`String(x)` on a possibly missing value)",
+    pointer: "SKILL.md Core Rule 1 — narrow first; `String(undefined)` is \"undefined\"",
+    create: () => noStringOfOptionalChain,
+  },
+  {
+    id: "void-guard",
+    skillRule: "Core Rule 1 (`asserts condition` guards)",
+    pointer: "SKILL.md Core Rule 1 — declare `asserts condition`",
+    create: () => noVoidGuard,
   },
 ];
 
