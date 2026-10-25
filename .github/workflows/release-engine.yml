@@ -4,6 +4,11 @@ name: release-engine
 # engine/dist/*.js (four readable files), and attaches them (plus SHA256SUMS) to
 # the GitHub Release.
 #   - pull request: build and verify only; nothing is published
+#   - push to main (engine changes): build and verify only. Two PRs can each pass
+#     alone and still leave a stale bundle once both merge (one regenerates dist
+#     without the other's sources). The pull request run cannot see that, because
+#     it ran before the other PR merged; this run checks the merged result and
+#     fails main's check until the bundle is rebuilt.
 #   - push of a v* tag: build, verify, publish to that tag's release
 #   - manual run: attach the engine to an EXISTING release (give the tag)
 # Uses the workflow's own GITHUB_TOKEN; no PAT.
@@ -12,6 +17,8 @@ on:
   pull_request:
     paths: ["engine/**", ".github/workflows/release-engine.yml"]
   push:
+    branches: [main]
+    paths: ["engine/**", ".github/workflows/release-engine.yml"]
     tags: ["v*"]
   workflow_dispatch:
     inputs:
@@ -27,6 +34,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TAG: ${{ inputs.tag || github.ref_name }}
+      # Only a tag push or a manual run publishes; a pull request or a push to main only verifies.
+      PUBLISH: ${{ github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/') }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -37,7 +46,7 @@ jobs:
           node-version: 24
 
       - name: Tag matches plugin.json
-        if: github.event_name != 'pull_request'
+        if: env.PUBLISH == 'true'
         run: |
           set -euo pipefail
           want="$(sed -n 's/.*"version": *"\([^"]*\)".*/\1/p' .claude-plugin/plugin.json | head -1)"
@@ -60,7 +69,7 @@ jobs:
         run: node --test test/run.test.mjs
 
       - name: Publish to the release
-        if: github.event_name != 'pull_request'
+        if: env.PUBLISH == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

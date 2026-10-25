@@ -216,6 +216,58 @@ var noNarrativeComment = {
   }
 };
 
+// src/rules/lookup-annotation.ts
+var RECORD = "Record";
+var READONLY = "Readonly";
+var typeNameOf = (type) => type?.type === "TSTypeReference" ? nameOf(child(type, "typeName")) : void 0;
+function isRecordType(type) {
+  if (typeNameOf(type) === RECORD) return true;
+  if (!type || typeNameOf(type) !== READONLY) return false;
+  const [inner] = childList(child(type, "typeArguments") ?? type, "params");
+  return typeNameOf(inner) === RECORD;
+}
+var noColonAnnotatedLookup = {
+  id: "colon-annotated-lookup",
+  enter: ({ node }, context) => {
+    if (node.type !== "VariableDeclarator") return;
+    const id = child(node, "id");
+    const init = child(node, "init");
+    const declared = child(child(id ?? node, "typeAnnotation") ?? node, "typeAnnotation");
+    if (init?.type !== "ObjectExpression" || !childList(init, "properties").length || !isRecordType(declared)) return;
+    context.report(node, "lookup object typed with a colon annotation: write `{ ... } as const satisfies Record<K, V>` (see SKILL.md Data Over Logic).");
+  }
+};
+
+// src/rules/fail-open.ts
+var ARITHMETIC = /* @__PURE__ */ new Set(["+", "-", "*", "/", "%", "**"]);
+var STRING = "String";
+var noFailOpenDefault = {
+  id: "fail-open-default",
+  enter: ({ node, ancestors }, context) => {
+    if (node.type !== "LogicalExpression" || node["operator"] !== "??") return;
+    const right = child(node, "right");
+    const left = child(node, "left");
+    const callee = left?.type === "ChainExpression" ? child(left, "expression") : left;
+    if (callee?.type !== "CallExpression") return;
+    if (right?.type !== "Literal" || right["value"] !== "" && right["value"] !== 0) return;
+    const parent = ancestors.at(-1);
+    const isOperand = parent?.type === "BinaryExpression" && ARITHMETIC.has(String(parent["operator"]));
+    if (isOperand || parent?.type === "TemplateLiteral") return;
+    context.report(node, `\`?? ${String(right["raw"])}\` turns absence or failure into a valid value: return a tagged result or throw (see SKILL.md Make Illegal States Unrepresentable).`);
+  }
+};
+var isOptionalChain = (arg) => arg?.type === "ChainExpression";
+var noStringOfOptionalChain = {
+  id: "string-of-optional-chain",
+  enter: ({ node }, context) => {
+    if (node.type !== "CallExpression" || nameOf(child(node, "callee")) !== STRING) return;
+    const [first] = node["arguments"] ?? [];
+    if (isOptionalChain(first)) {
+      context.report(node, '`String()` of an optional chain prints "undefined" when it breaks: narrow first (see SKILL.md Core Rule 1).');
+    }
+  }
+};
+
 // src/rules/magic-numbers.ts
 var IGNORED = /* @__PURE__ */ new Set([0, 1, -1]);
 var MAX_ARRAY_LENGTH = 4294967295;
@@ -225,6 +277,8 @@ var MEMBER = "MemberExpression";
 var CALL = "CallExpression";
 var CLASS_FIELD = "PropertyDefinition";
 var SIGNS = ["-", "+"];
+var ARITHMETIC2 = /* @__PURE__ */ new Set(["+", "-", "*", "/", "%", "**", "<<", ">>"]);
+var AS_CONST_PATH = /* @__PURE__ */ new Set(["Property", "ObjectExpression", "ArrayExpression", "UnaryExpression"]);
 var PARENT = 1;
 var GRANDPARENT = 2;
 var GREAT_GRANDPARENT = 3;
@@ -290,6 +344,23 @@ function isArrayIndex({ above, full, magnitude, sign }) {
   const isInteger = typeof value === "bigint" || Number.isInteger(value);
   return isInteger && value >= 0 && value < MAX_ARRAY_LENGTH;
 }
+function aboveArithmetic(levels) {
+  const top = levels.at(-PARENT);
+  const isMath = top?.type === "BinaryExpression" && ARITHMETIC2.has(String(top["operator"])) || top?.type === "UnaryExpression";
+  return isMath ? aboveArithmetic(levels.slice(0, -PARENT)) : levels;
+}
+function isNamedConstArithmetic({ above }) {
+  const rest = aboveArithmetic(above);
+  return rest.at(-PARENT)?.type === "VariableDeclarator" && rest.at(-GRANDPARENT)?.["kind"] === "const";
+}
+function isInsideAsConst({ above }) {
+  const climb = (levels) => {
+    const top = levels.at(-PARENT);
+    if (top && AS_CONST_PATH.has(top.type)) return climb(levels.slice(0, -PARENT));
+    return top?.type === "TSAsExpression" && nameOf(child(child(top, "typeAnnotation") ?? top, "typeName")) === "const";
+  };
+  return climb(above);
+}
 var isExempt = (found) => isParseIntRadix(found) || isJsxNumber(found) || isArrayIndex(found);
 var noMagicNumbers = {
   id: "no-magic-numbers",
@@ -305,6 +376,7 @@ var noMagicNumbers = {
     if (isNumericLiteralType(found)) return;
     if (isInsideIndexedAccessType(found) || isReadonlyClassField(found)) return flaggedHere();
     if (IGNORED.has(signed(magnitude, sign)) || isExempt(found)) return;
+    if (isNamedConstArithmetic(found) || isInsideAsConst(found)) return;
     if (above.at(-PARENT)?.type !== "VariableDeclarator") report(full, `${sign ?? ""}${rawOf(node)}`);
   }
 };
@@ -507,6 +579,68 @@ var requireRegexExample = {
   }
 };
 
+// src/rules/repeated-literal.ts
+var MIN_LENGTH = 8;
+var MIN_OCCURRENCES = 3;
+var PREVIEW_LENGTH = 40;
+var PLACEHOLDER = "${}";
+var ALLOWED = /* @__PURE__ */ new Set(["undefined", "function", "anonymous"]);
+var NON_VALUE_PARENTS = /* @__PURE__ */ new Set([
+  "ImportDeclaration",
+  "ExportNamedDeclaration",
+  "ExportAllDeclaration",
+  "ImportAttribute",
+  "TSLiteralType",
+  "TSImportType",
+  "TSExternalModuleReference",
+  "JSXAttribute",
+  "TaggedTemplateExpression"
+]);
+var TEST_FUNCTIONS = /* @__PURE__ */ new Set(["it", "test", "describe"]);
+function isTestTitle(parent, node) {
+  if (parent?.type !== "CallExpression") return false;
+  const callee = child(parent, "callee");
+  const base = callee?.type === "MemberExpression" ? child(callee, "object") : callee;
+  const [title] = parent["arguments"] ?? [];
+  const name = nameOf(base);
+  return title === node && name !== void 0 && TEST_FUNCTIONS.has(name);
+}
+function isPositionalNoise(parent, node) {
+  if (!parent) return false;
+  const isKey = parent.type === "Property" && parent["computed"] === false && child(parent, "key") === node;
+  const isDirective = parent.type === "ExpressionStatement" && typeof parent["directive"] === "string";
+  return isKey || isDirective || NON_VALUE_PARENTS.has(parent.type) || isTestTitle(parent, node);
+}
+function textOf(node) {
+  if (node.type === "Literal") return typeof node["value"] === "string" ? node["value"] : void 0;
+  if (node.type !== "TemplateLiteral") return void 0;
+  return node["quasis"].map((quasi) => String(quasi["value"].cooked ?? "")).join(PLACEHOLDER);
+}
+function literalText({ node, ancestors }) {
+  const text = textOf(node);
+  if (text === void 0 || text.length < MIN_LENGTH || text === PLACEHOLDER || ALLOWED.has(text)) return void 0;
+  return isPositionalNoise(ancestors.at(-1), node) ? void 0 : text;
+}
+function createRepeatedLiteral() {
+  const seen = /* @__PURE__ */ new Map();
+  return {
+    id: "repeated-literal",
+    enter: (visit) => {
+      const text = literalText(visit);
+      if (text !== void 0) seen.set(text, [...seen.get(text) ?? [], visit.node]);
+    },
+    exit: ({ ancestors }, context) => {
+      if (ancestors.length) return;
+      seen.forEach((nodes, text) => {
+        const [first] = nodes;
+        if (!first || nodes.length < MIN_OCCURRENCES) return;
+        const preview = text.length > PREVIEW_LENGTH ? `${text.slice(0, PREVIEW_LENGTH)}\u2026` : text;
+        context.report(first, `"${preview}" appears ${nodes.length} times: export one named const and compose from it (see SKILL.md Core Rule 9).`);
+      });
+    }
+  };
+}
+
 // src/rules/simple.ts
 var CONDITIONAL = "ConditionalExpression";
 var LOOP_TYPES = /* @__PURE__ */ new Set([
@@ -545,6 +679,41 @@ var noNestedTernary = {
     const nested = ["test", "consequent", "alternate"].some((key) => child(node, key)?.type === CONDITIONAL);
     if (nested) {
       context.report(node, "nested ternary \u2014 flatten, or convert to a Record/.find() lookup (see SKILL.md Data Over Logic).");
+    }
+  }
+};
+
+// src/rules/void-guard.ts
+var GUARD = "guard";
+var ASSERT_PREFIX = "assert";
+var isGuardName = (name) => name === GUARD || (name?.startsWith(ASSERT_PREFIX) ?? false);
+var returnsVoid = (fn) => child(child(fn ?? {}, "returnType") ?? {}, "typeAnnotation")?.type === "TSVoidKeyword";
+var noVoidGuard = {
+  id: "void-guard",
+  enter: ({ node }, context) => {
+    const declared = node.type === "FunctionDeclaration" ? node : void 0;
+    const init = node.type === "VariableDeclarator" ? child(node, "init") : void 0;
+    const isFunctionInit = init?.type === "ArrowFunctionExpression" || init?.type === "FunctionExpression";
+    const name = declared ? nameOf(child(declared, "id")) : nameOf(child(node, "id"));
+    const fn = declared ?? (isFunctionInit ? init : void 0);
+    if (fn && isGuardName(name) && returnsVoid(fn)) {
+      context.report(node, `\`${String(name)}\` returns void: declare \`asserts condition\` so the narrowing reaches the caller (see SKILL.md Core Rule 1).`);
+    }
+  }
+};
+
+// src/rules/zero-comparison.ts
+var ZERO_TESTS = /* @__PURE__ */ new Set(["> 0", "=== 0", "!== 0", "== 0", "!= 0", ">= 1", "< 1"]);
+var noZeroComparison = {
+  id: "no-zero-comparison",
+  enter: ({ node }, context) => {
+    if (node.type !== "BinaryExpression") return;
+    const left = child(node, "left");
+    const right = child(node, "right");
+    const isLength = left?.type === "MemberExpression" && !left["computed"] && nameOf(child(left, "property")) === "length";
+    if (!isLength || right?.type !== "Literal" || typeof right["value"] !== "number") return;
+    if (ZERO_TESTS.has(`${String(node["operator"])} ${right["value"]}`)) {
+      context.report(node, "`.length` compared with zero: coerce it (`!!x.length`, `!x.length`) (see SKILL.md Core Rule 10).");
     }
   }
 };
@@ -618,6 +787,48 @@ var CHECKS = [
     skillRule: "Core Rule 11 (every regex carries an example)",
     pointer: "SKILL.md Core Rule 11 \u2014 comment above: what it accepts, a quoted match/reject, and a pre-filled tester link",
     create: () => requireRegexExample
+  },
+  {
+    // Matches `.length` only: on a bare number the comparison can be the point, and the
+    // engine has no types to tell the two apart.
+    id: "no-zero-comparison",
+    skillRule: "Core Rule 10 (coerce over compare), the `.length` case",
+    pointer: "SKILL.md Core Rule 10 \u2014 coerce: `!!x.length` / `!x.length`",
+    create: () => noZeroComparison
+  },
+  {
+    // A lexical proxy for "the same value restated": counts identical strings and template
+    // skeletons per file, so it cannot see a repeat across files.
+    id: "repeated-literal",
+    skillRule: "Core Rule 9 (repeated literals)",
+    pointer: "SKILL.md Core Rule 9 \u2014 export one named const and compose from it",
+    create: createRepeatedLiteral
+  },
+  {
+    id: "colon-annotated-lookup",
+    skillRule: "Derive, Don't Restate (`as const satisfies`) and Data Over Logic",
+    pointer: "SKILL.md Data Over Logic \u2014 `{ ... } as const satisfies Record<K, V>`",
+    create: () => noColonAnnotatedLookup
+  },
+  {
+    // Lexical: sees the literal after `??`, not the type, so arithmetic and template
+    // operands are skipped as the intended uses.
+    id: "fail-open-default",
+    skillRule: "Make Illegal States Unrepresentable (fail-open defaults)",
+    pointer: "SKILL.md Make Illegal States Unrepresentable \u2014 return a tagged result or throw",
+    create: () => noFailOpenDefault
+  },
+  {
+    id: "string-of-optional-chain",
+    skillRule: "Core Rule 1 (`String(x)` on a possibly missing value)",
+    pointer: 'SKILL.md Core Rule 1 \u2014 narrow first; `String(undefined)` is "undefined"',
+    create: () => noStringOfOptionalChain
+  },
+  {
+    id: "void-guard",
+    skillRule: "Core Rule 1 (`asserts condition` guards)",
+    pointer: "SKILL.md Core Rule 1 \u2014 declare `asserts condition`",
+    create: () => noVoidGuard
   }
 ];
 var POINTER_BY_ID = Object.fromEntries(CHECKS.map((check) => [check.id, check.pointer]));
