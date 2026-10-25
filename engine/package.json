@@ -8,7 +8,7 @@
     "build": "node build.mjs",
     "typecheck": "tsc --noEmit",
     "pretest": "npm run build",
-    "test": "node --test test/run.test.mjs",
+    "test": "node --test test/run.test.mjs test/consistency.test.mjs",
     "release": "npm ci && npm run typecheck && npm run build && npm test"
   },
   "devDependencies": {
