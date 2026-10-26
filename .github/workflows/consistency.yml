@@ -1,0 +1,25 @@
+name: consistency
+
+# The hand-kept lists and numbers that must agree with their source (check ids, counts,
+# build outputs, versions): engine/test/consistency.test.mjs. It only reads files, so it
+# needs no install and no path filter, and it runs on every pull request and every push to
+# main. The push run matters: a pull request is checked before another one merges.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  consistency:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Hand-kept lists agree with their sources
+        run: node --test engine/test/consistency.test.mjs
