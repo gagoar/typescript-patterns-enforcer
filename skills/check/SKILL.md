@@ -16,7 +16,7 @@ description: >
   this TS file", "enforce patterns", "check type safety", "improve types".
 
   This skill applies inline. For full PR reviews or large multi-file refactors, the
-  typescript-patterns-enforcer agent is available for deeper delegated work.
+  typescript-patterns-enforcer:review agent is available for deeper delegated work.
 ---
 
 # TypeScript Pattern Enforcement
