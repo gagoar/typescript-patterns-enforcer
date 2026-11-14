@@ -129,7 +129,7 @@ The plugin ships two hooks, in `hooks/hooks.json`.
 
 The `PostToolUse` hook runs `node engine/dist/check.js` after Claude edits or writes a file. It reads the hook payload on stdin and the edited file from disk. It checks only `.ts` and `.tsx` files.
 
-The `Stop` hook runs `node engine/dist/stop.js` when Claude finishes a turn. The edit hook never sees a file written through a shell (a heredoc, a script), so this one lists the `.ts` and `.tsx` files under the working directory that changed since the session began and runs the same checks on them. It skips `node_modules`, `dist` and `.d.ts` files. It is advisory: it shows the findings to you as a message and always exits 0.
+The `Stop` hook runs `node engine/dist/stop.js` when Claude finishes a turn. The edit hook never sees a file written through a shell (a heredoc, a script), so this one lists the `.ts` and `.tsx` files under the working directory that changed since the session began and runs the same checks on them. It skips `node_modules`, `.claude`, `dist` and `.d.ts` files, and caps the message at about 20,000 characters. It is advisory: it shows the findings to you as a message and always exits 0.
 
 The engine's own code writes nothing to disk, makes no network calls, and starts no other process. The edit hook prints violations to stderr and exits with code 2, which sends them back to Claude. If Node is missing or the check cannot run, the hook exits with no output. The skill's written rules then remain the only enforcement.
 

@@ -14,8 +14,10 @@ const EXIT_OK = 0;
 // https://regex101.com/?flavor=javascript&regex=%5E%28%3F%21.%2A%5C.d%5C.tsx%3F%24%29.%2A%5C.tsx%3F%24&flags=gm&testString=src%2Fa.ts%0AApp.tsx%0Aa.d.ts%0Anotes.md%0Aa.ts.bak
 // (the link carries the m flag only so the tester tries each example line)
 const TS_FILE = /^(?!.*\.d\.tsx?$).*\.tsx?$/;
-const SKIPPED_DIRS: ReadonlySet<string> = new Set(["node_modules", ".git", "dist", "build", "out", "coverage", ".next", ".turbo"]);
+const SKIPPED_DIRS: ReadonlySet<string> = new Set(["node_modules", ".git", ".claude", "dist", "build", "out", "coverage", ".next", ".turbo"]);
 const MAX_DEPTH = 8;
+// A session that touches many files must not flood the transcript with one huge message.
+const MAX_MESSAGE_CHARS = 20_000;
 
 interface StopPayload {
   readonly cwd?: string;
@@ -69,6 +71,16 @@ function reportFor(file: string): readonly string[] {
   }
 }
 
+function capped(lines: readonly string[]): readonly string[] {
+  const runningSize = lines.reduce<number[]>((sizes, line) => {
+    sizes.push((sizes.at(-1) ?? 0) + line.length + 1);
+    return sizes;
+  }, []);
+  const keep = runningSize.filter((size) => size <= MAX_MESSAGE_CHARS).length;
+  const omitted = lines.length - keep;
+  return omitted ? [...lines.slice(0, keep), `... ${omitted} more lines omitted`] : lines;
+}
+
 function main(): void {
   const payload = JSON.parse(readFileSync(0, "utf8")) as StopPayload;
   const since = sessionStart(payload.transcript_path);
@@ -80,7 +92,7 @@ function main(): void {
   if (!lines.length) process.exit(EXIT_OK);
   const message = [
     "ts-patterns: mechanical violations in TypeScript files changed this session (the edit hook does not see files written through a shell):",
-    ...lines,
+    ...capped(lines),
   ].join("\n");
   process.stdout.write(JSON.stringify({ systemMessage: message }));
   process.exit(EXIT_OK);
