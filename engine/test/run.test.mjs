@@ -128,6 +128,28 @@ test("stop: node_modules and .d.ts files are skipped", () => {
   assert.equal(r.stdout, "");
 });
 
+test("stop: files under a .claude directory are skipped", () => {
+  const r = stopScenario((dir) => {
+    const plugin = join(dir, ".claude", "plugins", "marketplaces", "x", "external_plugins", "discord");
+    mkdirSync(plugin, { recursive: true });
+    writeFileSync(join(plugin, "server.ts"), BAD_SOURCE);
+  });
+  assert.equal(r.status, 0);
+  assert.equal(r.stdout, "");
+});
+
+test("stop: an oversized report is truncated with an omitted-lines note", () => {
+  const FILE_COUNT = 400;
+  const MESSAGE_CAP = 25_000;
+  const r = stopScenario((dir) => {
+    Array.from({ length: FILE_COUNT }, (_, i) => writeFileSync(join(dir, `bad-${i}.ts`), BAD_SOURCE));
+  });
+  assert.equal(r.status, 0);
+  const { systemMessage } = JSON.parse(r.stdout);
+  assert.ok(systemMessage.length <= MESSAGE_CAP);
+  assert.match(systemMessage, /\.\.\. \d+ more lines omitted/);
+});
+
 test("stop: a clean .ts file produces no output", () => {
   const r = stopScenario((dir) => writeFileSync(join(dir, "clean.ts"), "export const x = (): number => 1;\n"));
   assert.equal(r.status, 0);

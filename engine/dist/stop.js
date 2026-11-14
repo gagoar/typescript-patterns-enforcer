@@ -887,8 +887,9 @@ var violationLines = (violations) => violations.map((v) => `  L${v.line}:${v.col
 // src/stop.ts
 var EXIT_OK = 0;
 var TS_FILE = /^(?!.*\.d\.tsx?$).*\.tsx?$/;
-var SKIPPED_DIRS = /* @__PURE__ */ new Set(["node_modules", ".git", "dist", "build", "out", "coverage", ".next", ".turbo"]);
+var SKIPPED_DIRS = /* @__PURE__ */ new Set(["node_modules", ".git", ".claude", "dist", "build", "out", "coverage", ".next", ".turbo"]);
 var MAX_DEPTH = 8;
+var MAX_MESSAGE_CHARS = 2e4;
 function sessionStart(transcriptPath) {
   if (!transcriptPath) return void 0;
   try {
@@ -928,6 +929,15 @@ function reportFor(file) {
     return [];
   }
 }
+function capped(lines) {
+  const runningSize = lines.reduce((sizes, line) => {
+    sizes.push((sizes.at(-1) ?? 0) + line.length + 1);
+    return sizes;
+  }, []);
+  const keep = runningSize.filter((size) => size <= MAX_MESSAGE_CHARS).length;
+  const omitted = lines.length - keep;
+  return omitted ? [...lines.slice(0, keep), `... ${omitted} more lines omitted`] : lines;
+}
 function main() {
   const payload = JSON.parse((0, import_node_fs.readFileSync)(0, "utf8"));
   const since = sessionStart(payload.transcript_path);
@@ -937,7 +947,7 @@ function main() {
   if (!lines.length) process.exit(EXIT_OK);
   const message = [
     "ts-patterns: mechanical violations in TypeScript files changed this session (the edit hook does not see files written through a shell):",
-    ...lines
+    ...capped(lines)
   ].join("\n");
   process.stdout.write(JSON.stringify({ systemMessage: message }));
   process.exit(EXIT_OK);
